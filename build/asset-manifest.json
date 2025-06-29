@@ -1,0 +1,26 @@
+{
+  "files": {
+    "main.css": "/informatik/kryptogame/static/css/main.2ebf8e04.css",
+    "main.js": "/informatik/kryptogame/static/js/main.29b20d33.js",
+    "static/media/mauborgne.png": "/informatik/kryptogame/static/media/mauborgne.40580a001b29463d4ce3.png",
+    "static/media/bellaso.png": "/informatik/kryptogame/static/media/bellaso.0eb7e97607ecc7fdaa39.png",
+    "static/media/miller.png": "/informatik/kryptogame/static/media/miller.99c0848da9a1b51a383b.png",
+    "static/media/babbage.png": "/informatik/kryptogame/static/media/babbage.6528865fd079ab7e042d.png",
+    "static/media/vigenere.png": "/informatik/kryptogame/static/media/vigenere.d677bbb2f743e7571ecd.png",
+    "static/media/roemer.png": "/informatik/kryptogame/static/media/roemer.14515aeb2d10b3037a5f.png",
+    "static/media/kasiski.png": "/informatik/kryptogame/static/media/kasiski.72409fcecd7cea874de9.png",
+    "static/media/alkindi.png": "/informatik/kryptogame/static/media/alkindi.960df879a6a68ec8e690.png",
+    "static/media/trithemius.png": "/informatik/kryptogame/static/media/trithemius.11f549372a43fb3ab386.png",
+    "static/media/timemachine.png": "/informatik/kryptogame/static/media/timemachine.de7b375544e0e8c89435.png",
+    "static/media/vigenere2.png": "/informatik/kryptogame/static/media/vigenere2.102c15502c688f094dbc.png",
+    "static/media/background.png": "/informatik/kryptogame/static/media/background.1210bf66f5594f3dcc99.png",
+    "static/media/arab.png": "/informatik/kryptogame/static/media/arab.7d9ebffc79feccca7fcd.png",
+    "index.html": "/informatik/kryptogame/index.html",
+    "main.2ebf8e04.css.map": "/informatik/kryptogame/static/css/main.2ebf8e04.css.map",
+    "main.29b20d33.js.map": "/informatik/kryptogame/static/js/main.29b20d33.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2ebf8e04.css",
+    "static/js/main.29b20d33.js"
+  ]
+}
