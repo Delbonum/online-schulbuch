@@ -1,7 +1,9 @@
 const express = require("express");
-const fs = require("fs");
 const cors = require("cors");
+const axios = require("axios");
 const app = express();
+const BIN_ID = process.env.JSONBIN_BIN_ID;
+const API_KEY = process.env.JSONBIN_API_KEY;
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
@@ -9,18 +11,36 @@ app.use(express.json());
 
 const USERS_FILE = "./users.json";
 
-function loadUsers() {
-  return JSON.parse(fs.readFileSync(USERS_FILE));
+async function loadUsers() {
+  const response = await axios.get(
+    `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,
+    {
+      headers: {
+        "X-Master-Key": API_KEY,
+      },
+    }
+  );
+
+  return response.data.record;
 }
 
-function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+async function saveUsers(users) {
+  await axios.put(
+    `https://api.jsonbin.io/v3/b/${BIN_ID}`,
+    users,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": API_KEY,
+      },
+    }
+  );
 }
 
 // POST /login
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const users = loadUsers();
+  const users = await loadUsers();
   const user = users.find(u => u.username === username && u.password === password);
 
   if (user) {
@@ -33,7 +53,7 @@ app.post("/login", (req, res) => {
 
 // GET progress
 app.get("/progress/:username", (req, res) => {
-  const users = loadUsers();
+  const users = await loadUsers();
   const user = users.find(u => u.username === req.params.username);
 
   if (!user || user.role !== "student") {
@@ -44,8 +64,8 @@ app.get("/progress/:username", (req, res) => {
 });
 
 // POST progress (mit optionalem Skip der History)
-app.post("/progress/:username", (req, res) => {
-  const users = loadUsers();
+app.post("/progress/:username", async (req, res) => {
+  const users = await loadUsers();
   const user = users.find(u => u.username === req.params.username && u.role === "student");
 
   if (!user) return res.status(404).json({ error: "Nicht gefunden" });
@@ -66,15 +86,15 @@ app.post("/progress/:username", (req, res) => {
     }
   }
 
-  saveUsers(users);
+  await saveUsers(users);
   res.json({ success: true });
 });
 
 // POST Prüfungsversuch
-app.post("/progress/:username/recordAttempt", (req, res) => {
+app.post("/progress/:username/recordAttempt", async (req, res) => {
   const { levelKey, score, details } = req.body;
 
-  const users = loadUsers();
+  const users = await loadUsers();
   const user = users.find(u => u.username === req.params.username && u.role === "student");
 
   if (!user) return res.status(404).json({ error: "Nicht gefunden" });
@@ -89,13 +109,13 @@ app.post("/progress/:username/recordAttempt", (req, res) => {
     details
   });
 
-  saveUsers(users);
+  await saveUsers(users);
   res.json({ success: true });
 });
 
 // GET Prüfungsverlauf
 app.get("/progress/:username/history", (req, res) => {
-  const users = loadUsers();
+  const users = await loadUsers();
   const user = users.find(u => u.username === req.params.username);
 
   if (!user || user.role !== "student") {
@@ -108,7 +128,7 @@ app.get("/progress/:username/history", (req, res) => {
 // GET Schüler
 app.get("/students", (req, res) => {
   const teacher = req.query.teacher;
-  const users = loadUsers();
+  const users = await loadUsers();
 
   if (!teacher) {
     return res.status(400).json({ error: "Lehrername fehlt" });
@@ -127,14 +147,14 @@ app.get("/students", (req, res) => {
 });
 
 // POST Schüler anlegen
-app.post("/students", (req, res) => {
+app.post("/students", async (req, res) => {
   const { username, password, teacher } = req.body;
 
   if (!username || !password || !teacher) {
     return res.status(400).json({ error: "Fehlende Felder" });
   }
 
-  const users = loadUsers();
+  const users = await loadUsers();
 
   if (users.find((u) => u.username === username)) {
     return res.status(409).json({ error: "Benutzername existiert bereits" });
@@ -149,25 +169,25 @@ app.post("/students", (req, res) => {
   };
 
   users.push(newStudent);
-  saveUsers(users);
+  await saveUsers(users);
 
   res.status(201).json({ success: true, student: { username, progress: {} } });
 });
 
 // DELETE Schüler
 app.delete("/students/:username", (req, res) => {
-  const users = loadUsers();
+  const users = await loadUsers();
   const filtered = users.filter(u => u.username !== req.params.username);
   if (filtered.length === users.length) {
     return res.status(404).json({ error: "Schüler nicht gefunden" });
   }
-  saveUsers(filtered);
+  await saveUsers(filtered);
   res.json({ success: true });
 });
 
 // PUT Schüler aktualisieren
 app.put("/students/:username", (req, res) => {
-  const users = loadUsers();
+  const users = await loadUsers();
   const idx = users.findIndex((u) => u.username === req.params.username);
 
   if (idx === -1 || users[idx].role !== "student") {
@@ -206,12 +226,12 @@ app.put("/students/:username", (req, res) => {
   }
 
   users[idx] = updated;
-  saveUsers(users);
+  await saveUsers(users);
   res.json({ success: true });
 });
 
 app.delete("/students/:username/reset", (req, res) => {
-  const users = loadUsers();
+  const users = await loadUsers();
   const idx = users.findIndex((u) => u.username === req.params.username);
 
   if (idx === -1 || users[idx].role !== "student") {
@@ -221,13 +241,13 @@ app.delete("/students/:username/reset", (req, res) => {
   users[idx].progress = {};
   users[idx].history = {};
 
-  saveUsers(users);
+  await saveUsers(users);
   res.json({ success: true });
 });
 
 app.get("/teachers/:teacher/statistics", (req, res) => {
   const { teacher } = req.params;
-  const users = loadUsers();
+  const users = await loadUsers();
   const students = users.filter(u => u.role === "student" && u.teacher === teacher);
 
   const progressSummary = { level1: 0, level2: 0, level3: 0 };
