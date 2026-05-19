@@ -52,7 +52,7 @@ app.post("/login", async (req, res) => {
 });
 
 // GET progress
-app.get("/progress/:username", (req, res) => {
+app.get("/progress/:username", async (req, res) => {
   const users = await loadUsers();
   const user = users.find(u => u.username === req.params.username);
 
@@ -114,7 +114,7 @@ app.post("/progress/:username/recordAttempt", async (req, res) => {
 });
 
 // GET Prüfungsverlauf
-app.get("/progress/:username/history", (req, res) => {
+app.get("/progress/:username/history", async (req, res) => {
   const users = await loadUsers();
   const user = users.find(u => u.username === req.params.username);
 
@@ -126,7 +126,7 @@ app.get("/progress/:username/history", (req, res) => {
 });
 
 // GET Schüler
-app.get("/students", (req, res) => {
+app.get("/students", async (req, res) => {
   const teacher = req.query.teacher;
   const users = await loadUsers();
 
@@ -186,7 +186,7 @@ app.delete("/students/:username", (req, res) => {
 });
 
 // PUT Schüler aktualisieren
-app.put("/students/:username", (req, res) => {
+app.put("/students/:username", async (req, res) => {
   const users = await loadUsers();
   const idx = users.findIndex((u) => u.username === req.params.username);
 
@@ -230,7 +230,7 @@ app.put("/students/:username", (req, res) => {
   res.json({ success: true });
 });
 
-app.delete("/students/:username/reset", (req, res) => {
+app.delete("/students/:username/reset", async (req, res) => {
   const users = await loadUsers();
   const idx = users.findIndex((u) => u.username === req.params.username);
 
@@ -245,7 +245,7 @@ app.delete("/students/:username/reset", (req, res) => {
   res.json({ success: true });
 });
 
-app.get("/teachers/:teacher/statistics", (req, res) => {
+app.get("/teachers/:teacher/statistics", async (req, res) => {
   const { teacher } = req.params;
   const users = await loadUsers();
   const students = users.filter(u => u.role === "student" && u.teacher === teacher);
