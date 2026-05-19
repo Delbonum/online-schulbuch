@@ -175,7 +175,7 @@ app.post("/students", async (req, res) => {
 });
 
 // DELETE Schüler
-app.delete("/students/:username", (req, res) => {
+app.delete("/students/:username", async (req, res) => {
   const users = await loadUsers();
   const filtered = users.filter(u => u.username !== req.params.username);
   if (filtered.length === users.length) {
