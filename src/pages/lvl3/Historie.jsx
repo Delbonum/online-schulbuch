@@ -19,13 +19,13 @@ export default function Historie() {
             deine Idee, die Verschiebezahl ständig zu verändern.<br></br>
             <br></br>
             Dir fällt auf, dass du die Tabula Recta auch nutzen kannst, um nach Caesars Verfahren zu verschlüsseln:
-            Stellst du entwa den Schlüsselbuchstaben 'D' ein, so wird das Geheimtextalphabet
-            'DEFGHIJKLMNOPQRSTUVWXYZABC' markiert, das sich bei der Verschiebezahl 3 ergibt. Für jeden
-            Klartextbuchstaben kannst du nun einfach die entsprechende Zeile der Tabula Recta nutzen, um den
-            Geheimtextbuchstaben zu finden. Genauso kannst du für jeden Geheimtextbuchstaben in der Zeile zum
-            Entschlüsseln in der Kopfzeile nachschauen, welches der entsprechende Klartextbuchstabe ist. Dann fällt dir
-            außerdem auf: Um nach progressiver Caesar-Verschlüsselung zu verschlüsseln, musst du einfach nach jedem
-            verschlüsselten Buchstaben in die nächste Zeile der Tabula Recta wechseln.
+            Stellst du etwa den Schlüsselbuchstaben 'D' ein, so wird das Geheimtextalphabet 'DEFGHIJKLMNOPQRSTUVWXYZABC'
+            markiert, das sich bei der Verschiebezahl 3 ergibt. Für jeden Klartextbuchstaben kannst du nun einfach die
+            entsprechende Zeile der Tabula Recta nutzen, um den Geheimtextbuchstaben zu finden. Genauso kannst du für
+            jeden Geheimtextbuchstaben in der Zeile zum Entschlüsseln in der Kopfzeile nachschauen, welches der
+            entsprechende Klartextbuchstabe ist. Dann fällt dir außerdem auf: Um nach progressiver
+            Caesar-Verschlüsselung zu verschlüsseln, musst du einfach nach jedem verschlüsselten Buchstaben in die
+            nächste Zeile der Tabula Recta wechseln.
           </p>
         </div>
         <TabulaRectaTool />

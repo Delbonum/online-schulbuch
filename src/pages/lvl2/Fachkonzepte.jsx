@@ -42,9 +42,9 @@ export default function Fachkonzepte() {
             ausgenutzt, um Rückschlüsse auf die unverschlüsselte Nachricht zu ziehen. Es werden die
             Buchstabenhäufigkeiten im Geheimtext mit bekannten Buchstabenhäufigkeiten in der Sprache verglichen. So
             können Rückschlüsse auf das verwendete Schlüsselalphabet gezogen werden. Die Häufigkeitsanalyse wird seit
-            dem 7. Jahrhundert benutzt, um Texte zu entschlüsseln, die mittels monoalphabetischer Verschlüsselung ohne
-            Transposition chiffriert worden sind. Entdeckt wurde die Häufigkeitsanalyse von dem arabischen Gelehrten
-            al-Kindī, erst deutlich später kam dieses Wissen nach Europa.
+            dem 9. Jahrhundert benutzt, um Texte zu entschlüsseln, die mittels monoalphabetischer Verschlüsselung ohne
+            Transposition chiffriert worden sind. Als Erster beschrieben hat sie der arabische Gelehrte al-Kindī; erst
+            deutlich später kam dieses Wissen nach Europa.
           </p>
         </section>
 

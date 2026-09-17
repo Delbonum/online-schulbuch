@@ -16,15 +16,15 @@ export default function Kasiski() {
       <h1 className="text-2xl font-bold heading-style mb-4">Der Kasiski-Test</h1>
 
       <p className="mb-4">
-        Du hast herausgefunden, dass Vigenère durch eine Häufigkeitsanalyse geknackt werden kann, wenn die Schüssellänge
-        bekannt ist. Doch der Schlüssel ist in aller Regel geheim; deshalb gehst du davon aus, dass das
+        Du hast herausgefunden, dass Vigenère durch eine Häufigkeitsanalyse geknackt werden kann, wenn die
+        Schlüssellänge bekannt ist. Doch der Schlüssel ist in aller Regel geheim; deshalb gehst du davon aus, dass das
         Vigenère-Verfahren sehr sicher sein muss – womöglich gar absolut sicher?
       </p>
 
       <div className="flex flex-col md:flex-row-reverse items-start gap-4">
         <img src={babbage} alt="Babbage" className="w-40 h-auto self-start" />
         <p className="mb-4">
-          Nein. Lange Zeit gilt das Verfahren zwar als unknackbar, doch schob bald lernst du jemanden kennen, dem es
+          Nein. Lange Zeit gilt das Verfahren zwar als unknackbar, doch schon bald lernst du jemanden kennen, dem es
           offenbar doch gelingt, die Chiffre zu knacken: Bei deinen weiteren Zeitreisen triffst du im 19. Jahrhundert
           auf den englischen Mathematiker Charles Babbage. Im Jahr 1854 gelingt es ihm, einen Vigenère-verschlüsselten
           Text zu entziffern – allerdings will der alte Wichtigtuer nicht verraten, wie er das angestellt hat.<br></br>
@@ -39,7 +39,7 @@ export default function Kasiski() {
         <p className="mb-4">
           Du triffst den preußischen Infanteriemajor Friedrich Wilhelm Kasiski, der ein Verfahren entwickelt hat, die
           Chiffre zu knacken. Ihm zu Ehren wird dieses Verfahren als <strong>Kasiski-Test</strong> bezeichnet – und
-          tatsächlich handelt es sich dabei um eine Methode, bei der zunächst die Schüssellänge ermittelt wird. Du
+          tatsächlich handelt es sich dabei um eine Methode, bei der zunächst die Schlüssellänge ermittelt wird. Du
           triffst ihn, um dir von ihm persönlich seine Strategie erklären zu lassen.<br></br>
           <br></br>
           <em>"Selbstredend will ich dir weiterhelfen, Fremder"</em>, sagt Kasiski offenherzig, lädt dich in sein
@@ -71,12 +71,12 @@ export default function Kasiski() {
           Statistisch gesehen ist es aber so, dass ein systematischer Zusammenhang zwischen Klartext, Schlüssel und
           Geheimtext viel häufiger ist als zufällige Dopplungen im Geheimtext. Wenn du eine Dopplung im Geheimtext
           findest, die sich über mehrere Buchstaben erstreckt, kannst du den Abstand zwischen den Dopplungen messen.
-          Wenn du mehrere solcher Abstände findest, kannst du die größten gemeinsamen Teiler dieser Abstände ermitteln
+          Wenn du mehrere solcher Abstände findest, kannst du den größten gemeinsamen Teiler dieser Abstände ermitteln
           und so die Schlüssellänge herausfinden.
         </em>
       </p>
 
-      <p className="font-semibold mb-2">Ermittle die Schüssellänge:</p>
+      <p className="font-semibold mb-2">Ermittle die Schlüssellänge:</p>
       <div className="bg-white/10 p-4 rounded mb-6">
         <SchluessellaengenTool initialText={KASISKI_CIPHERTEXT} />
       </div>

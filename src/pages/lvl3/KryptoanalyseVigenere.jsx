@@ -22,8 +22,8 @@ export default function KryptoanalyseVigenere() {
         </p>
 
         <p className="mt-4">
-          Tatsächlich: Angenommen dein Schlüssel hat vier Buchstaben – z.B. <strong>'ZEIT'</strong> – dann wird jeder
-          fünfte Buchstabe mit dem gleichen Schlüsselbuchstaben verschlüsselt: Der erste, fünfte, neunte usw. mit dem
+          Tatsächlich: Angenommen dein Schlüssel hat vier Buchstaben – z. B. <strong>'ZEIT'</strong> – dann wird jeder
+          vierte Buchstabe mit dem gleichen Schlüsselbuchstaben verschlüsselt: Der erste, fünfte, neunte usw. mit dem
           Schlüsselbuchstaben <strong>'Z'</strong>; der zweite, sechste, zehnte usw. mit dem <strong>'E'</strong> und so
           weiter... Du musst also nur für jeden Schlüsselbuchstaben eine separate Häufigkeitsanalyse durchführen!
         </p>

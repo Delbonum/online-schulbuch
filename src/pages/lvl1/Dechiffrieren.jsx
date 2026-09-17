@@ -13,10 +13,10 @@ export default function Dechiffrieren() {
         </strong>
         <br />
         <br />
-        Von einer früheren Zeitreise ins Italien des 15. Jahrhunderts hast du noch Chiffrierscheibe von Leon Battista
-        Alberti in deiner Tasche. Vielleicht kann sie dir helfen, die Nachricht zu entschlüsseln. Diese Scheibe setzt
-        sich aus einem äußeren und einem inneren Ring zusammen, die sich separat drehen lassen. Versuche mithilfe der
-        Scheibe herauszufinden, welche Bedeutung hinter der verschlüsselten Nachricht stecken könnte!
+        Von einer früheren Zeitreise ins Italien des 15. Jahrhunderts hast du noch die Chiffrierscheibe von Leon
+        Battista Alberti in deiner Tasche. Vielleicht kann sie dir helfen, die Nachricht zu entschlüsseln. Diese Scheibe
+        setzt sich aus einem äußeren und einem inneren Ring zusammen, die sich separat drehen lassen. Versuche mithilfe
+        der Scheibe herauszufinden, welche Bedeutung hinter der verschlüsselten Nachricht stecken könnte!
       </p>
 
       <ChiffreDisk presetText="CLHKW HXFK CXUXHFN" showHint revealDecryption="afterHint" />

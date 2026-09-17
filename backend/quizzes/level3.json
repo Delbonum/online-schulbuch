@@ -27,7 +27,7 @@
       "options": [
         "Es wird für jeden Buchstaben des Klartexts genau ein Schlüsselbuchstabe verwendet.",
         "Es handelt sich um ein polyalphabetisches Verfahren.",
-        "Nutzt man das Verfahren mit einem Schlüssel, der nur aus einem Buchstaben 'A' besteht, so unterscheidet sich das Ergebnis nicht von dem einfachen Verschiebeverfahren.",
+        "Nutzt man das Verfahren mit einem Schlüssel, der nur aus einem einzigen Buchstaben besteht, so unterscheidet sich das Ergebnis nicht vom einfachen Verschiebeverfahren.",
         "Bei längeren Schlüsseln kann das Verfahren mit der Tabula Recta, aber nicht mit einer Chiffrierscheibe entschlüsselt werden.",
         "Das Verfahren kann durch eine Häufigkeitsanalyse geknackt werden."
       ],
@@ -39,7 +39,7 @@
       "prompt": "Welche der folgenden Aussagen treffen auf das One-Time-Pad zu?",
       "options": [
         "Das One-Time-Pad ist absolut sicher und unknackbar.",
-        "Die Schlüsselbuchstaben dürfen nur ein einziges Mal verwendet werden.",
+        "Jeder Buchstabe darf innerhalb des Schlüssels nur ein einziges Mal vorkommen.",
         "Das Vorgehen beim Ver- und Entschlüsseln unterscheidet sich nicht vom Vigenère-Verfahren.",
         "Beim One-Time-Pad werden vor allem sehr kurze Schlüsselworte verwendet.",
         "Die Schlüsselübertragung ist beim One-Time-Pad kein Problem, da der Schlüssel innerhalb der verschlüsselten Nachricht mitgeschickt werden kann.",

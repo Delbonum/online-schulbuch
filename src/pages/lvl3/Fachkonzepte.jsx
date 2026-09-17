@@ -72,7 +72,7 @@ export default function FachkonzepteLvl3() {
             </strong>{" "}
             ist eine besonders sichere Variante des Vigenère-Verfahrens. Dabei ist der Schlüssel so lang wie der
             Klartext, völlig zufällig gewählt und wird nur ein einziges Mal verwendet. Wenn diese Regeln eingehalten
-            werden, ist das Verfahren mathematisch (nachgewiesen) unknackbar.
+            werden, ist das Verfahren nachweislich unknackbar – das hat Claude Shannon 1949 mathematisch bewiesen.
           </p>
         </section>
 

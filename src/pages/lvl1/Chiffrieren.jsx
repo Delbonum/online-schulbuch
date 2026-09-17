@@ -10,7 +10,7 @@ export default function VerschluesselnMitScheibe() {
         <strong className="text-white font-bold">"ZIEHT EUCH ZURUECK!"</strong>
         <br />
         <br />
-        Offensichtlich kam die Nachricht zu spät. Du entschließt, Caesar darüber zu benachrichtigen. Deine Nachricht{" "}
+        Offensichtlich kam die Nachricht zu spät. Du beschließt, Caesar darüber zu benachrichtigen. Deine Nachricht{" "}
         <strong className="text-white font-bold">"SCHLACHT VERLOREN"</strong> solltest du am besten verschlüsseln, bevor
         du sie versendest.
         <br />

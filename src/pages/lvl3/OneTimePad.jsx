@@ -27,17 +27,18 @@ export default function OneTimePad() {
       </div>
 
       <div className="flex flex-col md:flex-row-reverse items-start gap-4">
-        <img src={mauborgne} alt="Maubrogne" className="w-40 h-auto self-start" />
+        <img src={mauborgne} alt="Joseph O. Mauborgne" className="w-40 h-auto self-start" />
         <p className="mb-4">
           Im 20. Jahrhundert – einer Ära, in der die verschlüsselte Kommunikation über weite Strecken hinweg immer
-          bedeutsamer wird - begegnest du dem Amerikaner Joseph O. Mauborgne, der die Idee aufgreit und umsetzt. Er gibt
-          dem Verfahren den Namen, unter dem es schließlich bekannt wird: Das <strong>One-Time-Pad</strong>.<br></br>
+          bedeutsamer wird – begegnest du dem Amerikaner Joseph O. Mauborgne, der die Idee aufgreift und umsetzt. Er
+          gibt dem Verfahren den Namen, unter dem es schließlich bekannt wird: Das <strong>One-Time-Pad</strong>.
           <br></br>
-          Du reist ins Jahr 1962 und erkennst, wie bedeutsam das Verfahren in dieser Zeit tatsächlich ist: Der
-          sogenannte Heiße Draht zwischen dem US-amerikanischen und dem russischen Präsidenten wird mit dem One-Time-Pad
-          gesichert. Die Hotline wird 1962 nach dem Ende der Kuba-Krise eingerichtet und geht ein Jahr später in
-          Betrieb. Ziel ist es, eine direkte, schnelle und sichere Kommunikation zwischen Washington und Moskau zu
-          ermöglichen, um Missverständnisse und Eskalationen in Krisensituationen zu vermeiden.
+          <br></br>
+          Du reist ins Jahr 1963 und erkennst, wie bedeutsam das Verfahren in dieser Zeit tatsächlich ist: Der
+          sogenannte Heiße Draht zwischen dem Weißen Haus in Washington und dem Kreml in Moskau wird mit dem
+          One-Time-Pad gesichert. Beschlossen wird die Verbindung als Lehre aus der Kuba-Krise von 1962; im August 1963
+          geht sie in Betrieb. Ziel ist es, eine direkte, schnelle und sichere Kommunikation zwischen Washington und
+          Moskau zu ermöglichen, um Missverständnisse und Eskalationen in Krisensituationen zu vermeiden.
         </p>
       </div>
 

@@ -45,8 +45,8 @@ export default function Vigenere() {
 
       <div className="text-style mb-6">
         <em>
-          Hinweis: Es kann sich lohnen, mit dem Tool oben verschiedene Extremwerte zu test (z. B. ein Schlüsselwort mit
-          nur einem Buchstaben oder ein Klartext, der kürzer ist als der Schlüssel etc.).
+          Hinweis: Es kann sich lohnen, mit dem Tool oben verschiedene Extremwerte zu testen (z. B. ein Schlüsselwort
+          mit nur einem Buchstaben oder ein Klartext, der kürzer ist als der Schlüssel etc.).
         </em>
         <br></br>
         <br></br>
@@ -87,7 +87,7 @@ export default function Vigenere() {
         </em>
         <br></br>
         <br></br>
-        <em>Hinweis: Notiere dir die verschlüsselte Nachricht für die Zwischenprüfung.</em>
+        <em>Hinweis: Notiere dir die entschlüsselte Nachricht für die Zwischenprüfung.</em>
       </div>
     </div>
   );

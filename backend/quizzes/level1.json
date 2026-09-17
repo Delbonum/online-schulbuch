@@ -62,9 +62,9 @@
       "prompt": "Welche Aussage ist falsch?",
       "options": [
         "Wenn man den Schlüssel 'A' verwendet, sind Klartext und Geheimtext identisch",
-        "Betrachtet man den Index des Schlüssels im Alphabet, ergibt sich die Verschiebezahl",
+        "Die Position des Schlüssels im Alphabet (gezählt ab A = 0) ergibt die Verschiebezahl",
         "Caesar hat das Verschiebeverfahren in der Regel mit dem Schlüssel 'D' verwendet",
-        "Bei einer Verschiebung über die Alphabetgrenzen hinaus, wird wieder in die andere Richtung verschoben"
+        "Bei einer Verschiebung über das Alphabetende hinaus wird wieder in die andere Richtung zurückverschoben"
       ],
       "answer": 3
     }

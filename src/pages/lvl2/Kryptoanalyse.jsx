@@ -69,7 +69,7 @@ export default function Kryptoanalyse() {
         <p>
           Du hast herausgefunden: Das Caesar-Verfahren ist leicht durch Brute-Force knackbar – es gibt nur 26 mögliche
           Schlüssel. Beim Ersetzungsverfahren sind es 26! Möglichkeiten – viel zu viele zum Raten. Aber auch hier hilft
-          die Häufigkeitsanalyse - aber nur, wenn der Text lang genug ist, um die Häufigkeiten repräsentativ abzuilden.
+          die Häufigkeitsanalyse – aber nur, wenn der Text lang genug ist, um die Häufigkeiten repräsentativ abzubilden.
         </p>
       </section>
     </div>

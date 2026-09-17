@@ -22,8 +22,9 @@ export default function Chiffrieren() {
               geheimen Schlüsselalphabet. Der Schlüssel ist damit auch nicht mehr nur ein einzelner Buchstabe, sondern
               ein ganzes Alphabet, das die Zuordnung der Buchstaben bestimmt. Es sind also auch viel mehr mögliche
               Schlüssel denkbar, als beim Caesar-Verfahren - nämlich alle Permutationen des Alphabets. Das macht 26
-              Fakultät, ergibt ... Undenkbar viele! Über 400 Trilliarden! Beim Verschiebeverfahren sind nur 26
-              verschiedene Schlüssel möglich, selbst wenn wir die Verschiebezahl 0 miteinbeziehen."
+              Fakultät, ergibt ... Undenkbar viele! Über 400 Quadrillionen – eine Zahl mit 27 Stellen! Beim
+              Verschiebeverfahren sind nur 26 verschiedene Schlüssel möglich, selbst wenn wir die Verschiebezahl 0
+              miteinbeziehen."
             </i>
           </p>
           <p className="mb-4">
@@ -45,9 +46,9 @@ export default function Chiffrieren() {
         <p className="mb-6">
           <i>
             „Nimm das Wort <b>VERTRAUEN</b>. Mit unserem Alphabet ergibt sich: <br />
-            <b>V → C</b>, <b>E → T</b>, <b>R → G</b>, <b>T → B</b>, <b>R → G</b>, <b>A → Q</b>, <b>U → L</b>,{" "}
-            <b>E → T</b>, <b>N → H</b>. <br />
-            Geheimtext: <strong className="text-white font-bold">CTGBGQLTH</strong>“
+            <b>V → C</b>, <b>E → T</b>, <b>R → K</b>, <b>T → Y</b>, <b>R → K</b>, <b>A → Q</b>, <b>U → X</b>,{" "}
+            <b>E → T</b>, <b>N → F</b>. <br />
+            Geheimtext: <strong className="text-white font-bold">CTKYKQXTF</strong>“
           </i>
         </p>
       </div>

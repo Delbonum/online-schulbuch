@@ -5,7 +5,7 @@ export default function Dechiffrieren() {
   const [userInput, setUserInput] = useState("");
   const [showSolution, setShowSolution] = useState(false);
 
-  const botschaft = "JCUQU LMIU VY TCOIUMDVCD XOCFVCO QCKUOCKICDCO";
+  const botschaft = "JCUQU LMIU VY TCOIUMDVCD XOCFVCO QCKUOCKICDVCO";
 
   return (
     <>
@@ -49,7 +49,7 @@ export default function Dechiffrieren() {
             </p>
           )}
           <p className="mb-4">
-            <br></br>Du entschließt, Al-Kindi für seine Hilfe zu danken, indem du ihm eine verschlüsselte Nachricht
+            <br></br>Du beschließt, Al-Kindi für seine Hilfe zu danken, indem du ihm eine verschlüsselte Nachricht
             schreibst. Du verwendest das gleiche Geheimtextalphabet und schreibst:{" "}
             <strong className="text-white font-bold">"HAB DANK MEISTER ALKINDI"</strong>
             <br />
