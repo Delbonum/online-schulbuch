@@ -26,9 +26,7 @@ export default function ClusterTable() {
               {zeile.content.split("").map((char, i) => (
                 <td key={i}>{char === "." ? "" : char}</td>
               ))}
-              <td className="pl-6 font-bold text-white">
-                {clusterSpalte[idx] || ""}
-              </td>
+              <td className="pl-6 font-bold text-white">{clusterSpalte[idx] || ""}</td>
             </tr>
           ))}
           <tr>
@@ -41,9 +39,7 @@ export default function ClusterTable() {
             <td></td>
           </tr>
           <tr>
-            <td className="font-semibold pr-4 text-right">
-              {geheimtextZeile.label}
-            </td>
+            <td className="font-semibold pr-4 text-right">{geheimtextZeile.label}</td>
             {geheimtextZeile.content.split("").map((char, i) => (
               <td key={i}>{char}</td>
             ))}

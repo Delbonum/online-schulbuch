@@ -1,29 +1,11 @@
-import React, { useState } from "react";
-import useLevelGuard from "../components/LevelGuard";
-import WeiterButton from "../components/WeiterButton";
+import { useState } from "react";
+import AlphabetTable from "../../components/AlphabetTable";
 
 export default function Dechiffrieren() {
-  useLevelGuard("level1Passed");
-
   const [userInput, setUserInput] = useState("");
   const [showSolution, setShowSolution] = useState(false);
 
-  const klartext = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-  const geheimtext = "MNBVCXZLKJHGFDSAPOIUYTREWQ".split("");
-  const botschaft = "JCUQU LMIU VY TCOIUMDVCD XOCFVCO QCKUOCKICDCO";
-
-  const entschlüsseln = (geheimtext) => {
-    return geheimtext
-      .split("")
-      .map((char) => {
-        const index = geheimtextAlphabet.indexOf(char.toUpperCase());
-        return index !== -1 ? klartextAlphabet[index] : "?";
-      })
-      .join("");
-  };
-
-  const klartextAlphabet = klartext;
-  const geheimtextAlphabet = geheimtext;
+  const botschaft = "JCUQU LMIU VY TCOIUMDVCD XOCFVCO QCKUOCKICDVCO";
 
   return (
     <>
@@ -34,42 +16,31 @@ export default function Dechiffrieren() {
             Al-Kindi legt dir ein neues Geheimtextalphabet sowie eine verschlüsselte Nachricht vor.
           </p>
           <p className="mb-4">
-            <i>„Jetzt bist du dran“</i>, sagt Al-Kindi. <i>„Entschlüssele diese Nachricht: <strong className="text-white font-bold">{botschaft}</strong>!“</i>
+            <i>„Jetzt bist du dran“</i>, sagt Al-Kindi.{" "}
+            <i>
+              „Entschlüssele diese Nachricht: <strong className="text-white font-bold">{botschaft}</strong>!“
+            </i>
           </p>
           <div className="overflow-x-auto mt-8 text-style">
-              <h2 className="text-xl font-bold mb-2 heading-style">Klartext- und Geheimtextalphabet</h2>
-              <table className="table-auto border border-white mb-4">
-                  <thead>
-                      <tr>
-                          {klartext.map((char, i) => (
-                              <th key={i} className="border px-2 py-1">{char}</th>
-                              ))}
-                          </tr>
-                          </thead>
-                          <tbody>
-                              <tr>
-                                  {geheimtext.map((char, i) => (
-                                      <td key={i} className="border px-2 py-1">{char}</td>
-                                      ))}
-                                  </tr>
-                                  </tbody>
-                                  </table>
-                                  </div>
+            <h2 className="text-xl font-bold mb-2 heading-style">Klartext- und Geheimtextalphabet</h2>
+            <div className="mb-4">
+              <AlphabetTable cipher="MNBVCXZLKJHGFDSAPOIUYTREWQ" />
+            </div>
+          </div>
           <div className="mb-4">
-            <label htmlFor="input" className="font-bold block mb-2">Deine Entschlüsselung:</label>
+            <label htmlFor="input" className="font-bold block mb-2">
+              Deine Entschlüsselung:
+            </label>
             <input
               id="input"
               type="text"
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              className="w-full p-2 rounded text-black"
+              className="input-style w-full uppercase"
               placeholder="Gib hier deinen Klartext ein..."
             />
           </div>
-          <button
-            onClick={() => setShowSolution(true)}
-            className="mt-2 px-4 py-2 border border-white text-white rounded hover:bg-white hover:text-black transition"
-          >
+          <button onClick={() => setShowSolution(true)} className="btn mt-2">
             Lösung anzeigen
           </button>
           {showSolution && (
@@ -77,15 +48,16 @@ export default function Dechiffrieren() {
               <b>Richtige Lösung:</b> JETZT HAST DU VERSTANDEN FREMDER ZEITREISENDER
             </p>
           )}
-      <p className="mb-4">
-            <br></br>Du entschließt, Al-Kindi für seine Hilfe zu danken, indem du ihm eine verschlüsselte Nachricht schreibst.
-            Du verwendest das gleiche Geheimtextalphabet und schreibst: <strong className="text-white font-bold">"HAB DANK MEISTER ALKINDI"</strong>
-            <br /><br /><em>Hinweis: Notiere dir die verschlüsselte Nachricht für die Zwischenprüfung.</em>
+          <p className="mb-4">
+            <br></br>Du beschließt, Al-Kindi für seine Hilfe zu danken, indem du ihm eine verschlüsselte Nachricht
+            schreibst. Du verwendest das gleiche Geheimtextalphabet und schreibst:{" "}
+            <strong className="text-white font-bold">"HAB DANK MEISTER ALKINDI"</strong>
+            <br />
+            <br />
+            <em>Hinweis: Notiere dir die verschlüsselte Nachricht für die Zwischenprüfung.</em>
           </p>
         </div>
       </div>
-
-      <WeiterButton to="/level2/kryptoanalyse" />
     </>
   );
 }

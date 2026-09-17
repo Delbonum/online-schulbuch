@@ -15,7 +15,7 @@ module.exports = {
         headinglight: '#ffffff',
       },
       backgroundImage: {
-        stars: "url('./img/background.png')",
+        stars: "url('./img/background.webp')",
       }
     },
   },

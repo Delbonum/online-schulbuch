@@ -1,0 +1,4 @@
+build/
+node_modules/
+backend/
+package-lock.json

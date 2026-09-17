@@ -1,0 +1,75 @@
+{
+  "level": 4,
+  "title": "Zwischenprüfung Level 4",
+  "questions": [
+    {
+      "id": 1,
+      "type": "text",
+      "prompt": "Welchen gemeinsamen Schlüssel K hast du mit Bob vereinbart (p = 29, g = 2, a = 12, B = 10)?",
+      "answer": "20"
+    },
+    {
+      "id": 2,
+      "type": "text",
+      "prompt": "Wie lautet Bobs entschlüsselte Nachricht?",
+      "answer": "TREFFPUNKT UM MITTERNACHT AM ZEITTOR"
+    },
+    {
+      "id": 3,
+      "type": "text",
+      "prompt": "Alice und Bob vereinbaren p = 11 und g = 2. Alice wählt die Geheimzahl a = 4. Welche Zahl A schickt sie an Bob?",
+      "answer": "5"
+    },
+    {
+      "id": 4,
+      "type": "text",
+      "prompt": "Bob antwortet Alice mit B = 7. Welchen gemeinsamen Schlüssel K berechnet Alice?",
+      "answer": "3"
+    },
+    {
+      "id": 5,
+      "type": "single",
+      "prompt": "Welches Problem löst der Diffie-Hellman-Schlüsselaustausch?",
+      "options": [
+        "Nachrichten können ganz ohne Schlüssel verschlüsselt werden.",
+        "Zwei Personen können über einen öffentlichen Kanal einen gemeinsamen geheimen Schlüssel vereinbaren.",
+        "Man kann sicher erkennen, wer eine Nachricht geschickt hat.",
+        "Lange Nachrichten werden automatisch komprimiert."
+      ],
+      "answer": 1
+    },
+    {
+      "id": 6,
+      "type": "multiple",
+      "prompt": "Welche Werte kann die Lauscherin Eve beim Diffie-Hellman-Schlüsselaustausch mitlesen?",
+      "options": ["die Primzahl p", "die Basis g", "Alices Zahl A", "Bobs Zahl B", "Alices Geheimzahl a", "Bobs Geheimzahl b", "den gemeinsamen Schlüssel K"],
+      "answer": [0, 1, 2, 3]
+    },
+    {
+      "id": 7,
+      "type": "multiple",
+      "prompt": "Welche Aussagen sind richtig?",
+      "options": [
+        "Eine Einwegfunktion lässt sich leicht berechnen, aber nur mit enormem Aufwand umkehren.",
+        "Mit kleinen Zahlen wie p = 29 ist das Verfahren auch in der Praxis sicher.",
+        "Die Sicherheit beruht darauf, dass man aus A = gᵃ mod p die Geheimzahl a praktisch nicht zurückrechnen kann.",
+        "Alice und Bob müssen sich vorher persönlich treffen, um p und g zu vereinbaren.",
+        "Ohne zusätzliche Echtheitsprüfung kann sich eine Angreiferin als „Man in the Middle“ zwischen Alice und Bob schalten."
+      ],
+      "answer": [0, 2, 4]
+    },
+    {
+      "id": 8,
+      "type": "order",
+      "prompt": "Bringe die Schritte des Diffie-Hellman-Schlüsselaustauschs in die richtige Reihenfolge:",
+      "items": [
+        "Alice und Bob vereinbaren öffentlich p und g",
+        "Beide wählen eine eigene Geheimzahl",
+        "Beide berechnen A = gᵃ mod p bzw. B = gᵇ mod p",
+        "Alice und Bob tauschen A und B öffentlich aus",
+        "Beide berechnen den gemeinsamen Schlüssel K",
+        "Nachrichten werden mit K symmetrisch verschlüsselt"
+      ]
+    }
+  ]
+}
