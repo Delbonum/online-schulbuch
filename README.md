@@ -2,7 +2,7 @@
 
 Ein interaktives Lernspiel zur **Kryptologie** für den Informatikunterricht.
 Als Mitglied des geheimen _Krypto-Zeitkommandos_ reisen die Lernenden durch die Geschichte –
-von Julius Caesar über Al-Kindi, Vigenère und das One-Time-Pad bis zum Diffie-Hellman-Schlüsselaustausch –
+von Julius Caesar über Al-Kindi, Vigenère und das One-Time-Pad bis zu Diffie-Hellman und RSA –
 und lernen dabei Verschlüsselungsverfahren kennen, wenden sie an und knacken sie.
 
 🌐 **Live-Version:** <https://online-schulbuch.de/informatik/kryptogame/>
@@ -49,7 +49,7 @@ Jedes Level folgt demselben Aufbau:
 | **2** | Bagdad, 9. Jh. – Al-Kindi                                                        | Ersetzungsverfahren, Schlüsselraum (26 vs. 26!), Brute Force, Häufigkeitsanalyse                                                         | Brute-Force-Tool, Häufigkeitsanalyse, Ersetzungs-Tool                                                    |
 | **3** | 16.–20. Jh. – Trithemius, Bellaso, Vigenère, Babbage, Kasiski, Miller, Mauborgne | Polyalphabetische Verfahren, progressive Caesar-Chiffre, Tabula Recta, Vigenère, Kasiski-Test, Kolonnenanalyse, One-Time-Pad             | Progressive-Caesar-Tool, Tabula Recta, Vigenère-Tools, Schlüssellängen- und Kolonnenanalyse              |
 | **4** | Stanford, 1976 – Diffie, Hellman, Merkle                                         | Schlüsselaustauschproblem, Farbmisch-Analogie, Modulo-Rechnung, Einwegfunktion, diskreter Logarithmus, Diffie-Hellman, Man-in-the-Middle | Farbmischung, Modulo-Uhr, Modulo-Rechner, diskreter Logarithmus zum Ausprobieren, Diffie-Hellman-Rechner |
-| **5** | _in Planung_ (RSA)                                                               | –                                                                                                                                        | –                                                                                                        |
+| **5** | MIT, 1977 – Rivest, Shamir, Adleman                                              | Asymmetrische Verschlüsselung, Faktorisierung als Einwegfunktion, Schlüsselerzeugung, RSA-Ver- und -Entschlüsselung, digitale Signatur   | Faktorisierungs-Aufgabe, Schlüsselerzeugung, RSA-Rechner                                                 |
 
 ## Rollen
 
@@ -57,7 +57,7 @@ Jedes Level folgt demselben Aufbau:
 | --------------- | ------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Gast**        | „Als Gast fortfahren“                       | nur im Browser (`localStorage`) | Kein Konto nötig                                                                                                                                                                                                                                                                              |
 | **Schüler/-in** | Benutzername + Passwort (von der Lehrkraft) | in der Datenbank                | Jeder Prüfungsversuch wird mit Punktzahl und Einzelantworten protokolliert                                                                                                                                                                                                                    |
-| **Lehrkraft**   | Benutzername + Passwort                     | –                               | Alle Level frei zugänglich; **Dashboard**: Schüler/-innen einzeln oder als ganze Klasse anlegen (mit druckbaren Zugangskarten), bearbeiten, löschen, Level manuell freischalten/sperren, Prüfungsverlauf mit Details, Statistik (Bestehensquoten, Durchschnittsscores, Auswertung je Aufgabe) |
+| **Lehrkraft**   | Benutzername + Passwort                     | –                               | Alle Level frei zugänglich; **Dashboard**: Klassen anlegen und Schüler/-innen zuordnen, Zugänge einzeln oder als Liste anlegen (mit druckbaren Zugangskarten), bearbeiten, löschen, Level manuell freischalten/sperren, Prüfungsverlauf mit Details, Statistik für alle oder einzelne Klassen |
 
 ## Architektur
 
@@ -72,6 +72,10 @@ Browser ──► React-App (statische Dateien)          /informatik/kryptogame/
 
 **Backend** – schlanke PHP-API **ohne externe Abhängigkeiten** (PHP ≥ 8.1, PDO), läuft auf gewöhnlichem Shared
 Hosting. Daten liegen in **MySQL/MariaDB**; für die lokale Entwicklung genügt **SQLite**.
+
+**Oberfläche** – ein gemeinsamer Seitenrahmen (`.page` in `src/index.css`) gibt allen Levelseiten dieselbe
+Textbreite, Abstände und Überschriften. Das Layout ist für Handys ausgelegt: Die Navigation wird dort zum Overlay,
+breite Tabellen und Werkzeuge lassen sich seitlich scrollen, Illustrationen werden verkleinert.
 
 **Sicherheit**
 
@@ -229,6 +233,18 @@ Die bisherigen Daten lassen sich übernehmen; Passwörter werden dabei gehasht:
 4. Anschließend den Render-Dienst und den JSONBin-Bin löschen – und die Lehrkräfte bitten, ihr Passwort unter
    **Konto** zu ändern, da die alten Passwörter im Klartext gespeichert waren.
 
+## Datenbank aktualisieren
+
+Neue Versionen können zusätzliche Spalten oder Tabellen brauchen. `migrate` legt fehlende Tabellen an und ergänzt
+fehlende Spalten – vorhandene Daten bleiben erhalten:
+
+```bash
+php backend/bin/console.php migrate
+```
+
+Ohne SSH-Zugang geht das über `setup.php` (Setup-Token vorübergehend in `config.php` eintragen, Formular 1 ausführen,
+Token wieder entfernen).
+
 ## Ein neues Level hinzufügen
 
 1. **Seiten** unter `src/pages/lvlN/` anlegen – normale React-Komponenten. Den „Weiter“-Button, die Navigation und
@@ -269,15 +285,19 @@ Alle Pfade relativ zu `…/api`. Anfragen und Antworten im JSON-Format.
 | `DELETE` | `/students/{id}`          | Lehrkraft  | Schüler/-in löschen                                          |
 | `POST`   | `/students/{id}/reset`    | Lehrkraft  | Fortschritt und Verlauf zurücksetzen                         |
 | `GET`    | `/students/{id}/history`  | Lehrkraft  | Prüfungsversuche und manuelle Änderungen                     |
-| `GET`    | `/statistics`             | Lehrkraft  | Auswertung über alle eigenen Schüler/-innen                  |
+| `GET`    | `/classes`                | Lehrkraft  | Eigene Klassen mit Anzahl der Schüler/-innen                 |
+| `POST`   | `/classes`                | Lehrkraft  | Klasse anlegen (`name`)                                      |
+| `PATCH`  | `/classes/{id}`           | Lehrkraft  | Klasse umbenennen                                            |
+| `DELETE` | `/classes/{id}`           | Lehrkraft  | Klasse löschen (Schüler/-innen bleiben erhalten)             |
+| `GET`    | `/statistics`             | Lehrkraft  | Auswertung; optional `?classId=<id>` oder `?classId=none`    |
 
 ## Roadmap
 
 - [ ] Umzug der Live-Version auf das PHP-Backend (siehe [Deployment](#deployment) und [Umzug](#umzug-von-jsonbinrender))
-- [ ] Level 5: RSA und asymmetrische Verschlüsselung
-- [ ] Weitere mögliche Level: Transpositionsverfahren (Skytale), Enigma, digitale Signaturen, Hashfunktionen
+- [ ] Weitere mögliche Level: Transpositionsverfahren (Skytale), Enigma, Hashfunktionen, Zertifikate und HTTPS
 - [ ] Interaktive Man-in-the-Middle-Simulation in Level 4
 - [ ] Verwaltung von Lehrkräften in der Oberfläche (bisher über Kommandozeile/`setup.php`)
+- [ ] Klassen an mehrere Lehrkräfte freigeben (Teamteaching)
 - [ ] Prüfungsfragen aus einem Aufgabenpool zufällig ziehen
 
 ## Autor
