@@ -33,7 +33,7 @@ export default function Chiffrieren() {
         </div>
 
         <div className="flex-shrink-0 w-full md:w-1/3">
-          <img loading="lazy" src={alKindiImage} alt="Al-Kindi erklärt" className="w-full h-auto object-contain" />
+          <img loading="lazy" src={alKindiImage} alt="Al-Kindi erklärt" className="illustration" />
         </div>
       </div>
 

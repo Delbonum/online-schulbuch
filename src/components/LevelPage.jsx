@@ -25,8 +25,8 @@ export default function LevelPage({ level, page }) {
   if (!isUnlocked(level.number)) {
     const required = requiredLevel(level.number);
     return (
-      <div className="text-style">
-        <h1 className="text-3xl font-bold text-red-500 mb-4 heading-style">🚨 Zeitreise-Fehler</h1>
+      <div className="page">
+        <h1 className="text-3xl font-bold text-red-500 heading-style">🚨 Zeitreise-Fehler</h1>
         <p className="mb-6">
           Offenbar gibt es ein Problem mit deiner Zeitmaschine. <br />
           Löse erst die Zwischenprüfung von Level {required}, um diese Seite zu öffnen.
@@ -44,10 +44,10 @@ export default function LevelPage({ level, page }) {
   const next = nextPagePath(level.number, page.slug);
 
   return (
-    <>
+    <article className="page">
       <Component level={level.number} nextPath={next} />
       {/* Bei Prüfungen geht es erst nach dem Bestehen weiter */}
       {!page.quiz && next && <WeiterButton to={next} />}
-    </>
+    </article>
   );
 }

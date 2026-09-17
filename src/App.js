@@ -42,6 +42,15 @@ export default function App() {
     <>
       <TopBar onToggleMenu={() => setMenuOpen((open) => !open)} />
       <div className="pt-10 min-h-screen flex bg-stars bg-repeat text-textlight font-oxanium">
+        {/* Auf kleinen Bildschirmen liegt die Navigation über der Seite */}
+        {menuOpen && (
+          <button
+            type="button"
+            className="fixed inset-0 top-10 z-20 bg-black/60 md:hidden"
+            aria-label="Navigation schließen"
+            onClick={() => setMenuOpen(false)}
+          />
+        )}
         <Sidebar open={menuOpen} onNavigate={() => isSmallScreen() && setMenuOpen(false)} />
         <main className="flex-1 min-w-0 p-4 sm:p-6">
           <Routes>

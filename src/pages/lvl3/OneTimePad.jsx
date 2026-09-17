@@ -7,7 +7,7 @@ export default function OneTimePad() {
       <h1 className="text-2xl font-bold heading-style mb-4">Das One-Time-Pad</h1>
 
       <div className="flex flex-col md:flex-row items-start gap-4">
-        <img loading="lazy" src={miller} alt="Miller" className="w-60 h-auto self-start" />
+        <img loading="lazy" src={miller} alt="Miller" className="illustration self-start" />
         <p className="mb-4">
           Auf deiner Reise machst du einen weiteren Stopp im 19. Jahrhundert. 1882 begegnest du dem amerikanischen
           Kryptologen Frank Miller, der ein Verfahren vorschlägt, das die Sicherheit der Verschlüsselung revolutionieren
@@ -27,7 +27,7 @@ export default function OneTimePad() {
       </div>
 
       <div className="flex flex-col md:flex-row-reverse items-start gap-4">
-        <img loading="lazy" src={mauborgne} alt="Joseph O. Mauborgne" className="w-40 h-auto self-start" />
+        <img loading="lazy" src={mauborgne} alt="Joseph O. Mauborgne" className="illustration self-start" />
         <p className="mb-4">
           Im 20. Jahrhundert – einer Ära, in der die verschlüsselte Kommunikation über weite Strecken hinweg immer
           bedeutsamer wird – begegnest du dem Amerikaner Joseph O. Mauborgne, der die Idee aufgreift und umsetzt. Er

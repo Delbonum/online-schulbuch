@@ -7,7 +7,7 @@ export default function DiffieHellman() {
     <div className="text-style space-y-6">
       <h1 className="text-2xl font-bold heading-style">Der Diffie-Hellman-Schlüsselaustausch</h1>
 
-      <section className="space-y-3 max-w-4xl">
+      <section className="space-y-3">
         <p>
           Jetzt ersetzt Hellman die Farben durch Zahlen.{" "}
           <i>
@@ -55,7 +55,7 @@ export default function DiffieHellman() {
 
       <DiffieHellmanTool />
 
-      <section className="space-y-3 max-w-4xl">
+      <section className="space-y-3">
         <h2 className="text-xl font-semibold text-white">Deine Aufgabe</h2>
         <p>
           Zum Abschied möchte Bob dir – er hält dich für Alice – eine geheime Nachricht schicken. Ihr vereinbart
@@ -88,7 +88,7 @@ export default function DiffieHellman() {
         </div>
       </div>
 
-      <div className="panel border-l-4 border-amber-300 max-w-4xl">
+      <div className="panel border-l-4 border-amber-300">
         <p className="text-white font-semibold mb-1">📓 Notiz im Zeitreise-Journal</p>
         <p>
           Bei einem Abstecher nach Großbritannien erfährst du etwas Erstaunliches: Beim britischen Geheimdienst GCHQ

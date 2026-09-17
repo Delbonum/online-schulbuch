@@ -33,12 +33,7 @@ export default function Level2Intro() {
 
         <div className="flex-shrink-0 w-full md:w-1/5">
           <br></br>
-          <img
-            loading="lazy"
-            src={arabImage}
-            alt="Al-Kindi und die arabische Kryptologie"
-            className="w-full h-auto object-contain"
-          />
+          <img loading="lazy" src={arabImage} alt="Al-Kindi und die arabische Kryptologie" className="illustration" />
         </div>
       </div>
     </>

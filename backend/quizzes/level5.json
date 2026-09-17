@@ -1,0 +1,80 @@
+{
+  "level": 5,
+  "title": "Zwischenprüfung Level 5",
+  "questions": [
+    {
+      "id": 1,
+      "type": "text",
+      "prompt": "Wie lautet die entschlüsselte Nachricht von Ron Rivest?",
+      "answer": "TREFFEN UM ACHT"
+    },
+    {
+      "id": 2,
+      "type": "text",
+      "prompt": "Alice wählt die Primzahlen p = 17 und q = 23. Wie groß ist ihr Modul n?",
+      "answer": "391"
+    },
+    {
+      "id": 3,
+      "type": "text",
+      "prompt": "Wie groß ist φ(n) für p = 17 und q = 23?",
+      "answer": "352"
+    },
+    {
+      "id": 4,
+      "type": "text",
+      "prompt": "Welcher private Exponent d gehört zum öffentlichen Exponenten e = 3, wenn φ(n) = 352 ist?",
+      "answer": "235"
+    },
+    {
+      "id": 5,
+      "type": "single",
+      "prompt": "Welchen Schlüssel darf man gefahrlos veröffentlichen?",
+      "options": [
+        "den privaten Schlüssel (d, n)",
+        "den öffentlichen Schlüssel (e, n)",
+        "beide Schlüssel",
+        "keinen von beiden"
+      ],
+      "answer": 1
+    },
+    {
+      "id": 6,
+      "type": "multiple",
+      "prompt": "Welche Aussagen über RSA sind richtig?",
+      "options": [
+        "Zum Verschlüsseln und zum Entschlüsseln wird derselbe Schlüssel verwendet.",
+        "Die Sicherheit beruht darauf, dass sich große Zahlen nur sehr schwer in Primfaktoren zerlegen lassen.",
+        "Wer p und q kennt, kann den privaten Schlüssel berechnen.",
+        "RSA ist schneller als symmetrische Verfahren und ersetzt sie deshalb vollständig.",
+        "Mit dem privaten Schlüssel lassen sich Nachrichten digital signieren."
+      ],
+      "answer": [1, 2, 4]
+    },
+    {
+      "id": 7,
+      "type": "multiple",
+      "prompt": "Warum ist es unsicher, jeden Buchstaben einzeln nach dem Schema A = 1 … Z = 26 mit RSA zu verschlüsseln?",
+      "options": [
+        "Gleiche Buchstaben ergeben immer dieselbe Zahl, deshalb hilft eine Häufigkeitsanalyse.",
+        "Es gibt nur 26 mögliche Klartextzahlen, die man alle durchprobieren kann.",
+        "Das Verfahren rechnet dabei falsch.",
+        "Der private Schlüssel wird dabei mitgeschickt."
+      ],
+      "answer": [0, 1]
+    },
+    {
+      "id": 8,
+      "type": "order",
+      "prompt": "Bringe die Schritte der Schlüsselerzeugung in die richtige Reihenfolge:",
+      "items": [
+        "Zwei verschiedene Primzahlen p und q wählen",
+        "n = p · q berechnen",
+        "φ(n) = (p − 1) · (q − 1) berechnen",
+        "Einen zu φ(n) teilerfremden Exponenten e wählen",
+        "d mit (e · d) mod φ(n) = 1 bestimmen",
+        "(e, n) veröffentlichen und (d, n) geheim halten"
+      ]
+    }
+  ]
+}

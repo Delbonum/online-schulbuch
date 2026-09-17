@@ -7,7 +7,7 @@ export default function Einfuehrung() {
       <div className="flex flex-col md:flex-row items-start justify-between gap-6 text-style">
         {/* Linkes Bild: Zeitmaschine */}
         <div className="flex-shrink-0 w-full md:w-1/5">
-          <img loading="lazy" src={timemachine} alt="Zeitmaschine" className="w-full h-auto object-contain" />
+          <img loading="lazy" src={timemachine} alt="Zeitmaschine" className="illustration" />
         </div>
 
         <div className="flex-1">
@@ -24,7 +24,7 @@ export default function Einfuehrung() {
 
         <div className="flex-shrink-0 w-full md:w-1/4">
           <br></br>
-          <img loading="lazy" src={roemer} alt="Römer" className="w-full h-auto object-contain" />
+          <img loading="lazy" src={roemer} alt="Römer" className="illustration" />
         </div>
       </div>
     </>
