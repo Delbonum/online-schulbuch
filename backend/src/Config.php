@@ -15,7 +15,8 @@ final class Config
      *     secure_cookies: bool,
      *     session_lifetime: int,
      *     debug: bool,
-     *     allowed_origins: list<string>
+     *     allowed_origins: list<string>,
+     *     quizzes_dir: string
      * }
      */
     public static function load(string $file): array
@@ -43,6 +44,8 @@ final class Config
                 static fn ($origin): string => rtrim((string) $origin, '/'),
                 (array) ($config['allowed_origins'] ?? []),
             )),
+            // Prüfungen mit Lösungen – auf dem Server am besten außerhalb des öffentlichen Webordners
+            'quizzes_dir' => rtrim((string) ($config['quizzes_dir'] ?? dirname($file) . '/quizzes'), '/'),
         ];
     }
 }

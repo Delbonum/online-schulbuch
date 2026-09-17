@@ -28,6 +28,10 @@ return [
     // 'allowed_origins' => ['http://127.0.0.1:8000'],
     'allowed_origins' => [],
 
+    // Ordner mit den Prüfungen (enthalten die Lösungen!). Auf dem Server außerhalb des öffentlichen
+    // Webordners ablegen, da manche Webserver .json-Dateien direkt ausliefern und .htaccess dabei ignorieren.
+    // 'quizzes_dir' => __DIR__ . '/../../../../kryptogame-data/quizzes',
+
     // Fehlermeldungen im Detail ausgeben – nur lokal auf true setzen!
     'debug' => false,
 

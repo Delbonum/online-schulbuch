@@ -22,5 +22,5 @@ try {
 }
 
 $session = new NativeSession($config['base_path'], $config['secure_cookies'], $config['session_lifetime']);
-$app = new App($db, $session, new QuizCatalog(__DIR__ . '/quizzes'), $config['debug'], $config['allowed_origins']);
+$app = new App($db, $session, new QuizCatalog($config['quizzes_dir']), $config['debug'], $config['allowed_origins']);
 $app->handle(Request::fromGlobals($config['base_path']))->send();

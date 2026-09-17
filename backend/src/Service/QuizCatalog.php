@@ -63,6 +63,9 @@ final class QuizCatalog
         if ($this->quizzes !== null) {
             return $this->quizzes;
         }
+        if (!is_dir($this->directory)) {
+            throw new RuntimeException('Prüfungsordner nicht gefunden: ' . $this->directory);
+        }
         $this->quizzes = [];
         foreach (glob($this->directory . '/level*.json') ?: [] as $file) {
             $quiz = json_decode((string) file_get_contents($file), true);
