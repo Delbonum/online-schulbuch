@@ -50,8 +50,9 @@ function printList(prefix, rows) {
 }
 
 /** Mehrere Schüler/-innen aus einer Namensliste anlegen. */
-export default function BulkCreateDialog({ onClose, onCreated }) {
+export default function BulkCreateDialog({ classes = [], defaultClassId = null, onClose, onCreated }) {
   const [names, setNames] = useState("");
+  const [classId, setClassId] = useState(defaultClassId);
   const [running, setRunning] = useState(false);
   const [results, setResults] = useState(null);
 
@@ -67,7 +68,7 @@ export default function BulkCreateDialog({ onClose, onCreated }) {
     for (const candidate of candidates) {
       const password = generatePassword();
       try {
-        const { student } = await api.createStudent(candidate.username, password);
+        const { student } = await api.createStudent(candidate.username, password, classId);
         outcome.push({ ...candidate, password, ok: true });
         onCreated(student);
       } catch (err) {
@@ -114,6 +115,26 @@ export default function BulkCreateDialog({ onClose, onCreated }) {
             Ein Name pro Zeile (z. B. aus einer Klassenliste kopiert). Daraus werden Benutzernamen wie{" "}
             <code>max.mustermann</code> gebildet, die Passwörter werden zufällig erzeugt.
           </label>
+          {classes.length > 0 && (
+            <div>
+              <label htmlFor="bulk-class" className="block text-sm font-medium mb-1">
+                Klasse
+              </label>
+              <select
+                id="bulk-class"
+                value={classId ?? ""}
+                onChange={(e) => setClassId(e.target.value === "" ? null : Number(e.target.value))}
+                className="dialog-input"
+              >
+                <option value="">Ohne Klasse</option>
+                {classes.map((klass) => (
+                  <option key={klass.id} value={klass.id}>
+                    {klass.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <textarea
             id="bulk-names"
             rows={8}

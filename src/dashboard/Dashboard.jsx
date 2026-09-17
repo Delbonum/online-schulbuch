@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { BarChart3, KeyRound, Pencil, Trash2, UserPlus, Users } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { BarChart3, GraduationCap, Pencil, Trash2, UserPlus, Users } from "lucide-react";
 import { api } from "../lib/api";
 import Spinner from "../components/Spinner";
 import StudentDialog from "./StudentDialog";
@@ -7,12 +7,18 @@ import ConfirmDialog from "./ConfirmDialog";
 import HistoryDialog from "./HistoryDialog";
 import StatisticsDialog from "./StatisticsDialog";
 import BulkCreateDialog from "./BulkCreateDialog";
+import ClassesDialog from "./ClassesDialog";
+
+export const ALL_CLASSES = "all";
+export const WITHOUT_CLASS = "none";
 
 export default function Dashboard() {
   const [students, setStudents] = useState(null);
+  const [classes, setClasses] = useState([]);
   const [levels, setLevels] = useState([]);
+  const [filter, setFilter] = useState(ALL_CLASSES);
   const [error, setError] = useState(null);
-  // { type: "create" | "edit" | "delete" | "history" | "statistics", student? }
+  // { type: "create" | "edit" | "delete" | "history" | "statistics" | "bulk" | "classes", student? }
   const [dialog, setDialog] = useState(null);
 
   const load = useCallback(async () => {
@@ -20,6 +26,7 @@ export default function Dashboard() {
     try {
       const data = await api.students();
       setStudents(data.students);
+      setClasses(data.classes);
       setLevels(data.levels);
     } catch (err) {
       setError(err.message);
@@ -31,8 +38,17 @@ export default function Dashboard() {
     load();
   }, [load]);
 
-  const replaceStudent = (student) => setStudents((current) => current.map((s) => (s.id === student.id ? student : s)));
+  const className = useCallback((classId) => classes.find((c) => c.id === classId)?.name ?? "–", [classes]);
 
+  const visibleStudents = useMemo(() => {
+    if (filter === ALL_CLASSES) return students ?? [];
+    if (filter === WITHOUT_CLASS) return (students ?? []).filter((s) => s.classId === null);
+    return (students ?? []).filter((s) => s.classId === Number(filter));
+  }, [students, filter]);
+
+  const sortStudents = (list) => [...list].sort((a, b) => a.username.localeCompare(b.username, "de"));
+  const addStudent = (student) => setStudents((current) => sortStudents([...current, student]));
+  const replaceStudent = (student) => setStudents((current) => current.map((s) => (s.id === student.id ? student : s)));
   const closeDialog = () => setDialog(null);
 
   if (error) {
@@ -51,6 +67,8 @@ export default function Dashboard() {
 
   if (!students) return <Spinner />;
 
+  const columnCount = levels.length + (classes.length > 0 ? 3 : 2);
+
   return (
     <div className="text-style">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
@@ -59,14 +77,39 @@ export default function Dashboard() {
           <button type="button" onClick={() => setDialog({ type: "statistics" })} className="btn btn-sm">
             <BarChart3 size={16} aria-hidden="true" /> Statistik
           </button>
+          <button type="button" onClick={() => setDialog({ type: "classes" })} className="btn btn-sm">
+            <GraduationCap size={16} aria-hidden="true" /> Klassen
+          </button>
           <button type="button" onClick={() => setDialog({ type: "create" })} className="btn btn-sm">
-            <UserPlus size={16} aria-hidden="true" /> Schüler/-in hinzufügen
+            <UserPlus size={16} aria-hidden="true" /> Schüler/-in
           </button>
           <button type="button" onClick={() => setDialog({ type: "bulk" })} className="btn btn-sm">
-            <Users size={16} aria-hidden="true" /> Klasse anlegen
+            <Users size={16} aria-hidden="true" /> Mehrere anlegen
           </button>
         </div>
       </div>
+
+      {classes.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <label htmlFor="class-filter" className="text-sm">
+            Anzeigen:
+          </label>
+          <select
+            id="class-filter"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="input-style py-1"
+          >
+            <option value={ALL_CLASSES}>Alle Schüler/-innen ({students.length})</option>
+            {classes.map((klass) => (
+              <option key={klass.id} value={klass.id}>
+                {klass.name} ({klass.studentCount})
+              </option>
+            ))}
+            <option value={WITHOUT_CLASS}>Ohne Klasse ({students.filter((s) => s.classId === null).length})</option>
+          </select>
+        </div>
+      )}
 
       {students.length === 0 ? (
         <p className="panel">
@@ -79,6 +122,7 @@ export default function Dashboard() {
             <thead>
               <tr>
                 <th className="border border-white/70 px-2 py-1 text-left">Benutzername</th>
+                {classes.length > 0 && <th className="border border-white/70 px-2 py-1 text-left">Klasse</th>}
                 {levels.map((level) => (
                   <th key={level} className="border border-white/70 px-2 py-1">
                     Level {level}
@@ -88,7 +132,7 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {students.map((student) => (
+              {visibleStudents.map((student) => (
                 <tr key={student.id}>
                   <td className="border border-white/40 px-2 py-1">
                     <button
@@ -100,6 +144,9 @@ export default function Dashboard() {
                       {student.username}
                     </button>
                   </td>
+                  {classes.length > 0 && (
+                    <td className="border border-white/40 px-2 py-1">{className(student.classId)}</td>
+                  )}
                   {levels.map((level) => {
                     const passed = student.passedLevels.includes(level);
                     return (
@@ -114,18 +161,9 @@ export default function Dashboard() {
                       onClick={() => setDialog({ type: "edit", student })}
                       className="p-1 rounded hover:bg-white/20"
                       aria-label={`${student.username} bearbeiten`}
-                      title="Bearbeiten"
+                      title="Bearbeiten: Name, Passwort, Klasse und Level"
                     >
                       <Pencil size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDialog({ type: "edit", student, focusPassword: true })}
-                      className="p-1 rounded hover:bg-white/20 ml-1"
-                      aria-label={`Passwort von ${student.username} ändern`}
-                      title="Passwort ändern"
-                    >
-                      <KeyRound size={16} />
                     </button>
                     <button
                       type="button"
@@ -139,30 +177,29 @@ export default function Dashboard() {
                   </td>
                 </tr>
               ))}
+              {visibleStudents.length === 0 && (
+                <tr>
+                  <td colSpan={columnCount} className="border border-white/40 px-2 py-3">
+                    In dieser Klasse ist noch niemand.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       )}
 
-      {dialog?.type === "create" && (
-        <StudentDialog
-          levels={levels}
-          onClose={closeDialog}
-          onSaved={(student) => {
-            setStudents((current) => [...current, student].sort((a, b) => a.username.localeCompare(b.username)));
-            closeDialog();
-          }}
-        />
-      )}
-
-      {dialog?.type === "edit" && (
+      {(dialog?.type === "create" || dialog?.type === "edit") && (
         <StudentDialog
           student={dialog.student}
           levels={levels}
-          focusPassword={dialog.focusPassword}
+          classes={classes}
+          defaultClassId={filter === ALL_CLASSES || filter === WITHOUT_CLASS ? null : Number(filter)}
           onClose={closeDialog}
           onSaved={(student) => {
-            replaceStudent(student);
+            if (dialog.type === "create") addStudent(student);
+            else replaceStudent(student);
+            load();
             closeDialog();
           }}
         />
@@ -176,6 +213,7 @@ export default function Dashboard() {
           onConfirm={async () => {
             await api.deleteStudent(dialog.student.id);
             setStudents((current) => current.filter((s) => s.id !== dialog.student.id));
+            load();
             closeDialog();
           }}
         >
@@ -194,14 +232,30 @@ export default function Dashboard() {
         />
       )}
 
-      {dialog?.type === "statistics" && <StatisticsDialog onClose={closeDialog} />}
+      {dialog?.type === "statistics" && (
+        <StatisticsDialog classes={classes} initialClassId={filter} onClose={closeDialog} />
+      )}
 
       {dialog?.type === "bulk" && (
         <BulkCreateDialog
+          classes={classes}
+          defaultClassId={filter === ALL_CLASSES || filter === WITHOUT_CLASS ? null : Number(filter)}
+          onClose={() => {
+            load();
+            closeDialog();
+          }}
+          onCreated={addStudent}
+        />
+      )}
+
+      {dialog?.type === "classes" && (
+        <ClassesDialog
+          classes={classes}
+          onChange={(updated) => {
+            setClasses(updated);
+            load();
+          }}
           onClose={closeDialog}
-          onCreated={(student) =>
-            setStudents((current) => [...current, student].sort((a, b) => a.username.localeCompare(b.username)))
-          }
         />
       )}
     </div>

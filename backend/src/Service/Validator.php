@@ -33,6 +33,15 @@ final class Validator
         return $password;
     }
 
+    public static function className(mixed $value): string
+    {
+        $name = is_string($value) ? trim($value) : '';
+        if (mb_strlen($name) < 1 || mb_strlen($name) > 64) {
+            throw HttpException::badRequest('Der Klassenname muss 1–64 Zeichen lang sein.');
+        }
+        return $name;
+    }
+
     public static function positiveInt(mixed $value, string $label): int
     {
         if (is_int($value) && $value > 0) {

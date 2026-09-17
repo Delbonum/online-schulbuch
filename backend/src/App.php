@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Kryptogame;
 
 use Kryptogame\Controller\AuthController;
+use Kryptogame\Controller\ClassController;
 use Kryptogame\Controller\QuizController;
 use Kryptogame\Controller\StatisticsController;
 use Kryptogame\Controller\StudentController;
@@ -14,6 +15,7 @@ use Kryptogame\Http\Response;
 use Kryptogame\Http\Router;
 use Kryptogame\Http\Session;
 use Kryptogame\Repository\LoginThrottle;
+use Kryptogame\Repository\ClassRepository;
 use Kryptogame\Repository\ProgressRepository;
 use Kryptogame\Repository\UserRepository;
 use Kryptogame\Service\Auth;
@@ -35,12 +37,14 @@ final class App
     ) {
         $users = new UserRepository($db);
         $progress = new ProgressRepository($db);
+        $classes = new ClassRepository($db);
         $auth = new Auth($users, new LoginThrottle($db), $session);
 
         $authController = new AuthController($auth, $users, $progress);
         $quizController = new QuizController($auth, $catalog, new QuizGrader(), $progress);
-        $studentController = new StudentController($auth, $db, $users, $progress, $catalog);
-        $statisticsController = new StatisticsController($auth, $users, $progress, $catalog);
+        $studentController = new StudentController($auth, $db, $users, $progress, $catalog, $classes);
+        $statisticsController = new StatisticsController($auth, $users, $progress, $catalog, $classes);
+        $classController = new ClassController($auth, $classes);
 
         $this->router = new Router();
         $r = $this->router;
@@ -59,6 +63,11 @@ final class App
         $r->add('DELETE', '/students/{id}', [$studentController, 'delete']);
         $r->add('POST', '/students/{id}/reset', [$studentController, 'reset']);
         $r->add('GET', '/students/{id}/history', [$studentController, 'history']);
+
+        $r->add('GET', '/classes', [$classController, 'index']);
+        $r->add('POST', '/classes', [$classController, 'create']);
+        $r->add('PATCH', '/classes/{id}', [$classController, 'update']);
+        $r->add('DELETE', '/classes/{id}', [$classController, 'delete']);
 
         $r->add('GET', '/statistics', [$statisticsController, 'show']);
     }

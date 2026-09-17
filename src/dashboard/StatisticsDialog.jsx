@@ -30,16 +30,45 @@ function ChartSection({ title, children, empty }) {
   );
 }
 
-export default function StatisticsDialog({ onClose }) {
+export default function StatisticsDialog({ classes = [], initialClassId = "all", onClose }) {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
+  const [classId, setClassId] = useState(initialClassId);
 
   useEffect(() => {
+    let active = true;
+    setStats(null);
+    setError(null);
     api
-      .statistics()
-      .then(setStats)
-      .catch((err) => setError(err.message));
-  }, []);
+      .statistics(classId === "all" ? null : classId)
+      .then((data) => active && setStats(data))
+      .catch((err) => active && setError(err.message));
+    return () => {
+      active = false;
+    };
+  }, [classId]);
+
+  const classFilter = classes.length > 0 && (
+    <div className="flex flex-wrap items-center gap-2 mb-2">
+      <label htmlFor="stats-class" className="text-sm font-medium">
+        Auswertung für:
+      </label>
+      <select
+        id="stats-class"
+        value={classId}
+        onChange={(e) => setClassId(e.target.value)}
+        className="dialog-input w-auto"
+      >
+        <option value="all">Alle Schüler/-innen</option>
+        {classes.map((klass) => (
+          <option key={klass.id} value={klass.id}>
+            {klass.name}
+          </option>
+        ))}
+        <option value="none">Ohne Klasse</option>
+      </select>
+    </div>
+  );
 
   const footer = (
     <button type="button" onClick={onClose} className="btn-dialog">
@@ -50,6 +79,7 @@ export default function StatisticsDialog({ onClose }) {
   if (!stats) {
     return (
       <Modal title="Statistik" onClose={onClose} footer={footer} size="xl">
+        {classFilter}
         {error ? <p className="text-red-700">{error}</p> : <Spinner />}
       </Modal>
     );
@@ -68,6 +98,7 @@ export default function StatisticsDialog({ onClose }) {
 
   return (
     <Modal title="Statistik" onClose={onClose} footer={footer} size="xl">
+      {classFilter}
       <p className="text-sm text-gray-600">{total} Schüler/-innen · Durchschnittswerte über alle Prüfungsversuche</p>
 
       <ChartSection title="Bestehensquoten" empty={total === 0}>

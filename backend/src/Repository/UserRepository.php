@@ -43,13 +43,18 @@ final class UserRepository
         return array_map(fn (array $row): array => $this->normalize($row), $rows);
     }
 
-    public function create(string $username, string $passwordHash, string $role, ?int $teacherId): int
+    public function create(string $username, string $passwordHash, string $role, ?int $teacherId, ?int $classId = null): int
     {
         $this->db->execute(
-            'INSERT INTO users (username, password_hash, role, teacher_id, created_at) VALUES (?, ?, ?, ?, ?)',
-            [$username, $passwordHash, $role, $teacherId, Database::now()],
+            'INSERT INTO users (username, password_hash, role, teacher_id, class_id, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+            [$username, $passwordHash, $role, $teacherId, $classId, Database::now()],
         );
         return $this->db->lastInsertId();
+    }
+
+    public function setClass(int $id, ?int $classId): void
+    {
+        $this->db->execute('UPDATE users SET class_id = ? WHERE id = ?', [$classId, $id]);
     }
 
     public function rename(int $id, string $username): void
@@ -78,6 +83,7 @@ final class UserRepository
         }
         $row['id'] = (int) $row['id'];
         $row['teacher_id'] = $row['teacher_id'] === null ? null : (int) $row['teacher_id'];
+        $row['class_id'] = ($row['class_id'] ?? null) === null ? null : (int) $row['class_id'];
         return $row;
     }
 }

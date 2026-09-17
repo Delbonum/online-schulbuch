@@ -7,11 +7,23 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     role          ENUM('teacher', 'student') NOT NULL,
     teacher_id    INT UNSIGNED NULL,
+    class_id      INT UNSIGNED NULL,
     created_at    DATETIME(3)  NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_users_username (username),
     KEY idx_users_teacher (teacher_id),
+    KEY idx_users_class (class_id),
     CONSTRAINT fk_users_teacher FOREIGN KEY (teacher_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS classes (
+    id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    teacher_id INT UNSIGNED NOT NULL,
+    name       VARCHAR(64)  NOT NULL,
+    created_at DATETIME(3)  NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_classes_teacher_name (teacher_id, name),
+    CONSTRAINT fk_classes_teacher FOREIGN KEY (teacher_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS level_progress (

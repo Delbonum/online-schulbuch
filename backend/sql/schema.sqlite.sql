@@ -6,9 +6,19 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash TEXT    NOT NULL,
     role          TEXT    NOT NULL CHECK (role IN ('teacher', 'student')),
     teacher_id    INTEGER NULL REFERENCES users (id) ON DELETE CASCADE,
+    class_id      INTEGER NULL,
     created_at    TEXT    NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_users_teacher ON users (teacher_id);
+CREATE INDEX IF NOT EXISTS idx_users_class ON users (class_id);
+
+CREATE TABLE IF NOT EXISTS classes (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    teacher_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    name       TEXT    NOT NULL COLLATE NOCASE,
+    created_at TEXT    NOT NULL,
+    UNIQUE (teacher_id, name)
+);
 
 CREATE TABLE IF NOT EXISTS level_progress (
     user_id   INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
