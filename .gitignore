@@ -12,6 +12,7 @@ node_modules/
 .env.local
 .env.*.local
 backend/config.php
+backend/config.production.php
 
 # Lokale Daten (SQLite-Entwicklungsdatenbank, Exporte mit Zugangsdaten)
 backend/data/*.sqlite
