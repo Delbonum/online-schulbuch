@@ -1,9 +1,9 @@
 # Krypto-Zeitreise (KryptoGAME)
 
-Ein interaktives Lernspiel zur **klassischen Kryptologie** für den Informatikunterricht.
-Als Mitglied des geheimen *Krypto-Zeitkommandos* reisen die Lernenden durch die Geschichte –
-von Julius Caesar über Al-Kindi und Blaise de Vigenère bis zum One-Time-Pad – und lernen dabei
-Verschlüsselungsverfahren kennen, wenden sie an und knacken sie.
+Ein interaktives Lernspiel zur **Kryptologie** für den Informatikunterricht.
+Als Mitglied des geheimen _Krypto-Zeitkommandos_ reisen die Lernenden durch die Geschichte –
+von Julius Caesar über Al-Kindi, Vigenère und das One-Time-Pad bis zum Diffie-Hellman-Schlüsselaustausch –
+und lernen dabei Verschlüsselungsverfahren kennen, wenden sie an und knacken sie.
 
 🌐 **Live-Version:** <https://online-schulbuch.de/informatik/kryptogame/>
 
@@ -14,12 +14,15 @@ Verschlüsselungsverfahren kennen, wenden sie an und knacken sie.
 - [Zielgruppe und Konzept](#zielgruppe-und-konzept)
 - [Levelübersicht](#levelübersicht)
 - [Rollen](#rollen)
-- [Technik](#technik)
+- [Architektur](#architektur)
 - [Projektstruktur](#projektstruktur)
 - [Lokale Entwicklung](#lokale-entwicklung)
-- [Build und Deployment](#build-und-deployment)
+- [Tests](#tests)
+- [Deployment](#deployment)
+- [Umzug von JSONBin/Render](#umzug-von-jsonbinrender)
+- [Ein neues Level hinzufügen](#ein-neues-level-hinzufügen)
 - [Backend-API](#backend-api)
-- [Bekannte Baustellen und Roadmap](#bekannte-baustellen-und-roadmap)
+- [Roadmap](#roadmap)
 - [Autor](#autor)
 - [Lizenz](#lizenz)
 
@@ -32,73 +35,86 @@ Das Spiel lässt sich flexibel in der **Sekundarstufe I und II** einsetzen.
 Jedes Level folgt demselben Aufbau:
 
 1. **Story-Einstieg:** Eine Zeitreise führt zu einer historischen Person oder Situation.
-2. **Interaktive Aufgaben:** Mit Werkzeugen wie Chiffrierscheibe, Tabula Recta oder Häufigkeitsanalyse
-   werden Nachrichten ver- und entschlüsselt.
-3. **Fachkonzepte:** Die Begriffe werden zusammengefasst und gesichert, dazu gibt es ein frei nutzbares Tool.
-4. **Zwischenprüfung:** Erst wenn *alle* Aufgaben richtig gelöst sind, wird das nächste Level freigeschaltet.
-   Einige Prüfungsaufgaben greifen Ergebnisse auf, die sich die Lernenden in den vorherigen Aufgaben notieren sollen.
+2. **Interaktive Aufgaben:** Mit Werkzeugen wie Chiffrierscheibe, Tabula Recta, Häufigkeitsanalyse oder
+   Diffie-Hellman-Rechner werden Nachrichten ver- und entschlüsselt.
+3. **Fachkonzepte:** Die Begriffe werden zusammengefasst und gesichert, dazu gibt es ein frei nutzbares Werkzeug.
+4. **Zwischenprüfung:** Erst wenn _alle_ Aufgaben richtig gelöst sind, wird das nächste Level freigeschaltet.
+   Einige Prüfungsaufgaben greifen Ergebnisse auf, die sich die Lernenden in den vorherigen Aufgaben notieren.
 
 ## Levelübersicht
 
-| Level | Epoche / Personen | Inhalte | Werkzeuge |
-|-------|-------------------|---------|-----------|
-| **1** | Rom, 50 v. Chr. – Julius Caesar | Caesar-Verfahren, Verschiebezahl und Schlüssel, Ver- und Entschlüsseln | Chiffrierscheibe (Alberti), Verschiebe-Tool |
-| **2** | Bagdad, 9. Jh. – Al-Kindi | Ersetzungsverfahren (monoalphabetische Substitution), Schlüsselraum (26 vs. 26!), Brute Force, Häufigkeitsanalyse | Alphabet-Verschiebung (Brute Force), Häufigkeitsanalyse-Tool, Ersetzungs-Tool |
-| **3** | 16.–20. Jh. – Trithemius, Bellaso, Vigenère, Babbage, Kasiski, Miller, Mauborgne | Polyalphabetische Verfahren, progressive Caesar-Chiffre, Tabula Recta, Vigenère-Verfahren, Kasiski-Test, Kolonnenanalyse, One-Time-Pad | Progressive-Caesar-Tool, Tabula Recta, Vigenère-Tool, Schlüssellängen-Tool, Kolonnenanalyse-Tool |
-| **4** | *in Planung* | – | – |
+| Level | Epoche / Personen                                                                | Inhalte                                                                                                                                  | Werkzeuge                                                                                                |
+| ----- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **1** | Rom, 50 v. Chr. – Julius Caesar                                                  | Caesar-Verfahren, Verschiebezahl und Schlüssel                                                                                           | Chiffrierscheibe (Alberti), Verschiebe-Tool                                                              |
+| **2** | Bagdad, 9. Jh. – Al-Kindi                                                        | Ersetzungsverfahren, Schlüsselraum (26 vs. 26!), Brute Force, Häufigkeitsanalyse                                                         | Brute-Force-Tool, Häufigkeitsanalyse, Ersetzungs-Tool                                                    |
+| **3** | 16.–20. Jh. – Trithemius, Bellaso, Vigenère, Babbage, Kasiski, Miller, Mauborgne | Polyalphabetische Verfahren, progressive Caesar-Chiffre, Tabula Recta, Vigenère, Kasiski-Test, Kolonnenanalyse, One-Time-Pad             | Progressive-Caesar-Tool, Tabula Recta, Vigenère-Tools, Schlüssellängen- und Kolonnenanalyse              |
+| **4** | Stanford, 1976 – Diffie, Hellman, Merkle                                         | Schlüsselaustauschproblem, Farbmisch-Analogie, Modulo-Rechnung, Einwegfunktion, diskreter Logarithmus, Diffie-Hellman, Man-in-the-Middle | Farbmischung, Modulo-Uhr, Modulo-Rechner, diskreter Logarithmus zum Ausprobieren, Diffie-Hellman-Rechner |
+| **5** | _in Planung_ (RSA)                                                               | –                                                                                                                                        | –                                                                                                        |
 
 ## Rollen
 
-| Rolle | Anmeldung | Fortschritt | Besonderheiten |
-|-------|-----------|-------------|----------------|
-| **Gast** | „Als Gast fortfahren“ | nur lokal im Browser | Kein Konto nötig |
-| **Schüler/-in** | Benutzername + Passwort (von der Lehrkraft angelegt) | im Backend gespeichert | Jeder Prüfungsversuch wird mit Punktzahl und Einzelantworten protokolliert |
-| **Lehrkraft** | Benutzername + Passwort | – | Alle Level frei zugänglich; **Dashboard** mit Schülerverwaltung (anlegen, bearbeiten, löschen, Fortschritt manuell setzen/zurücksetzen), Versuchsverlauf je Schüler/-in und globaler Statistik (Bestehensquoten, Durchschnittsscores, Auswertung je Aufgabe) |
+| Rolle           | Anmeldung                                   | Fortschritt                     | Besonderheiten                                                                                                                                                                                                                                                                                |
+| --------------- | ------------------------------------------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Gast**        | „Als Gast fortfahren“                       | nur im Browser (`localStorage`) | Kein Konto nötig                                                                                                                                                                                                                                                                              |
+| **Schüler/-in** | Benutzername + Passwort (von der Lehrkraft) | in der Datenbank                | Jeder Prüfungsversuch wird mit Punktzahl und Einzelantworten protokolliert                                                                                                                                                                                                                    |
+| **Lehrkraft**   | Benutzername + Passwort                     | –                               | Alle Level frei zugänglich; **Dashboard**: Schüler/-innen einzeln oder als ganze Klasse anlegen (mit druckbaren Zugangskarten), bearbeiten, löschen, Level manuell freischalten/sperren, Prüfungsverlauf mit Details, Statistik (Bestehensquoten, Durchschnittsscores, Auswertung je Aufgabe) |
 
-## Technik
+## Architektur
 
-**Frontend**
-- [React 18](https://react.dev/) mit [Create React App](https://create-react-app.dev/) (`react-scripts`)
-- [React Router 6](https://reactrouter.com/) – `basename` ist `/informatik/kryptogame`
-- [Tailwind CSS 3](https://tailwindcss.com/) mit der Schriftart *Oxanium* (Google Fonts)
-- [Recharts](https://recharts.org/) für die Statistiken im Lehrkräfte-Dashboard
-- [react-beautiful-dnd](https://github.com/atlassian/react-beautiful-dnd) für Drag-&-Drop-Aufgaben
-- [lucide-react](https://lucide.dev/) für Icons
+```
+Browser ──► React-App (statische Dateien)          /informatik/kryptogame/
+        └─► PHP-API  ──► MySQL/MariaDB              /informatik/kryptogame/api/
+```
 
-**Backend** (`backend/`)
-- [Node.js](https://nodejs.org/) mit [Express 5](https://expressjs.com/)
-- Datenspeicherung als **eine JSON-Datei** in [JSONBin.io](https://jsonbin.io/), Zugriff über `axios`
-- Aktuell gehostet auf dem kostenlosen Tarif von [Render](https://render.com/) (`https://kryptogame.onrender.com`)
+**Frontend** – [React 18](https://react.dev/) mit Create React App, [React Router 6](https://reactrouter.com/),
+[Tailwind CSS 3](https://tailwindcss.com/), [Recharts](https://recharts.org/) (nur im nachgeladenen Dashboard),
+[lucide-react](https://lucide.dev/).
+
+**Backend** – schlanke PHP-API **ohne externe Abhängigkeiten** (PHP ≥ 8.1, PDO), läuft auf gewöhnlichem Shared
+Hosting. Daten liegen in **MySQL/MariaDB**; für die lokale Entwicklung genügt **SQLite**.
+
+**Sicherheit**
+
+- Passwörter werden nur als Hash gespeichert (`password_hash`).
+- Anmeldung über ein HttpOnly-Session-Cookie; im Browser werden keine Zugangsdaten oder Rollen gespeichert.
+- Bremse gegen Passwort-Raten (vorübergehende Sperre nach 10 Fehlversuchen).
+- CSRF-Schutz: schreibende Anfragen nur als JSON und von derselben Herkunft.
+- Lehrkräfte sehen und verwalten ausschließlich ihre eigenen Schüler/-innen.
+- **Prüfungen werden auf dem Server bewertet** – die Lösungen stehen nicht im ausgelieferten JavaScript.
+  Auch die Freischaltung der Level wird serverseitig geprüft.
 
 ## Projektstruktur
 
 ```
 KryptoGAME/
-├── backend/
-│   ├── server.js              # Express-API (Login, Fortschritt, Schülerverwaltung, Statistik)
-│   ├── users.json             # Beispiel-/Startdaten (wird vom Server nicht mehr gelesen)
-│   └── package.json
-├── public/
-│   └── index.html
+├── backend/                     # PHP-API (wird nach …/kryptogame/api/ hochgeladen)
+│   ├── index.php                # Einstiegspunkt aller API-Anfragen
+│   ├── setup.php                # Einrichtung per Browser (nur mit Setup-Token aktiv)
+│   ├── .htaccess                # Routing + Zugriffsschutz für alle anderen Dateien
+│   ├── config.example.php       # Vorlage für config.php (Zugangsdaten, nicht versioniert)
+│   ├── bin/console.php          # Kommandozeile: migrate, create-teacher, import-json, …
+│   ├── quizzes/levelN.json      # Zwischenprüfungen inkl. Lösungen
+│   ├── sql/                     # Datenbankschema (MySQL/MariaDB und SQLite)
+│   ├── src/                     # App, Router, Controller, Repositories, Services
+│   ├── tests/run.php            # Backend-Tests
+│   └── dev-server.php           # Router für den eingebauten PHP-Webserver
+├── public/index.html
 ├── src/
-│   ├── App.js                 # Layout, Seitennavigation und alle Routen
-│   ├── index.js               # Einstiegspunkt (Router + AuthProvider)
-│   ├── index.css              # Tailwind + globale Stilklassen
-│   ├── auth/
-│   │   ├── AuthContext.jsx    # Login/Logout, Zugriffsprüfung, Fortschritt speichern
-│   │   ├── LoginPage.jsx
-│   │   ├── TopBar.jsx
-│   │   └── Dashboard.jsx      # Lehrkräfte-Dashboard
-│   ├── img/                   # Illustrationen (historische Personen, Hintergrund)
-│   └── pages/
-│       ├── components/
-│       │   ├── LevelGuard.jsx     # Sperrt Seiten, bis das vorherige Level bestanden ist
-│       │   ├── WeiterButton.jsx
-│       │   ├── ZugriffsError.jsx
-│       │   └── tools/             # Interaktive Krypto-Werkzeuge
-│       ├── lvl1/ … lvl4/          # Seiten je Level (Intro, Aufgaben, Fachkonzepte, Quiz, Abschluss)
-├── tailwind.config.js
-├── postcss.config.js
+│   ├── levels.js                # ⭐ Zentrale Level-Konfiguration (Seiten, Reihenfolge, Navigation)
+│   ├── App.js                   # Layout und Routen (aus levels.js erzeugt)
+│   ├── auth/AuthContext.jsx     # Anmeldung, Fortschritt, Freischaltung
+│   ├── lib/
+│   │   ├── api.js               # Zugriff auf die PHP-API
+│   │   ├── crypto.js            # Verschlüsselungsverfahren und Kryptoanalyse (mit Tests)
+│   │   ├── colors.js            # Farbmischung für Level 4
+│   │   └── progress.js          # Freischaltregel
+│   ├── components/
+│   │   ├── quiz/                # Gemeinsame Prüfungskomponente und Fragetypen
+│   │   ├── tools/               # Interaktive Werkzeuge (Chiffrierscheibe, Vigenère, Diffie-Hellman, …)
+│   │   └── …                    # Layout, Navigation, Dialoge
+│   ├── dashboard/               # Lehrkräfte-Dashboard
+│   ├── pages/lvl1 … lvl5/       # Inhaltsseiten je Level
+│   └── img/                     # Illustrationen (WebP)
 └── package.json
 ```
 
@@ -106,126 +122,163 @@ KryptoGAME/
 
 ### Voraussetzungen
 
-- [Node.js](https://nodejs.org/) (LTS-Version empfohlen) und npm
-- Ein [JSONBin.io](https://jsonbin.io/)-Konto mit einem Bin, das ein Array von Benutzern enthält
-  (Aufbau siehe `backend/users.json`)
+- [Node.js](https://nodejs.org/) (LTS) und npm
+- [PHP 8.1+](https://www.php.net/) mit den Erweiterungen `pdo_sqlite` (lokal) bzw. `pdo_mysql` und `mbstring`
 
-### 1. Backend starten
+### 1. Backend einrichten
 
 ```bash
-cd backend
+cp backend/config.example.php backend/config.php
+```
+
+In `backend/config.php` für die lokale Entwicklung:
+
+```php
+'db' => ['dsn' => 'sqlite:data/kryptogame.sqlite'],
+'secure_cookies' => false,
+'debug' => true,
+'allowed_origins' => ['http://127.0.0.1:8000'],
+```
+
+Datenbank anlegen und eine Lehrkraft erstellen:
+
+```bash
+php backend/bin/console.php migrate
+php backend/bin/console.php create-teacher MeinName meinPasswort
+```
+
+### 2. Starten
+
+Zwei Terminals:
+
+```bash
+npm run start:api     # PHP-API auf http://127.0.0.1:8000
 npm install
+npm start             # React-App auf http://localhost:3000/informatik/kryptogame
 ```
 
-Umgebungsvariablen setzen:
+Der React-Entwicklungsserver leitet alle API-Aufrufe per Proxy an den PHP-Server weiter (`proxy` in `package.json`).
 
-| Variable | Bedeutung |
-|----------|-----------|
-| `JSONBIN_BIN_ID` | ID des JSONBin-Bins mit den Benutzerdaten |
-| `JSONBIN_API_KEY` | Master Key des JSONBin-Kontos |
-| `PORT` | optional, Standard: `3001` |
+### Nützliche Befehle
+
+| Befehl                                            | Zweck                                     |
+| ------------------------------------------------- | ----------------------------------------- |
+| `npm test`                                        | Frontend-Tests (Jest, Testing Library)    |
+| `npm run test:api`                                | Backend-Tests                             |
+| `npm run format`                                  | Code mit Prettier formatieren             |
+| `php backend/bin/console.php check-quizzes`       | Prüfungsdateien auf Fehler prüfen         |
+| `php backend/bin/console.php set-password <name>` | Passwort zurücksetzen (erzeugt ein neues) |
+
+## Tests
 
 ```bash
-# Linux/macOS
-JSONBIN_BIN_ID=… JSONBIN_API_KEY=… npm start
-
-# Windows PowerShell
-$env:JSONBIN_BIN_ID="…"; $env:JSONBIN_API_KEY="…"; npm start
+npm test -- --watchAll=false   # Krypto-Bibliothek, Werkzeuge, Freischaltung, Prüfungsablauf, Login
+npm run test:api               # API mit SQLite im Arbeitsspeicher
 ```
 
-Das Backend läuft anschließend unter `http://localhost:3001`.
-
-### 2. Frontend starten
-
-Im Projektwurzelverzeichnis:
+Die Backend-Tests lassen sich auch gegen MySQL/MariaDB ausführen (Achtung: die Tabellen der Testdatenbank werden
+gelöscht):
 
 ```bash
-npm install
-npm start
+KRYPTOGAME_TEST_DSN="mysql:host=127.0.0.1;dbname=kryptotest;charset=utf8mb4" \
+KRYPTOGAME_TEST_USER=… KRYPTOGAME_TEST_PASSWORD=… php backend/tests/run.php
 ```
 
-Das Spiel ist dann unter <http://localhost:3000/informatik/kryptogame> erreichbar.
+Die Backend-Tests prüfen außerdem, dass jede Prüfungsdatei mit ihren eigenen Lösungen bestanden wird und dass keine
+Lösung an den Browser ausgeliefert wird. Die Frontend-Tests rechnen die Geheimtext-Aufgaben aller Level nach.
 
-> **Hinweis:** Die Backend-Adresse ist derzeit fest als `http://localhost:3001` im Quellcode eingetragen
-> (`src/auth/AuthContext.jsx`, `src/auth/Dashboard.jsx` und in den Quiz-Seiten).
+## Deployment
 
-## Build und Deployment
+Voraussetzungen beim Hoster: Apache (oder kompatibel, z. B. LiteSpeed) mit `mod_rewrite`, PHP ≥ 8.1 mit `pdo_mysql`
+und `mbstring`, eine MySQL-/MariaDB-Datenbank.
 
-```bash
-npm run build
-```
+1. **Datenbank** im Kundenmenü des Hosters anlegen.
+2. **Frontend bauen:** `npm run build`
+3. **Hochladen:**
+   - Inhalt von `build/` → `/informatik/kryptogame/`
+   - Inhalt von `backend/` → `/informatik/kryptogame/api/`
+     (`tests/`, `dev-server.php` und `data/` werden auf dem Server nicht benötigt)
+4. **Konfigurieren:** `api/config.example.php` → `api/config.php` kopieren und Datenbankzugang eintragen.
+5. **Einrichten** – mit SSH-Zugang:
+   ```bash
+   php api/bin/console.php migrate
+   php api/bin/console.php create-teacher MeinName
+   ```
+   Ohne SSH: in `config.php` ein langes, zufälliges `setup_token` eintragen, `…/kryptogame/api/setup.php` im Browser
+   öffnen, Tabellen anlegen und Lehrkräfte erstellen. **Danach das Token wieder auf `''` setzen.**
+6. **Direktaufrufe von Unterseiten** (z. B. nach dem Neuladen von `/level2/start`) brauchen eine Weiterleitung auf
+   `index.html`. Dazu im Ordner `/informatik/kryptogame/` diese `.htaccess` ablegen:
+   ```apache
+   RewriteEngine On
+   RewriteRule ^api/ - [L]
+   RewriteCond %{REQUEST_FILENAME} !-f
+   RewriteCond %{REQUEST_FILENAME} !-d
+   RewriteRule ^ index.html [L]
+   ```
 
-Den Inhalt von `build/` auf den Webspace ins Verzeichnis `/informatik/kryptogame/` hochladen.
-Weil `BrowserRouter` verwendet wird, muss der Webserver unbekannte Pfade unterhalb dieses Verzeichnisses
-auf `index.html` umleiten, damit Seiten direkt aufgerufen oder neu geladen werden können.
+Soll die API unter einer anderen Adresse laufen, beim Build `REACT_APP_API_URL` setzen und in `config.php`
+`base_path` anpassen.
 
-Vor dem Build für die Live-Version muss die Backend-Adresse im Code auf `https://kryptogame.onrender.com` geändert werden.
-Die aktuell veröffentlichte Version nutzt diese Adresse, der Stand im Repository dagegen noch `localhost`.
+## Umzug von JSONBin/Render
+
+Die bisherigen Daten lassen sich übernehmen; Passwörter werden dabei gehasht:
+
+1. Im JSONBin-Dashboard den Bin als JSON exportieren (oder den Inhalt kopieren).
+2. Importieren – per Kommandozeile `php api/bin/console.php import-json export.json` oder über `setup.php`.
+3. Vorhandene Benutzernamen werden übersprungen, Fortschritt und Prüfungsverlauf werden mit übernommen.
+4. Anschließend den Render-Dienst und den JSONBin-Bin löschen – und die Lehrkräfte bitten, ihr Passwort unter
+   **Konto** zu ändern, da die alten Passwörter im Klartext gespeichert waren.
+
+## Ein neues Level hinzufügen
+
+1. **Seiten** unter `src/pages/lvlN/` anlegen – normale React-Komponenten. Den „Weiter“-Button, die Navigation und
+   die Zugangssperre übernimmt der Rahmen automatisch.
+2. **Werkzeuge** unter `src/components/tools/` ablegen; Rechenlogik gehört (mit Tests) nach `src/lib/`.
+3. **In `src/levels.js` eintragen** – Reihenfolge der Seiten, Titel für die Navigation, `quiz: true` für die
+   Prüfungsseite und eine versteckte `abschluss`-Seite.
+4. **Prüfung** als `backend/quizzes/levelN.json` anlegen. Fragetypen:
+
+   ```json
+   { "id": 1, "type": "text", "prompt": "…", "answer": "LÖSUNG" }
+   { "id": 2, "type": "single", "prompt": "…", "options": ["a", "b"], "answer": 1 }
+   { "id": 3, "type": "multiple", "prompt": "…", "options": ["a", "b", "c"], "answer": [0, 2] }
+   { "id": 4, "type": "order", "prompt": "…", "items": ["erster Schritt", "zweiter Schritt"] }
+   ```
+
+   Textantworten werden ohne Beachtung von Groß-/Kleinschreibung, Leer- und Satzzeichen verglichen; `answer` darf
+   auch eine Liste gleichwertiger Lösungen sein. Bei `order` stehen die Einträge in der richtigen Reihenfolge – sie
+   werden für die Anzeige gemischt.
+
+5. `php backend/bin/console.php check-quizzes` und die Tests ausführen.
 
 ## Backend-API
 
-| Methode | Pfad | Zweck |
-|---------|------|-------|
-| `POST` | `/login` | Anmeldung (`username`, `password`) → Benutzerdaten ohne Passwort |
-| `GET` | `/progress/:username` | Fortschritt einer Schülerin / eines Schülers |
-| `POST` | `/progress/:username` | Fortschritt setzen (`{ level1Passed: true, … }`, optional `_skipHistory`) |
-| `POST` | `/progress/:username/recordAttempt` | Prüfungsversuch protokollieren (`levelKey`, `score`, `details`) |
-| `GET` | `/progress/:username/history` | Verlauf aller Prüfungsversuche |
-| `GET` | `/students?teacher=…` | Schüler/-innen einer Lehrkraft |
-| `POST` | `/students` | Schüler/-in anlegen (`username`, `password`, `teacher`) |
-| `PUT` | `/students/:username` | Schüler/-in bearbeiten (Name, Passwort, Fortschritt) |
-| `DELETE` | `/students/:username` | Schüler/-in löschen |
-| `DELETE` | `/students/:username/reset` | Fortschritt und Verlauf zurücksetzen |
-| `GET` | `/teachers/:teacher/statistics` | Aggregierte Statistik für das Dashboard |
+Alle Pfade relativ zu `…/api`. Anfragen und Antworten im JSON-Format.
 
-### Datenmodell (ein Eintrag im JSONBin-Array)
+| Methode  | Pfad                      | Rolle      | Zweck                                                        |
+| -------- | ------------------------- | ---------- | ------------------------------------------------------------ |
+| `POST`   | `/auth/login`             | –          | Anmelden (`username`, `password`)                            |
+| `POST`   | `/auth/logout`            | –          | Abmelden                                                     |
+| `GET`    | `/auth/me`                | –          | Angemeldete Person inkl. `passedLevels` (oder `null`)        |
+| `POST`   | `/auth/password`          | angemeldet | Eigenes Passwort ändern (`currentPassword`, `newPassword`)   |
+| `GET`    | `/quizzes/{level}`        | –          | Prüfung ohne Lösungen                                        |
+| `POST`   | `/quizzes/{level}/submit` | –          | Antworten bewerten (`answers`); speichert bei Schüler/-innen |
+| `GET`    | `/students`               | Lehrkraft  | Eigene Schüler/-innen und verfügbare Level                   |
+| `POST`   | `/students`               | Lehrkraft  | Schüler/-in anlegen                                          |
+| `PATCH`  | `/students/{id}`          | Lehrkraft  | Name, Passwort oder `passedLevels` ändern                    |
+| `DELETE` | `/students/{id}`          | Lehrkraft  | Schüler/-in löschen                                          |
+| `POST`   | `/students/{id}/reset`    | Lehrkraft  | Fortschritt und Verlauf zurücksetzen                         |
+| `GET`    | `/students/{id}/history`  | Lehrkraft  | Prüfungsversuche und manuelle Änderungen                     |
+| `GET`    | `/statistics`             | Lehrkraft  | Auswertung über alle eigenen Schüler/-innen                  |
 
-```json
-{
-  "username": "max",
-  "password": "…",
-  "role": "student",
-  "teacher": "lehrer1",
-  "progress": { "level1Passed": true },
-  "history": {
-    "level1Passed": [
-      { "timestamp": "2025-06-28T00:12:50.266Z", "score": 33, "details": [ { "task": 1, "correct": false, "answer": "…" } ] },
-      { "timestamp": "2025-06-29T10:00:00.000Z", "manual": "freigeschaltet" }
-    ]
-  }
-}
-```
+## Roadmap
 
-## Bekannte Baustellen und Roadmap
-
-Das Projekt ist funktionsfähig und wird im Unterricht eingesetzt. Technisch gibt es aber einiges zu verbessern.
-
-### Datenhaltung und Hosting
-- [ ] Die Benutzerdaten liegen als eine einzige JSON-Datei (JSONBin) vor. Das soll durch eine **richtige Datenbank** ersetzt werden.
-- [ ] Das Backend auf dem kostenlosen Render-Tarif geht nach Inaktivität in den Sleep-Modus, der erste Aufruf dauert dann lange.
-      Der Webspace des Frontends unterstützt kein Node.js, aber PHP. Mögliche Wege:
-      **Backend auf PHP + MySQL/MariaDB umstellen** oder **einen anderen Anbieter für das Node-Backend** wählen.
-- [ ] Backend-Adresse über eine Umgebungsvariable (`REACT_APP_API_URL`) konfigurieren statt fest im Code
-
-### Sicherheit
-- [ ] Passwörter nur gehasht speichern (z. B. bcrypt/argon2 bzw. `password_hash` in PHP)
-- [ ] Echte Authentifizierung (Session/Token). Bisher prüft die API nicht, wer eine Anfrage stellt.
-- [ ] Berechtigungen serverseitig prüfen: Lehrkräfte dürfen nur ihre eigenen Schüler/-innen sehen und ändern
-- [ ] Prüfungsbewertung auf den Server verlagern. Bisher stehen die Lösungen im ausgelieferten JavaScript.
-- [ ] Nur geprüfte Felder bei `PUT /students/:username` übernehmen
-
-### Code-Qualität
-- [ ] `node_modules/`, `build/` und `kryptogame.zip` aus dem Repository entfernen und eine `.gitignore` anlegen
-- [ ] `backend/users.json` mit echten Zugangsdaten nicht im (öffentlichen) Repository ablegen
-- [ ] Quiz-Logik in eine wiederverwendbare Komponente auslagern (bisher in jedem Level kopiert)
-- [ ] Level-Struktur (Navigation, Routen, Prüfungen) datengetrieben aus einer zentralen Konfiguration erzeugen
-- [ ] Fehler beheben: Gäste können Level 2 nicht freischalten (der Fortschritt wird als Cookie gespeichert, aber aus `localStorage` gelesen)
-- [ ] Tippfehler und kleinere inhaltliche Ungenauigkeiten in den Texten korrigieren
-- [ ] Bilder für das Web komprimieren (einzelne PNGs sind mehrere MB groß)
-
-### Erweiterungen
-- [ ] **Level 4** und weitere Level (z. B. Transpositionsverfahren, Enigma, moderne symmetrische Verfahren, Diffie-Hellman, RSA)
-- [ ] Mobile Darstellung verbessern
+- [ ] Umzug der Live-Version auf das PHP-Backend (siehe [Deployment](#deployment) und [Umzug](#umzug-von-jsonbinrender))
+- [ ] Level 5: RSA und asymmetrische Verschlüsselung
+- [ ] Weitere mögliche Level: Transpositionsverfahren (Skytale), Enigma, digitale Signaturen, Hashfunktionen
+- [ ] Interaktive Man-in-the-Middle-Simulation in Level 4
+- [ ] Verwaltung von Lehrkräften in der Oberfläche (bisher über Kommandozeile/`setup.php`)
+- [ ] Prüfungsfragen aus einem Aufgabenpool zufällig ziehen
 
 ## Autor
 
