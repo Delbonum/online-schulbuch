@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { BarChart3, KeyRound, Pencil, Trash2, UserPlus } from "lucide-react";
+import { BarChart3, KeyRound, Pencil, Trash2, UserPlus, Users } from "lucide-react";
 import { api } from "../lib/api";
 import Spinner from "../components/Spinner";
 import StudentDialog from "./StudentDialog";
 import ConfirmDialog from "./ConfirmDialog";
 import HistoryDialog from "./HistoryDialog";
 import StatisticsDialog from "./StatisticsDialog";
+import BulkCreateDialog from "./BulkCreateDialog";
 
 export default function Dashboard() {
   const [students, setStudents] = useState(null);
@@ -60,6 +61,9 @@ export default function Dashboard() {
           </button>
           <button type="button" onClick={() => setDialog({ type: "create" })} className="btn btn-sm">
             <UserPlus size={16} aria-hidden="true" /> Schüler/-in hinzufügen
+          </button>
+          <button type="button" onClick={() => setDialog({ type: "bulk" })} className="btn btn-sm">
+            <Users size={16} aria-hidden="true" /> Klasse anlegen
           </button>
         </div>
       </div>
@@ -191,6 +195,15 @@ export default function Dashboard() {
       )}
 
       {dialog?.type === "statistics" && <StatisticsDialog onClose={closeDialog} />}
+
+      {dialog?.type === "bulk" && (
+        <BulkCreateDialog
+          onClose={closeDialog}
+          onCreated={(student) =>
+            setStudents((current) => [...current, student].sort((a, b) => a.username.localeCompare(b.username)))
+          }
+        />
+      )}
     </div>
   );
 }
