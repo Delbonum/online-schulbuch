@@ -1,4 +1,4 @@
-import arabImage from "../../img/arab.png";
+import arabImage from "../../img/arab.webp";
 
 export default function Level2Intro() {
   return (
@@ -33,7 +33,7 @@ export default function Level2Intro() {
 
         <div className="flex-shrink-0 w-full md:w-1/5">
           <br></br>
-          <img src={arabImage} alt="Al-Kindi und die arabische Kryptologie" className="w-full h-auto object-contain" />
+          <img loading="lazy" src={arabImage} alt="Al-Kindi und die arabische Kryptologie" className="w-full h-auto object-contain" />
         </div>
       </div>
     </>

@@ -1,5 +1,5 @@
 import AlphabetTable from "../../components/AlphabetTable";
-import alKindiImage from "../../img/alkindi.png";
+import alKindiImage from "../../img/alkindi.webp";
 
 export default function Chiffrieren() {
   return (
@@ -33,7 +33,7 @@ export default function Chiffrieren() {
         </div>
 
         <div className="flex-shrink-0 w-full md:w-1/3">
-          <img src={alKindiImage} alt="Al-Kindi erklärt" className="w-full h-auto object-contain" />
+          <img loading="lazy" src={alKindiImage} alt="Al-Kindi erklärt" className="w-full h-auto object-contain" />
         </div>
       </div>
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import vigenere from "../../img/vigenere2.png";
+import vigenere from "../../img/vigenere2.webp";
 import VigenereChiffreTool from "../../components/tools/VigenereChiffreTool";
 import TabulaRectaTool from "../../components/tools/TabulaRectaTool";
 import ChiffreDisk from "../../components/tools/ChiffreDisk";
@@ -11,7 +11,7 @@ export default function Vigenere() {
       <h1 className="text-2xl font-bold heading-style mb-4">Ein genauer Blick auf das Vigenère-Verfahren</h1>
 
       <div className="flex flex-col md:flex-row items-start gap-4 text-style">
-        <img src={vigenere} alt="Blaise de Vigenère" className="w-80 h-auto self-start" />
+        <img loading="lazy" src={vigenere} alt="Blaise de Vigenère" className="w-80 h-auto self-start" />
         <p>
           Um sicherzugehen, dass du das Vigenère-Verfahren richtig verstanden hast, reist du einmal mehr zu Blaise de
           Vigenère persönlich und bittest ihn um eine Erläuterung:{" "}
