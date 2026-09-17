@@ -1,0 +1,65 @@
+{
+  "level": 3,
+  "title": "Zwischenprüfung Level 3",
+  "questions": [
+    {
+      "id": 1,
+      "type": "text",
+      "prompt": "Welcher Klartext ergibt sich, wenn man den Geheimtext 'BCZIEIZWZ' mit dem Schlüsselwort 'VIGENERE' entschlüsselt?",
+      "answer": "GUTEREISE"
+    },
+    {
+      "id": 2,
+      "type": "text",
+      "prompt": "Welchen Schlüssel hast du mithilfe des Kasiski-Tests zu dem vorgegebenen Geheimtext ermittelt?",
+      "answer": "ZEBRA"
+    },
+    {
+      "id": 3,
+      "type": "text",
+      "prompt": "Welchen Schlüssel muss man beim Vigenère-Verfahren wählen, um eine progressive Verschiebung zu erhalten, die beim ersten Buchstaben mit der Verschiebezahl 0 startet und jeden Folgebuchstaben um eins mehr verschiebt?",
+      "answer": "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    },
+    {
+      "id": 4,
+      "type": "multiple",
+      "prompt": "Welche der folgenden Aussagen treffen auf das Vigenère-Verfahren zu?",
+      "options": [
+        "Es wird für jeden Buchstaben des Klartexts genau ein Schlüsselbuchstabe verwendet.",
+        "Es handelt sich um ein polyalphabetisches Verfahren.",
+        "Nutzt man das Verfahren mit einem Schlüssel, der nur aus einem Buchstaben 'A' besteht, so unterscheidet sich das Ergebnis nicht von dem einfachen Verschiebeverfahren.",
+        "Bei längeren Schlüsseln kann das Verfahren mit der Tabula Recta, aber nicht mit einer Chiffrierscheibe entschlüsselt werden.",
+        "Das Verfahren kann durch eine Häufigkeitsanalyse geknackt werden."
+      ],
+      "answer": [0, 1, 2, 4]
+    },
+    {
+      "id": 5,
+      "type": "multiple",
+      "prompt": "Welche der folgenden Aussagen treffen auf das One-Time-Pad zu?",
+      "options": [
+        "Das One-Time-Pad ist absolut sicher und unknackbar.",
+        "Die Schlüsselbuchstaben dürfen nur ein einziges Mal verwendet werden.",
+        "Das Vorgehen beim Ver- und Entschlüsseln unterscheidet sich nicht vom Vigenère-Verfahren.",
+        "Beim One-Time-Pad werden vor allem sehr kurze Schlüsselworte verwendet.",
+        "Die Schlüsselübertragung ist beim One-Time-Pad kein Problem, da der Schlüssel innerhalb der verschlüsselten Nachricht mitgeschickt werden kann.",
+        "Verschiedene Buchstaben im Klartext können mit dem gleichen Buchstaben verschlüsselt werden."
+      ],
+      "answer": [0, 2, 5]
+    },
+    {
+      "id": 6,
+      "type": "order",
+      "prompt": "Ordne die Schritte beim Vorgehen der Kryptoanalyse (inkl. Kasiski-Test) in der richtigen Reihenfolge an:",
+      "items": [
+        "Häufigkeit gleicher Textabschnitte untersuchen",
+        "Abstände zwischen gleichen Abschnitten bestimmen",
+        "Teiler der Abstände berechnen",
+        "Länge des Schlüsselwortes ermitteln",
+        "Häufigkeitsanalyse in Kolonnen durchführen",
+        "Schlüssel ermitteln",
+        "Geheimtext entschlüsseln"
+      ]
+    }
+  ]
+}
