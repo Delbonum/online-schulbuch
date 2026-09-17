@@ -1,16 +1,13 @@
-# Alle Anfragen an index.php weiterleiten
+# Alle Anfragen, die keine vorhandene Datei betreffen, an index.php weiterleiten
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [QSA,L]
 </IfModule>
 
-# Nur index.php (und die Einrichtungsseite) dürfen direkt aufgerufen werden
-<FilesMatch ".*">
+# Konfiguration mit Zugangsdaten niemals ausliefern
+<FilesMatch "^config.*\.php$">
     Require all denied
-</FilesMatch>
-<FilesMatch "^(index\.php|setup\.php)?$">
-    Require all granted
 </FilesMatch>
 
 Options -Indexes
