@@ -22,6 +22,12 @@ import OneTimePad from "./pages/lvl3/OneTimePad";
 import FachkonzepteLvl3 from "./pages/lvl3/Fachkonzepte";
 import QuizLvl3 from "./pages/lvl3/Quiz";
 import Level4Intro from "./pages/lvl4/Level4Intro";
+import Farbmischung from "./pages/lvl4/Farbmischung";
+import Modulo from "./pages/lvl4/Modulo";
+import DiffieHellman from "./pages/lvl4/DiffieHellman";
+import FachkonzepteLvl4 from "./pages/lvl4/Fachkonzepte";
+import QuizLvl4 from "./pages/lvl4/Quiz";
+import Level5Intro from "./pages/lvl5/Level5Intro";
 import LevelComplete from "./components/LevelComplete";
 
 /**
@@ -74,7 +80,20 @@ export const LEVELS = [
   {
     number: 4,
     title: "Schlüsselaustausch",
-    pages: [{ slug: "start", title: "Baustelle", Component: Level4Intro }],
+    pages: [
+      { slug: "start", title: "Das Schlüsselproblem", Component: Level4Intro },
+      { slug: "farbmischung", title: "Geheimnisse mischen", Component: Farbmischung },
+      { slug: "modulo", title: "Rechnen im Kreis", Component: Modulo },
+      { slug: "diffie-hellman", title: "Diffie-Hellman", Component: DiffieHellman },
+      { slug: "fachkonzepte", title: "Fachkonzepte", Component: FachkonzepteLvl4 },
+      { slug: "pruefung", title: "Zwischenprüfung", Component: QuizLvl4, quiz: true },
+      { slug: "abschluss", title: "Abschluss", Component: LevelComplete, hidden: true },
+    ],
+  },
+  {
+    number: 5,
+    title: "Ausblick",
+    pages: [{ slug: "start", title: "Baustelle", Component: Level5Intro }],
   },
 ];
 

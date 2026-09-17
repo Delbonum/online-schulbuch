@@ -8,6 +8,8 @@ import {
   modPow,
   normalizeSubstitutionKey,
   parseShiftRule,
+  powerSteps,
+  primitiveRoots,
   progressiveCaesar,
   repeatKey,
   repeatedSequences,
@@ -16,6 +18,7 @@ import {
   substitute,
   vigenere,
 } from "./crypto";
+import { mixColors } from "./colors";
 
 describe("Caesar", () => {
   test("verschlüsselt wie in Level 1", () => {
@@ -111,5 +114,37 @@ describe("Zahlentheorie", () => {
   test("Primzahlen", () => {
     expect([2, 3, 23, 97].every(isPrime)).toBe(true);
     expect([0, 1, 4, 91].some(isPrime)).toBe(false);
+  });
+});
+
+describe("Diffie-Hellman", () => {
+  test("Primitivwurzeln", () => {
+    expect(primitiveRoots(23).slice(0, 3)).toEqual([5, 7, 10]);
+    expect(primitiveRoots(29)[0]).toBe(2);
+    expect(primitiveRoots(15)).toEqual([]);
+  });
+
+  test("Zwischenschritte der Potenz", () => {
+    expect(powerSteps(3, 4, 17)).toEqual([3, 9, 10, 13]);
+    expect(powerSteps(2, 12, 29).at(-1)).toBe(modPow(2, 12, 29));
+  });
+
+  test("Beispiel aus Level 4 ergibt denselben Schlüssel", () => {
+    const [p, g, a, b] = [29, 2, 12, 23];
+    const A = modPow(g, a, p);
+    const B = modPow(g, b, p);
+    expect([A, B]).toEqual([7, 10]);
+    expect(modPow(B, a, p)).toBe(20);
+    expect(modPow(A, b, p)).toBe(20);
+    expect(caesar("NLYZZJOHEN OG GCNNYLHUWBN UG TYCNNIL", -20)).toBe("TREFFPUNKT UM MITTERNACHT AM ZEITTOR");
+  });
+
+  test("Farbmischung ist unabhängig von der Reihenfolge", () => {
+    const common = "#ffd700";
+    const alice = "#d62828";
+    const bob = "#1d4ed8";
+    expect(mixColors(mixColors(common, alice), bob)).not.toBe(mixColors(common, alice, bob));
+    expect(mixColors(common, alice, bob)).toBe(mixColors(bob, common, alice));
+    expect(mixColors("#000000", "#ffffff")).toBe("#bcbcbc");
   });
 });

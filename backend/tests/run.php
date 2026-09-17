@@ -325,7 +325,8 @@ test('Statistik', function () use ($catalog): void {
     check($stats['passedCounts']['1'] === 2 && $stats['passedCounts']['2'] === 1 && $stats['passedCounts']['3'] === 0, 'bestandene Level je Level');
     check($stats['averageScores']['1'] === 67 && $stats['averageScores']['3'] === null, 'Durchschnittsscore (0, 100, 100) und null ohne Versuche');
     check($stats['taskStats']['1']['1'] === ['correct' => 2, 'wrong' => 1], 'Auswertung je Aufgabe');
-    check(array_column($stats['completion'], 'count') === [1, 1, 1, 0], 'Bestehensgruppen');
+    $expectedGroups = array_pad([1, 1, 1], count($catalog->levels()) + 1, 0);
+    check(array_column($stats['completion'], 'count') === $expectedGroups, 'Bestehensgruppen');
     check($stats['completion'][2]['label'] === 'Level 1–2 bestanden', 'Beschriftung der Gruppen');
 });
 

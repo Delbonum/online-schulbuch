@@ -269,3 +269,30 @@ export function progressiveCaesar(text, start, nextShift, decrypt = false) {
     .join("");
   return { result, shifts };
 }
+
+/** Alle Primitivwurzeln (Erzeuger) modulo einer Primzahl p. */
+export function primitiveRoots(p) {
+  if (!isPrime(p)) return [];
+  const roots = [];
+  for (let g = 2; g < p; g++) {
+    const seen = new Set();
+    let value = 1;
+    for (let i = 1; i < p; i++) {
+      value = (value * g) % p;
+      seen.add(value);
+    }
+    if (seen.size === p - 1) roots.push(g);
+  }
+  return p === 2 ? [1] : roots;
+}
+
+/** Zwischenschritte von g^x mod p durch wiederholtes Multiplizieren: [g¹ mod p, g² mod p, …]. */
+export function powerSteps(g, x, p) {
+  const steps = [];
+  let value = 1 % p;
+  for (let i = 1; i <= x; i++) {
+    value = (value * mod(g, p)) % p;
+    steps.push(value);
+  }
+  return steps;
+}
