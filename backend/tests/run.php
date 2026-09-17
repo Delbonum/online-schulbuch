@@ -50,9 +50,9 @@ final class Client
 {
     private App $app;
 
-    public function __construct(Database $db, QuizCatalog $catalog)
+    public function __construct(Database $db, QuizCatalog $catalog, array $allowedOrigins = [])
     {
-        $this->app = new App($db, new ArraySession(), $catalog, true);
+        $this->app = new App($db, new ArraySession(), $catalog, true, $allowedOrigins);
     }
 
     /** @param array<string, mixed>|null $body */
@@ -205,6 +205,12 @@ test('CSRF-Schutz für schreibende Anfragen', function () use ($catalog): void {
     check($foreign->status() === 403, 'fremde Origin wird abgelehnt');
     $same = $client->call('POST', '/auth/logout', null, ['Origin' => 'https://example.org']);
     check($same->status() === 204, 'gleiche Origin ist erlaubt');
+
+    $proxied = new Client($db, $catalog, ['http://127.0.0.1:8000']);
+    $viaProxy = $proxied->call('POST', '/auth/logout', null, ['Origin' => 'http://127.0.0.1:8000', 'Host' => 'localhost:3000']);
+    check($viaProxy->status() === 204, 'konfigurierte Origin (Entwicklungs-Proxy) ist erlaubt');
+    $other = $proxied->call('POST', '/auth/logout', null, ['Origin' => 'http://127.0.0.1:8001', 'Host' => 'localhost:3000']);
+    check($other->status() === 403, 'andere Ports bleiben gesperrt');
 });
 
 test('Prüfung als Gast und als Schüler/-in', function () use ($catalog): void {

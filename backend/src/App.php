@@ -30,6 +30,8 @@ final class App
         Session $session,
         QuizCatalog $catalog,
         private bool $debug = false,
+        /** @var list<string> zusätzlich erlaubte Origins, z. B. der React-Entwicklungsserver */
+        private array $allowedOrigins = [],
     ) {
         $users = new UserRepository($db);
         $progress = new ProgressRepository($db);
@@ -89,9 +91,12 @@ final class App
             throw new HttpException(415, 'Anfragen müssen als JSON gesendet werden.');
         }
         $origin = $request->header('origin');
+        if ($origin === null || in_array(rtrim($origin, '/'), $this->allowedOrigins, true)) {
+            return;
+        }
         $host = $request->header('x-forwarded-host') ?? $request->header('host');
-        if ($origin !== null && $host !== null && parse_url($origin, PHP_URL_HOST) !== parse_url('http://' . $host, PHP_URL_HOST)) {
-            throw HttpException::forbidden('Anfrage von fremder Herkunft abgelehnt.');
+        if ($host === null || parse_url($origin, PHP_URL_HOST) !== parse_url('http://' . $host, PHP_URL_HOST)) {
+            throw HttpException::forbidden('Anfrage von fremder Herkunft abgelehnt.' . ($this->debug ? " (Origin: {$origin}, Host: {$host})" : ''));
         }
     }
 }

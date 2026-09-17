@@ -1,107 +1,111 @@
-import { createContext, useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { api } from "../lib/api";
+import { requiredLevel } from "../lib/progress";
 
-const AuthContext = createContext();
+const GUEST_PROGRESS_KEY = "kryptogame.guestPassedLevels";
+
+const AuthContext = createContext(null);
+
+function readGuestProgress() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(GUEST_PROGRESS_KEY));
+    return Array.isArray(stored) ? stored.filter(Number.isInteger) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeGuestProgress(levels) {
+  try {
+    localStorage.setItem(GUEST_PROGRESS_KEY, JSON.stringify(levels));
+  } catch {
+    // Speichern nicht möglich (z. B. privater Modus) – Fortschritt gilt dann nur bis zum Neuladen
+  }
+}
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : { role: "guest", username: "Gast" };
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [guestPassed, setGuestPassed] = useState(readGuestProgress);
 
-  const navigate = useNavigate();
-
-  const login = async (username, password) => {
+  const refresh = useCallback(async () => {
     try {
-      const res = await fetch("http://localhost:3001/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!res.ok) return false;
-
-      const userData = await res.json();
-
-      if (userData.role === "student") {
-        const progressRes = await fetch(`http://localhost:3001/progress/${userData.username}`);
-        if (progressRes.ok) {
-          userData.progress = await progressRes.json();
-        }
-      }
-
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      navigate(userData.role === "teacher" ? "/dashboard" : "/level1/start");
-      return true;
-    } catch (err) {
-      console.error("Login-Fehler:", err);
-      return false;
+      const { user } = await api.me();
+      setUser(user);
+    } catch {
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
-  const loginAsGuest = () => {
-    const guest = { role: "guest", username: "Gast" };
-    setUser(guest);
-    localStorage.setItem("user", JSON.stringify(guest));
-    navigate("/level1/start");
-  };
+  useEffect(() => {
+    // Überbleibsel der alten Version, die Benutzerdaten im localStorage abgelegt hat
+    try {
+      localStorage.removeItem("user");
+    } catch {
+      // ignorieren
+    }
+    refresh();
+  }, [refresh]);
 
-  const logout = () => {
-    setUser({ role: "guest", username: "Gast" });
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
+  const login = useCallback(async (username, password) => {
+    const { user } = await api.login(username, password);
+    setUser(user);
+    return user;
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ user, setUser, login, logout, loginAsGuest }}>
-      {children}
-    </AuthContext.Provider>
+  const logout = useCallback(async () => {
+    try {
+      await api.logout();
+    } finally {
+      setUser(null);
+    }
+  }, []);
+
+  const role = user?.role ?? "guest";
+  const passedLevels = useMemo(
+    () => (role === "student" ? user.passedLevels : role === "guest" ? guestPassed : []),
+    [role, user, guestPassed],
   );
+
+  const hasPassed = useCallback((level) => passedLevels.includes(level), [passedLevels]);
+
+  const isUnlocked = useCallback(
+    (level) => {
+      if (role === "teacher") return true;
+      const required = requiredLevel(level);
+      return required === null || passedLevels.includes(required);
+    },
+    [role, passedLevels],
+  );
+
+  /** Nach einer bestandenen Prüfung aufrufen. `serverLevels` kommt bei Schüler/-innen vom Server. */
+  const recordPassed = useCallback(
+    (level, serverLevels) => {
+      if (role === "student" && serverLevels) {
+        setUser((current) => ({ ...current, passedLevels: serverLevels }));
+      } else if (role === "guest") {
+        setGuestPassed((current) => {
+          const next = [...new Set([...current, level])].sort((a, b) => a - b);
+          writeGuestProgress(next);
+          return next;
+        });
+      }
+    },
+    [role],
+  );
+
+  const value = useMemo(
+    () => ({ user, role, loading, login, logout, refresh, passedLevels, hasPassed, isUnlocked, recordPassed }),
+    [user, role, loading, login, logout, refresh, passedLevels, hasPassed, isUnlocked, recordPassed],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
-  return useContext(AuthContext);
-}
-
-export function useAccess() {
-  const { user } = useAuth();
-
-  return (levelKey) => {
-    if (!user || user.role === "guest") {
-      return localStorage.getItem(levelKey) === "true";
-    }
-    if (user.role === "teacher") return true;
-    return !!user.progress?.[levelKey];
-  };
-}
-
-export function useProgressUpdater() {
-  const { user, setUser } = useAuth();
-
-  return async (levelKey) => {
-    if (user?.role === "student") {
-      const updated = {
-        ...user.progress,
-        [levelKey]: true,
-      };
-
-      setUser((prev) => ({
-        ...prev,
-        progress: updated,
-      }));
-
-      try {
-        await fetch(`http://localhost:3001/progress/${user.username}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ [levelKey]: true, _skipHistory: true }),
-        });
-      } catch (err) {
-        console.error("Fortschritt konnte nicht gespeichert werden:", err);
-      }
-    } else {
-      document.cookie = `${levelKey}=passed; path=/`;
-    }
-  };
+  const context = useContext(AuthContext);
+  if (!context) throw new Error("useAuth muss innerhalb von <AuthProvider> verwendet werden.");
+  return context;
 }

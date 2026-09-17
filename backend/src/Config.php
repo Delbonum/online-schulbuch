@@ -14,7 +14,8 @@ final class Config
      *     base_path: string,
      *     secure_cookies: bool,
      *     session_lifetime: int,
-     *     debug: bool
+     *     debug: bool,
+     *     allowed_origins: list<string>
      * }
      */
     public static function load(string $file): array
@@ -38,6 +39,10 @@ final class Config
             'secure_cookies' => (bool) ($config['secure_cookies'] ?? true),
             'session_lifetime' => (int) ($config['session_lifetime'] ?? 8 * 3600),
             'debug' => (bool) ($config['debug'] ?? false),
+            'allowed_origins' => array_values(array_map(
+                static fn ($origin): string => rtrim((string) $origin, '/'),
+                (array) ($config['allowed_origins'] ?? []),
+            )),
         ];
     }
 }

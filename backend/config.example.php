@@ -23,6 +23,11 @@ return [
     // Wie lange eine Anmeldung ohne Aktivität gültig bleibt (Sekunden)
     'session_lifetime' => 8 * 3600,
 
+    // Zusätzlich erlaubte Origins für schreibende Anfragen. Nur für die lokale Entwicklung nötig:
+    // Der Proxy des React-Entwicklungsservers ersetzt den Origin-Header durch die Adresse des PHP-Servers.
+    // 'allowed_origins' => ['http://127.0.0.1:8000'],
+    'allowed_origins' => [],
+
     // Fehlermeldungen im Detail ausgeben – nur lokal auf true setzen!
     'debug' => false,
 
