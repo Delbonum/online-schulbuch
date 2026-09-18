@@ -19,7 +19,6 @@ und lernen dabei Verschlüsselungsverfahren kennen, wenden sie an und knacken si
 - [Lokale Entwicklung](#lokale-entwicklung)
 - [Tests](#tests)
 - [Deployment](#deployment)
-- [Umzug von JSONBin/Render](#umzug-von-jsonbinrender)
 - [Ein neues Level hinzufügen](#ein-neues-level-hinzufügen)
 - [Backend-API](#backend-api)
 - [Roadmap](#roadmap)
@@ -228,27 +227,18 @@ und `mbstring`, eine MySQL-/MariaDB-Datenbank.
 Soll die API unter einer anderen Adresse laufen, beim Build `REACT_APP_API_URL` setzen und in `config.php`
 `base_path` anpassen.
 
-## Umzug von JSONBin/Render
+## Daten aus einer alten Installation übernehmen
 
-Die bisherigen Daten lassen sich übernehmen; Passwörter werden dabei gehasht:
-
-1. Im JSONBin-Dashboard den Bin als JSON exportieren (oder den Inhalt kopieren).
-2. Importieren – per Kommandozeile `php api/bin/console.php import-json export.json` oder über `setup.php`.
-3. Vorhandene Benutzernamen werden übersprungen, Fortschritt und Prüfungsverlauf werden mit übernommen.
-4. Anschließend den Render-Dienst und den JSONBin-Bin löschen – und die Lehrkräfte bitten, ihr Passwort unter
-   **Konto** zu ändern, da die alten Passwörter im Klartext gespeichert waren.
-
-## Datenbank aktualisieren
-
-Neue Versionen können zusätzliche Spalten oder Tabellen brauchen. `migrate` legt fehlende Tabellen an und ergänzt
-fehlende Spalten – vorhandene Daten bleiben erhalten:
+Die Live-Version läuft seit dem 18.09.2026 mit dem PHP-Backend und einer MySQL-Datenbank; das frühere Node-Backend auf
+Render und der JSONBin-Speicher werden nicht mehr genutzt. Liegen irgendwo noch Benutzerdaten im alten JSON-Format vor,
+lassen sie sich weiterhin übernehmen – Passwörter werden dabei gehasht:
 
 ```bash
-php backend/bin/console.php migrate
+php backend/bin/console.php import-json export.json
 ```
 
-Ohne SSH-Zugang geht das über `setup.php` (Setup-Token vorübergehend in `config.php` eintragen, Formular 1 ausführen,
-Token wieder entfernen).
+Ohne SSH geht das auch über `setup.php`. Vorhandene Benutzernamen werden übersprungen, Fortschritt und Prüfungsverlauf
+kommen mit.
 
 ## Ein neues Level hinzufügen
 
@@ -306,7 +296,6 @@ Alle Pfade relativ zu `…/api`. Anfragen und Antworten im JSON-Format.
 
 ## Roadmap
 
-- [ ] Umzug der Live-Version auf das PHP-Backend (siehe [Deployment](#deployment) und [Umzug](#umzug-von-jsonbinrender))
 - [ ] Weitere mögliche Level: Transpositionsverfahren (Skytale), Enigma, Hashfunktionen, Zertifikate und HTTPS
 - [ ] Interaktive Man-in-the-Middle-Simulation in Level 4
 - [ ] Klassen an mehrere Lehrkräfte freigeben (Teamteaching)
