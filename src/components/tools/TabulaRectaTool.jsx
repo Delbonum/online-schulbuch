@@ -20,7 +20,7 @@ export default function TabulaRectaTool() {
 
   return (
     <ScrollArea className="mt-4">
-      <div className="pl-8 flex md:justify-center">
+      <div className="pl-8 min-w-0 md:flex md:justify-center">
         <div className="relative">
           <div className="absolute -left-24 top-[50%] -translate-y-1/2 rotate-[-90deg] font-semibold text-center whitespace-nowrap text-red-500">
             Schlüsselbuchstabe
