@@ -83,8 +83,8 @@ Lehrkräfte können sich selbst registrieren (Name, Schule, Ort, E-Mail); die An
 
 **Daten** – zu einem Konto werden nur Benutzername und Passwort-Hash gespeichert. Name, Schule, Ort und E-Mail aus
 einer Registrierung stehen ausschließlich in der Anfrage; bearbeitete Anfragen werden ein Jahr nach der Entscheidung
-automatisch gelöscht. Alle Konten lassen sich unter **Konto** selbst löschen – bei Lehrkräften samt Klassen und
-Zugängen ihrer Schüler/-innen.
+automatisch gelöscht. Lehrkräfte können ihr Konto unter **Konto** selbst löschen – samt Klassen und Zugängen ihrer Schüler/-innen.
+Schülerkonten löscht die jeweilige Lehrkraft im Dashboard.
 
 **Sicherheit**
 
@@ -277,7 +277,7 @@ Alle Pfade relativ zu `…/api`. Anfragen und Antworten im JSON-Format.
 | `POST`   | `/auth/logout`            | –          | Abmelden                                                     |
 | `GET`    | `/auth/me`                | –          | Angemeldete Person inkl. `passedLevels` (oder `null`)        |
 | `POST`   | `/auth/password`          | angemeldet | Eigenes Passwort ändern (`currentPassword`, `newPassword`)   |
-| `DELETE` | `/auth/account`           | angemeldet | Eigenes Konto endgültig löschen (Passwort zur Bestätigung)   |
+| `DELETE` | `/auth/account`           | Lehrkraft  | Eigenes Konto endgültig löschen (Passwort zur Bestätigung)   |
 | `GET`    | `/quizzes/{level}`        | –          | Prüfung ohne Lösungen                                        |
 | `POST`   | `/quizzes/{level}/submit` | –          | Antworten bewerten (`answers`); speichert bei Schüler/-innen |
 | `GET`    | `/students`               | Lehrkraft  | Eigene Schüler/-innen und verfügbare Level                   |

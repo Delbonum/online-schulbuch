@@ -604,11 +604,12 @@ test('Eigenes Konto löschen', function () use ($catalog): void {
     $users->setMaster($zweiterId, true);
     check($master->call('DELETE', '/auth/account', ['password' => 'master-pw'])->status() === 204, 'mit zweitem Master ist das Löschen erlaubt');
 
-    // Schüler/-innen verwalten ihr Konto nicht selbst
-    $users->create('allein', password_hash('allein-pw', PASSWORD_DEFAULT), 'student', $zweiterId);
+    // Schüler/-innen löschen ihr Konto nicht selbst – das macht ihre Lehrkraft
+    $studentId2 = $users->create('allein', password_hash('allein-pw', PASSWORD_DEFAULT), 'student', $zweiterId);
     $student = new Client($db, $catalog);
     $student->login('allein', 'allein-pw');
-    check($student->call('DELETE', '/auth/account', ['password' => 'allein-pw'])->status() === 204, 'auch Schüler/-innen können ihr Konto löschen');
+    check($student->call('DELETE', '/auth/account', ['password' => 'allein-pw'])->status() === 403, 'Schüler/-innen können ihr Konto nicht selbst löschen');
+    check($users->findById($studentId2) !== null, 'Schülerkonto besteht weiter');
 });
 
 test('Bearbeitete Registrierungen verfallen nach einem Jahr', function () use ($catalog): void {

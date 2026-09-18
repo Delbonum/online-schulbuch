@@ -53,3 +53,14 @@ test("Fehler beim Löschen bleibt auf der Seite", async () => {
   expect(await screen.findByRole("alert")).toHaveTextContent("nicht korrekt");
   expect(mockNavigate).not.toHaveBeenCalled();
 });
+
+test("Schüler/-innen sehen keinen Löschbereich", () => {
+  jest.spyOn(require("../auth/AuthContext"), "useAuth").mockReturnValue({
+    user: { id: 5, username: "max", role: "student" },
+    refresh: mockRefresh,
+  });
+
+  renderPage();
+  expect(screen.queryByRole("button", { name: /Konto löschen …/ })).not.toBeInTheDocument();
+  expect(screen.getByText(/Dein Konto verwaltet deine Lehrkraft/)).toBeInTheDocument();
+});

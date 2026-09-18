@@ -95,73 +95,73 @@ export default function AccountPage() {
         </button>
       </form>
 
-      <section className="mt-12 border border-red-400/50 rounded p-4">
-        <h2 className="text-lg heading-style text-red-300">Konto löschen</h2>
-        <p className="mt-2 text-sm">
-          {isTeacher ? (
-            <>
-              Dein Konto wird endgültig gelöscht – zusammen mit{" "}
-              <b>allen Klassen, Zugängen deiner Schüler/-innen und deren Prüfungsergebnissen</b>. Das lässt sich nicht
-              rückgängig machen.
-            </>
-          ) : (
-            <>
-              Dein Konto und dein gesamter Fortschritt werden endgültig gelöscht. Das lässt sich nicht rückgängig
-              machen.
-            </>
-          )}
+      {!isTeacher && (
+        <p className="mt-10 text-sm text-white/70">
+          Dein Konto verwaltet deine Lehrkraft. Wende dich an sie, wenn dein Zugang gelöscht oder dein Fortschritt
+          zurückgesetzt werden soll.
         </p>
+      )}
 
-        {!showDelete ? (
-          <button
-            type="button"
-            className="btn btn-sm mt-3 border-red-400 text-red-300"
-            onClick={() => setShowDelete(true)}
-          >
-            Konto löschen …
-          </button>
-        ) : (
-          <form onSubmit={handleDelete} className="mt-3 space-y-3">
-            <div>
-              <label htmlFor="account-delete-password" className="block mb-1 text-sm">
-                Zur Bestätigung dein Passwort
-              </label>
-              <input
-                id="account-delete-password"
-                type="password"
-                className="input-style w-full"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                autoComplete="current-password"
-                required
-              />
-            </div>
+      {isTeacher && (
+        <section className="mt-12 border border-red-400/50 rounded p-4">
+          <h2 className="text-lg heading-style text-red-300">Konto löschen</h2>
+          <p className="mt-2 text-sm">
+            Dein Konto wird endgültig gelöscht – zusammen mit{" "}
+            <b>allen Klassen, Zugängen deiner Schüler/-innen und deren Prüfungsergebnissen</b>. Das lässt sich nicht
+            rückgängig machen.
+          </p>
 
-            {deleteError && (
-              <p role="alert" className="text-red-300 text-sm">
-                {deleteError}
-              </p>
-            )}
+          {!showDelete ? (
+            <button
+              type="button"
+              className="btn btn-sm mt-3 border-red-400 text-red-300"
+              onClick={() => setShowDelete(true)}
+            >
+              Konto löschen …
+            </button>
+          ) : (
+            <form onSubmit={handleDelete} className="mt-3 space-y-3">
+              <div>
+                <label htmlFor="account-delete-password" className="block mb-1 text-sm">
+                  Zur Bestätigung dein Passwort
+                </label>
+                <input
+                  id="account-delete-password"
+                  type="password"
+                  className="input-style w-full"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
 
-            <div className="flex flex-wrap gap-2">
-              <button type="submit" className="btn btn-sm border-red-400 text-red-300" disabled={deleting}>
-                {deleting ? "Wird gelöscht …" : "Endgültig löschen"}
-              </button>
-              <button
-                type="button"
-                className="btn btn-sm"
-                onClick={() => {
-                  setShowDelete(false);
-                  setDeletePassword("");
-                  setDeleteError(null);
-                }}
-              >
-                Abbrechen
-              </button>
-            </div>
-          </form>
-        )}
-      </section>
+              {deleteError && (
+                <p role="alert" className="text-red-300 text-sm">
+                  {deleteError}
+                </p>
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                <button type="submit" className="btn btn-sm border-red-400 text-red-300" disabled={deleting}>
+                  {deleting ? "Wird gelöscht …" : "Endgültig löschen"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  onClick={() => {
+                    setShowDelete(false);
+                    setDeletePassword("");
+                    setDeleteError(null);
+                  }}
+                >
+                  Abbrechen
+                </button>
+              </div>
+            </form>
+          )}
+        </section>
+      )}
     </div>
   );
 }

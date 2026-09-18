@@ -62,12 +62,13 @@ final class AuthController
     }
 
     /**
-     * Eigenes Konto endgültig löschen. Bei Lehrkräften verschwinden damit auch ihre
+     * Eigenes Konto endgültig löschen – nur für Lehrkräfte. Damit verschwinden auch ihre
      * Klassen sowie die Zugänge und Ergebnisse ihrer Schüler/-innen.
+     * Konten von Schüler/-innen löscht ihre Lehrkraft im Dashboard.
      */
     public function deleteAccount(Request $request): Response
     {
-        $user = $this->auth->requireUser();
+        $user = $this->auth->requireTeacher();
         $password = $request->json()['password'] ?? '';
 
         if (!is_string($password) || !password_verify($password, $user['password_hash'])) {
