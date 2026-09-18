@@ -40,11 +40,11 @@ final class App
         $classes = new ClassRepository($db);
         $auth = new Auth($users, new LoginThrottle($db), $session);
 
-        $authController = new AuthController($auth, $users, $progress);
-        $quizController = new QuizController($auth, $catalog, new QuizGrader(), $progress);
+        $authController = new AuthController($auth, $users, $progress, $classes);
+        $quizController = new QuizController($auth, $catalog, new QuizGrader(), $progress, $classes);
         $studentController = new StudentController($auth, $db, $users, $progress, $catalog, $classes);
         $statisticsController = new StatisticsController($auth, $users, $progress, $catalog, $classes);
-        $classController = new ClassController($auth, $classes);
+        $classController = new ClassController($auth, $classes, $catalog);
 
         $this->router = new Router();
         $r = $this->router;

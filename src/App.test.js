@@ -131,3 +131,22 @@ test("Unbekannte Seiten zeigen eine Fehlerseite", async () => {
   renderApp("/gibt-es-nicht");
   expect(await screen.findByText(/Zeitloch/)).toBeInTheDocument();
 });
+
+test("Freiwillige Level öffnen das nächste Level ohne bestandene Prüfung", async () => {
+  api.me.mockResolvedValue({
+    user: { id: 2, username: "anna", role: "student", passedLevels: [], optionalLevels: [1] },
+  });
+  renderApp("/level2/start");
+  expect(await screen.findByRole("heading", { name: /Die Reise geht weiter/ })).toBeInTheDocument();
+
+  const nav = screen.getByRole("complementary", { name: "Level-Navigation" });
+  expect(within(nav).getByText("(freiwillig)")).toBeInTheDocument();
+});
+
+test("Ohne freiwillige Level bleibt Level 2 für Schüler/-innen gesperrt", async () => {
+  api.me.mockResolvedValue({
+    user: { id: 2, username: "anna", role: "student", passedLevels: [], optionalLevels: [] },
+  });
+  renderApp("/level2/start");
+  expect(await screen.findByText(/Zeitreise-Fehler/)).toBeInTheDocument();
+});

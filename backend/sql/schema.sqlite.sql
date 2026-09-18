@@ -20,6 +20,12 @@ CREATE TABLE IF NOT EXISTS classes (
     UNIQUE (teacher_id, name)
 );
 
+CREATE TABLE IF NOT EXISTS class_optional_levels (
+    class_id INTEGER NOT NULL REFERENCES classes (id) ON DELETE CASCADE,
+    level    INTEGER NOT NULL,
+    PRIMARY KEY (class_id, level)
+);
+
 CREATE TABLE IF NOT EXISTS level_progress (
     user_id   INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     level     INTEGER NOT NULL,

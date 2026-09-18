@@ -4,7 +4,7 @@ import { useAuth } from "../auth/AuthContext";
 import { LEVELS, pagePath } from "../levels";
 
 export default function Sidebar({ open, onNavigate }) {
-  const { isUnlocked, hasPassed, role } = useAuth();
+  const { isUnlocked, hasPassed, role, optionalLevels } = useAuth();
 
   return (
     <aside
@@ -23,6 +23,9 @@ export default function Sidebar({ open, onNavigate }) {
                 Level {level.number}
                 <span className="font-extralight text-textlight text-sm">· {level.title}</span>
                 {!unlocked && <Lock size={14} className="text-white/60" aria-label="gesperrt" />}
+                {optionalLevels.includes(level.number) && (
+                  <span className="text-xs font-extralight text-white/60">(freiwillig)</span>
+                )}
                 {passed && <CheckCircle2 size={14} className="text-green-400" aria-label="bestanden" />}
               </h2>
               <ul className="mt-2 space-y-1.5 text-sm">

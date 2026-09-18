@@ -64,6 +64,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const role = user?.role ?? "guest";
+  // Level, deren Prüfung für die Klasse dieser Person freiwillig ist
+  const optionalLevels = useMemo(() => user?.optionalLevels ?? [], [user]);
   const passedLevels = useMemo(
     () => (role === "student" ? user.passedLevels : role === "guest" ? guestPassed : []),
     [role, user, guestPassed],
@@ -74,10 +76,10 @@ export function AuthProvider({ children }) {
   const isUnlocked = useCallback(
     (level) => {
       if (role === "teacher") return true;
-      const required = requiredLevel(level);
+      const required = requiredLevel(level, optionalLevels);
       return required === null || passedLevels.includes(required);
     },
-    [role, passedLevels],
+    [role, passedLevels, optionalLevels],
   );
 
   /** Nach einer bestandenen Prüfung aufrufen. `serverLevels` kommt bei Schüler/-innen vom Server. */
@@ -97,8 +99,20 @@ export function AuthProvider({ children }) {
   );
 
   const value = useMemo(
-    () => ({ user, role, loading, login, logout, refresh, passedLevels, hasPassed, isUnlocked, recordPassed }),
-    [user, role, loading, login, logout, refresh, passedLevels, hasPassed, isUnlocked, recordPassed],
+    () => ({
+      user,
+      role,
+      loading,
+      login,
+      logout,
+      refresh,
+      passedLevels,
+      optionalLevels,
+      hasPassed,
+      isUnlocked,
+      recordPassed,
+    }),
+    [user, role, loading, login, logout, refresh, passedLevels, optionalLevels, hasPassed, isUnlocked, recordPassed],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

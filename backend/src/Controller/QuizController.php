@@ -7,8 +7,10 @@ namespace Kryptogame\Controller;
 use Kryptogame\Http\HttpException;
 use Kryptogame\Http\Request;
 use Kryptogame\Http\Response;
+use Kryptogame\Repository\ClassRepository;
 use Kryptogame\Repository\ProgressRepository;
 use Kryptogame\Service\Auth;
+use Kryptogame\Service\LevelAccess;
 use Kryptogame\Service\QuizCatalog;
 use Kryptogame\Service\QuizGrader;
 use Kryptogame\Service\Validator;
@@ -20,6 +22,7 @@ final class QuizController
         private QuizCatalog $catalog,
         private QuizGrader $grader,
         private ProgressRepository $progress,
+        private ClassRepository $classes,
     ) {
     }
 
@@ -74,10 +77,13 @@ final class QuizController
         return Response::json($response);
     }
 
-    /** Ein Level ist offen, wenn das vorherige Level mit Prüfung bestanden wurde. */
     private function isUnlocked(int $userId, int $level): bool
     {
-        $previous = array_filter($this->catalog->levels(), static fn (int $l): bool => $l < $level);
-        return $previous === [] || $this->progress->hasPassed($userId, max($previous));
+        $required = LevelAccess::requiredLevel(
+            $this->catalog->levels(),
+            $this->classes->optionalLevelsForUser($userId),
+            $level,
+        );
+        return $required === null || $this->progress->hasPassed($userId, $required);
     }
 }

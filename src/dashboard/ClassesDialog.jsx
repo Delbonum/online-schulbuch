@@ -4,7 +4,7 @@ import Modal from "../components/Modal";
 import { api } from "../lib/api";
 
 /** Klassen anlegen, umbenennen und löschen. */
-export default function ClassesDialog({ classes, onClose, onChange }) {
+export default function ClassesDialog({ classes, levels = [], onClose, onChange }) {
   const [newName, setNewName] = useState("");
   const [editing, setEditing] = useState(null); // { id, name }
   const [confirmDelete, setConfirmDelete] = useState(null);
@@ -34,11 +34,21 @@ export default function ClassesDialog({ classes, onClose, onChange }) {
 
   const rename = () =>
     run(async () => {
-      const { class: updated } = await api.updateClass(editing.id, editing.name.trim());
+      const { class: updated } = await api.updateClass(editing.id, { name: editing.name.trim() });
       onChange(
         classes.map((c) => (c.id === updated.id ? updated : c)).sort((a, b) => a.name.localeCompare(b.name, "de")),
       );
       setEditing(null);
+    });
+
+  /** Ein Level für diese Klasse als freiwillig markieren oder die Markierung entfernen. */
+  const toggleOptional = (klass, level) =>
+    run(async () => {
+      const optionalLevels = klass.optionalLevels.includes(level)
+        ? klass.optionalLevels.filter((l) => l !== level)
+        : [...klass.optionalLevels, level].sort((x, y) => x - y);
+      const { class: updated } = await api.updateClass(klass.id, { optionalLevels });
+      onChange(classes.map((c) => (c.id === updated.id ? updated : c)));
     });
 
   const remove = (klass) =>
@@ -88,7 +98,7 @@ export default function ClassesDialog({ classes, onClose, onChange }) {
       ) : (
         <ul className="divide-y">
           {classes.map((klass) => (
-            <li key={klass.id} className="py-2 flex items-center gap-2">
+            <li key={klass.id} className="py-2 flex flex-wrap items-center gap-2">
               {editing?.id === klass.id ? (
                 <>
                   <input
@@ -144,6 +154,28 @@ export default function ClassesDialog({ classes, onClose, onChange }) {
                     <Trash2 size={16} />
                   </button>
                 </>
+              )}
+
+              {levels.length > 0 && editing?.id !== klass.id && confirmDelete !== klass.id && (
+                <fieldset className="basis-full mt-1">
+                  <legend className="text-xs text-gray-600 mb-1">
+                    Freiwillige Level (Prüfung nicht nötig, um weiterzukommen)
+                  </legend>
+                  <div className="flex flex-wrap gap-x-3 gap-y-1">
+                    {levels.map((level) => (
+                      <label key={level} className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={klass.optionalLevels.includes(level)}
+                          onChange={() => toggleOptional(klass, level)}
+                          disabled={busy}
+                          aria-label={`Level ${level} in ${klass.name} freiwillig`}
+                        />
+                        Level {level}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
               )}
             </li>
           ))}

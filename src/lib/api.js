@@ -51,7 +51,7 @@ export const api = {
 
   classes: () => request("GET", "/classes"),
   createClass: (name) => request("POST", "/classes", { name }),
-  updateClass: (id, name) => request("PATCH", `/classes/${id}`, { name }),
+  updateClass: (id, changes) => request("PATCH", `/classes/${id}`, changes),
   deleteClass: (id) => request("DELETE", `/classes/${id}`, {}),
 
   students: () => request("GET", "/students"),

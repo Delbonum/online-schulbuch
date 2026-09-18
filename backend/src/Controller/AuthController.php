@@ -7,6 +7,7 @@ namespace Kryptogame\Controller;
 use Kryptogame\Http\HttpException;
 use Kryptogame\Http\Request;
 use Kryptogame\Http\Response;
+use Kryptogame\Repository\ClassRepository;
 use Kryptogame\Repository\ProgressRepository;
 use Kryptogame\Repository\UserRepository;
 use Kryptogame\Service\Auth;
@@ -18,6 +19,7 @@ final class AuthController
         private Auth $auth,
         private UserRepository $users,
         private ProgressRepository $progress,
+        private ClassRepository $classes,
     ) {
     }
 
@@ -70,6 +72,7 @@ final class AuthController
             'username' => $user['username'],
             'role' => $user['role'],
             'passedLevels' => $user['role'] === 'student' ? $this->progress->passedLevels($user['id']) : [],
+            'optionalLevels' => $user['role'] === 'student' ? $this->classes->optionalLevelsForUser($user['id']) : [],
         ];
     }
 }

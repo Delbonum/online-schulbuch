@@ -353,7 +353,10 @@ test('Klassenverwaltung', function () use ($catalog): void {
     check($list['students'][0]['classId'] === $classId, 'Klasse in der Schülerliste');
 
     $renamed = $teacherA->call('PATCH', "/classes/{$classId}", ['name' => '9c']);
-    check($renamed->data()['class'] === ['id' => $classId, 'name' => '9c', 'studentCount' => 1], 'Klasse umbenannt');
+    check(
+        $renamed->data()['class'] === ['id' => $classId, 'name' => '9c', 'studentCount' => 1, 'optionalLevels' => []],
+        'Klasse umbenannt',
+    );
 
     check($teacherA->call('PATCH', "/students/{$annaId}", ['classId' => null])->data()['student']['classId'] === null, 'Klasse entfernt');
     $teacherA->call('PATCH', "/students/{$annaId}", ['classId' => $classId]);
@@ -362,6 +365,48 @@ test('Klassenverwaltung', function () use ($catalog): void {
     $after = $teacherA->call('GET', '/students')->data();
     check(count($after['students']) === 2, 'Schüler/-innen bleiben erhalten');
     check($after['students'][0]['classId'] === null, 'Klassenzuordnung aufgehoben');
+});
+
+test('Optionale Level einer Klasse', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $users->create('lehrer', password_hash('lehrer-pw', PASSWORD_DEFAULT), 'teacher', null);
+
+    $teacher = new Client($db, $catalog);
+    $teacher->login('lehrer', 'lehrer-pw');
+    $classId = $teacher->call('POST', '/classes', ['name' => '9a'])->data()['class']['id'];
+    $teacher->call('POST', '/students', ['username' => 'anna', 'password' => 'anna-pw', 'classId' => $classId]);
+    $teacher->call('POST', '/students', ['username' => 'ben', 'password' => 'ben-pw']);
+
+    $anna = new Client($db, $catalog);
+    $anna->login('anna', 'anna-pw');
+    check($anna->call('POST', '/quizzes/2/submit', ['answers' => []])->status() === 403, 'Level 2 zunächst gesperrt');
+
+    check($teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => [99]])->status() === 400, 'unbekanntes Level');
+    check($teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => 'x'])->status() === 400, 'keine Liste');
+
+    $updated = $teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => [1]]);
+    check($updated->data()['class']['optionalLevels'] === [1], 'Level 1 als optional gespeichert');
+
+    check($anna->call('POST', '/quizzes/2/submit', ['answers' => []])->status() === 200, 'Level 2 ohne Level-1-Prüfung offen');
+    check($anna->call('GET', '/auth/me')->data()['user']['optionalLevels'] === [1], 'optionale Level im Profil');
+
+    $ben = new Client($db, $catalog);
+    $ben->login('ben', 'ben-pw');
+    check($ben->call('POST', '/quizzes/2/submit', ['answers' => []])->status() === 403, 'ohne Klasse gilt die Regel weiter');
+    check($ben->call('GET', '/auth/me')->data()['user']['optionalLevels'] === [], 'ohne Klasse keine optionalen Level');
+
+    // Mehrere optionale Level hintereinander werden übersprungen
+    $teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => [1, 2]]);
+    check($anna->call('POST', '/quizzes/3/submit', ['answers' => []])->status() === 200, 'Level 3 nach zwei optionalen Leveln offen');
+    check($anna->call('POST', '/quizzes/4/submit', ['answers' => []])->status() === 403, 'Level 4 bleibt gesperrt');
+
+    $teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => []]);
+    check($anna->call('POST', '/quizzes/2/submit', ['answers' => []])->status() === 403, 'Zurücknehmen sperrt wieder');
+
+    $teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => [1]]);
+    $teacher->call('DELETE', "/classes/{$classId}");
+    check($anna->call('POST', '/quizzes/2/submit', ['answers' => []])->status() === 403, 'nach dem Löschen der Klasse gilt wieder die Standardregel');
 });
 
 test('Statistik nach Klassen', function () use ($catalog): void {

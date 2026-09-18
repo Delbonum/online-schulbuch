@@ -9,6 +9,7 @@ use Kryptogame\Http\Request;
 use Kryptogame\Http\Response;
 use Kryptogame\Repository\ClassRepository;
 use Kryptogame\Service\Auth;
+use Kryptogame\Service\QuizCatalog;
 use Kryptogame\Service\Validator;
 
 /**
@@ -19,6 +20,7 @@ final class ClassController
     public function __construct(
         private Auth $auth,
         private ClassRepository $classes,
+        private QuizCatalog $catalog,
     ) {
     }
 
@@ -36,7 +38,7 @@ final class ClassController
             throw HttpException::conflict('Eine Klasse mit diesem Namen existiert bereits.');
         }
         $id = $this->classes->create($teacher['id'], $name);
-        return Response::json(['class' => ['id' => $id, 'name' => $name, 'studentCount' => 0]], 201);
+        return Response::json(['class' => ['id' => $id, 'name' => $name, 'studentCount' => 0, 'optionalLevels' => []]], 201);
     }
 
     /** @param array<string, string> $params */
@@ -44,11 +46,29 @@ final class ClassController
     {
         $teacher = $this->auth->requireTeacher();
         $class = $this->ownClass($teacher, $params['id']);
-        $name = Validator::className($request->json()['name'] ?? null);
-        if ($this->classes->nameExists($teacher['id'], $name, $class['id'])) {
-            throw HttpException::conflict('Eine Klasse mit diesem Namen existiert bereits.');
+        $body = $request->json();
+
+        if (array_key_exists('name', $body)) {
+            $name = Validator::className($body['name']);
+            if ($this->classes->nameExists($teacher['id'], $name, $class['id'])) {
+                throw HttpException::conflict('Eine Klasse mit diesem Namen existiert bereits.');
+            }
+            $this->classes->rename($class['id'], $name);
         }
-        $this->classes->rename($class['id'], $name);
+
+        if (array_key_exists('optionalLevels', $body)) {
+            $levels = $body['optionalLevels'];
+            if (!is_array($levels) || array_filter($levels, 'is_int') !== $levels) {
+                throw HttpException::badRequest('"optionalLevels" muss eine Liste von Levelnummern sein.');
+            }
+            foreach ($levels as $level) {
+                if (!$this->catalog->has($level)) {
+                    throw HttpException::badRequest("Level {$level} existiert nicht.");
+                }
+            }
+            $this->classes->setOptionalLevels($class['id'], $levels);
+        }
+
         return Response::json(['class' => $this->current($teacher['id'], $class['id'])]);
     }
 
@@ -74,7 +94,7 @@ final class ClassController
         return $class;
     }
 
-    /** @return array{id: int, name: string, studentCount: int} */
+    /** @return array{id: int, name: string, studentCount: int, optionalLevels: list<int>} */
     private function current(int $teacherId, int $classId): array
     {
         foreach ($this->classes->forTeacher($teacherId) as $class) {

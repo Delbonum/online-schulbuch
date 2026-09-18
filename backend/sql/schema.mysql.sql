@@ -26,6 +26,13 @@ CREATE TABLE IF NOT EXISTS classes (
     CONSTRAINT fk_classes_teacher FOREIGN KEY (teacher_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS class_optional_levels (
+    class_id INT UNSIGNED      NOT NULL,
+    level    SMALLINT UNSIGNED NOT NULL,
+    PRIMARY KEY (class_id, level),
+    CONSTRAINT fk_optional_class FOREIGN KEY (class_id) REFERENCES classes (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS level_progress (
     user_id   INT UNSIGNED      NOT NULL,
     level     SMALLINT UNSIGNED NOT NULL,

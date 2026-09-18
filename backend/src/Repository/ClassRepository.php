@@ -15,7 +15,7 @@ final class ClassRepository
     {
     }
 
-    /** @return list<array{id: int, name: string, studentCount: int}> */
+    /** @return list<array{id: int, name: string, studentCount: int, optionalLevels: list<int>}> */
     public function forTeacher(int $teacherId): array
     {
         $rows = $this->db->fetchAll(
@@ -23,11 +23,53 @@ final class ClassRepository
              FROM classes c WHERE c.teacher_id = ? ORDER BY c.name',
             [$teacherId],
         );
-        return array_map(static fn (array $row): array => [
+        return array_map(fn (array $row): array => [
             'id' => (int) $row['id'],
             'name' => (string) $row['name'],
             'studentCount' => (int) $row['student_count'],
+            'optionalLevels' => $this->optionalLevels((int) $row['id']),
         ], $rows);
+    }
+
+    /**
+     * Level, die für diese Klasse freiwillig sind: Ihre Zwischenprüfung muss nicht
+     * bestanden werden, um das nächste Level zu öffnen.
+     *
+     * @return list<int>
+     */
+    public function optionalLevels(int $classId): array
+    {
+        $rows = $this->db->fetchAll(
+            'SELECT level FROM class_optional_levels WHERE class_id = ? ORDER BY level',
+            [$classId],
+        );
+        return array_map(static fn (array $row): int => (int) $row['level'], $rows);
+    }
+
+    /** Optionale Level einer Klasse setzen (ersetzt die bisherigen). @param list<int> $levels */
+    public function setOptionalLevels(int $classId, array $levels): void
+    {
+        $this->db->transaction(function () use ($classId, $levels): void {
+            $this->db->execute('DELETE FROM class_optional_levels WHERE class_id = ?', [$classId]);
+            foreach (array_unique($levels) as $level) {
+                $this->db->execute(
+                    'INSERT INTO class_optional_levels (class_id, level) VALUES (?, ?)',
+                    [$classId, $level],
+                );
+            }
+        });
+    }
+
+    /** Optionale Level der Klasse, in der diese Person ist (leer, wenn ohne Klasse). @return list<int> */
+    public function optionalLevelsForUser(int $userId): array
+    {
+        $rows = $this->db->fetchAll(
+            'SELECT o.level FROM class_optional_levels o
+             JOIN users u ON u.class_id = o.class_id
+             WHERE u.id = ? ORDER BY o.level',
+            [$userId],
+        );
+        return array_map(static fn (array $row): int => (int) $row['level'], $rows);
     }
 
     /** @return array{id: int, teacher_id: int, name: string}|null */
@@ -63,6 +105,7 @@ final class ClassRepository
     public function delete(int $id): void
     {
         $this->db->transaction(function () use ($id): void {
+            $this->db->execute('DELETE FROM class_optional_levels WHERE class_id = ?', [$id]);
             $this->db->execute('UPDATE users SET class_id = NULL WHERE class_id = ?', [$id]);
             $this->db->execute('DELETE FROM classes WHERE id = ?', [$id]);
         });

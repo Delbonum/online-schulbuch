@@ -252,6 +252,7 @@ export default function Dashboard() {
       {dialog?.type === "classes" && (
         <ClassesDialog
           classes={classes}
+          levels={levels}
           onChange={(updated) => {
             setClasses(updated);
             load();

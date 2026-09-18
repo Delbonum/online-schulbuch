@@ -28,7 +28,7 @@ function initialAnswers(questions) {
  * damit die Lösungen nicht im Browser nachgelesen werden können.
  */
 export default function Quiz({ level, nextPath, intro = null }) {
-  const { role, recordPassed, refresh } = useAuth();
+  const { role, recordPassed, refresh, optionalLevels } = useAuth();
   const navigate = useNavigate();
   const [quiz, setQuiz] = useState(null);
   const [loadError, setLoadError] = useState(null);
@@ -114,6 +114,13 @@ export default function Quiz({ level, nextPath, intro = null }) {
         Beantworte alle Aufgaben richtig, um {nextPath ? "das nächste Level freizuschalten" : "das Level abzuschließen"}
         .{role === "guest" && " Als Gast wird dein Fortschritt nur in diesem Browser gespeichert."}
       </p>
+
+      {optionalLevels.includes(level) && (
+        <p className="panel mb-6">
+          Diese Prüfung ist für deine Klasse <b>freiwillig</b>: Das nächste Level ist auch ohne sie geöffnet. Du kannst
+          sie trotzdem machen, um dein Wissen zu testen.
+        </p>
+      )}
 
       {intro}
 
