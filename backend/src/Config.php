@@ -16,7 +16,10 @@ final class Config
      *     session_lifetime: int,
      *     debug: bool,
      *     allowed_origins: list<string>,
-     *     quizzes_dir: string
+     *     quizzes_dir: string,
+     *     admin_email: string,
+     *     mail_from: string,
+     *     app_url: string
      * }
      */
     public static function load(string $file): array
@@ -46,6 +49,12 @@ final class Config
             )),
             // Prüfungen mit Lösungen – auf dem Server am besten außerhalb des öffentlichen Webordners
             'quizzes_dir' => rtrim((string) ($config['quizzes_dir'] ?? dirname($file) . '/quizzes'), '/'),
+            // Adresse, an die Registrierungsanfragen gemeldet werden
+            'admin_email' => (string) ($config['admin_email'] ?? ''),
+            // Absenderadresse der E-Mails (leer = kein Versand)
+            'mail_from' => (string) ($config['mail_from'] ?? ''),
+            // Öffentliche Adresse der App, für Links in E-Mails
+            'app_url' => rtrim((string) ($config['app_url'] ?? ''), '/'),
         ];
     }
 }

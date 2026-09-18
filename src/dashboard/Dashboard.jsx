@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BarChart3, GraduationCap, Pencil, Trash2, UserPlus, Users } from "lucide-react";
+import { useAuth } from "../auth/AuthContext";
+import { BarChart3, GraduationCap, Pencil, ShieldCheck, Trash2, UserPlus, Users } from "lucide-react";
 import { api } from "../lib/api";
 import Spinner from "../components/Spinner";
 import StudentDialog from "./StudentDialog";
@@ -8,12 +9,14 @@ import HistoryDialog from "./HistoryDialog";
 import StatisticsDialog from "./StatisticsDialog";
 import BulkCreateDialog from "./BulkCreateDialog";
 import ClassesDialog from "./ClassesDialog";
+import TeachersDialog from "./TeachersDialog";
 import ScrollArea from "../components/ScrollArea";
 
 export const ALL_CLASSES = "all";
 export const WITHOUT_CLASS = "none";
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [students, setStudents] = useState(null);
   const [classes, setClasses] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -78,6 +81,11 @@ export default function Dashboard() {
           <button type="button" onClick={() => setDialog({ type: "statistics" })} className="btn btn-sm">
             <BarChart3 size={16} aria-hidden="true" /> Statistik
           </button>
+          {user?.isMaster && (
+            <button type="button" onClick={() => setDialog({ type: "teachers" })} className="btn btn-sm">
+              <ShieldCheck size={16} aria-hidden="true" /> Lehrkräfte
+            </button>
+          )}
           <button type="button" onClick={() => setDialog({ type: "classes" })} className="btn btn-sm">
             <GraduationCap size={16} aria-hidden="true" /> Klassen
           </button>
@@ -232,6 +240,8 @@ export default function Dashboard() {
           }}
         />
       )}
+
+      {dialog?.type === "teachers" && <TeachersDialog onClose={closeDialog} currentUserId={user?.id} />}
 
       {dialog?.type === "statistics" && (
         <StatisticsDialog classes={classes} initialClassId={filter} onClose={closeDialog} />

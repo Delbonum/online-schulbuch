@@ -52,6 +52,31 @@ final class UserRepository
         return $this->db->lastInsertId();
     }
 
+    /** @return list<array<string, mixed>> Lehrkräfte mit Anzahl ihrer Schüler/-innen */
+    public function teachers(): array
+    {
+        $rows = $this->db->fetchAll(
+            "SELECT u.*, (SELECT COUNT(*) FROM users s WHERE s.teacher_id = u.id) AS student_count
+             FROM users u WHERE u.role = 'teacher' ORDER BY u.username",
+        );
+        return array_map(function (array $row): array {
+            $user = $this->normalize($row);
+            $user['student_count'] = (int) $row['student_count'];
+            return $user;
+        }, $rows);
+    }
+
+    public function countStudents(int $teacherId): int
+    {
+        $row = $this->db->fetchOne("SELECT COUNT(*) AS n FROM users WHERE role = 'student' AND teacher_id = ?", [$teacherId]);
+        return (int) ($row['n'] ?? 0);
+    }
+
+    public function setMaster(int $id, bool $isMaster): void
+    {
+        $this->db->execute('UPDATE users SET is_master = ? WHERE id = ?', [$isMaster ? 1 : 0, $id]);
+    }
+
     public function setClass(int $id, ?int $classId): void
     {
         $this->db->execute('UPDATE users SET class_id = ? WHERE id = ?', [$classId, $id]);
@@ -84,6 +109,7 @@ final class UserRepository
         $row['id'] = (int) $row['id'];
         $row['teacher_id'] = $row['teacher_id'] === null ? null : (int) $row['teacher_id'];
         $row['class_id'] = ($row['class_id'] ?? null) === null ? null : (int) $row['class_id'];
+        $row['is_master'] = (bool) ($row['is_master'] ?? false);
         return $row;
     }
 }

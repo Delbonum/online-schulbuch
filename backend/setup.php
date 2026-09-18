@@ -56,6 +56,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 $message = "Lehrkraft \"{$username}\" wurde angelegt.";
                 break;
 
+            case 'make-master':
+                $username = Validator::username($_POST['username'] ?? null);
+                $user = $users->findByUsername($username);
+                if ($user === null || $user['role'] !== 'teacher') {
+                    throw new RuntimeException("Lehrkraft \"{$username}\" nicht gefunden.");
+                }
+                $users->setMaster($user['id'], true);
+                $message = "\"{$user['username']}\" ist jetzt Master-Konto und kann Lehrkräfte verwalten.";
+                break;
+
             case 'import-json':
                 $data = json_decode((string) ($_POST['json'] ?? ''), true, 512, JSON_THROW_ON_ERROR);
                 $data = $data['record'] ?? $data;
@@ -126,7 +136,18 @@ $e = static fn (string $s): string => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
 
 <form method="post">
     <fieldset>
-        <legend>3. Optional: Daten aus JSONBin übernehmen</legend>
+        <legend>3. Master-Konto festlegen</legend>
+        <p>Das Master-Konto darf weitere Lehrkräfte anlegen und Registrierungen freigeben.</p>
+        <label>Setup-Token <input type="password" name="token" required></label>
+        <label>Benutzername der Lehrkraft <input name="username" required></label>
+        <input type="hidden" name="action" value="make-master">
+        <button>Zum Master-Konto machen</button>
+    </fieldset>
+</form>
+
+<form method="post">
+    <fieldset>
+        <legend>4. Optional: Daten aus JSONBin übernehmen</legend>
         <label>Setup-Token <input type="password" name="token" required></label>
         <label>Inhalt der alten users.json bzw. des JSONBin-Exports
             <textarea name="json" rows="8" required></textarea></label>

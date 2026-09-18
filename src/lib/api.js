@@ -49,6 +49,15 @@ export const api = {
   quiz: (level) => request("GET", `/quizzes/${level}`),
   submitQuiz: (level, answers) => request("POST", `/quizzes/${level}/submit`, { answers }),
 
+  register: (data) => request("POST", "/register", data),
+  registrations: () => request("GET", "/registrations"),
+  decideRegistration: (id, decision) => request("POST", `/registrations/${id}/${decision}`, {}),
+
+  teachers: () => request("GET", "/teachers"),
+  createTeacher: (username, password) => request("POST", "/teachers", { username, password }),
+  updateTeacher: (id, changes) => request("PATCH", `/teachers/${id}`, changes),
+  deleteTeacher: (id) => request("DELETE", `/teachers/${id}`, {}),
+
   classes: () => request("GET", "/classes"),
   createClass: (name) => request("POST", "/classes", { name }),
   updateClass: (id, changes) => request("PATCH", `/classes/${id}`, changes),

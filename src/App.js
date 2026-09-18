@@ -8,6 +8,7 @@ import Spinner from "./components/Spinner";
 import LoginPage from "./pages/LoginPage";
 import AccountPage from "./pages/AccountPage";
 import NotFound from "./pages/NotFound";
+import RegisterPage from "./pages/RegisterPage";
 import { LEVELS, firstPagePath, pagePath } from "./levels";
 
 // Das Dashboard (mit Diagramm-Bibliothek) wird nur für Lehrkräfte nachgeladen
@@ -56,6 +57,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/registrieren" element={<RegisterPage />} />
             <Route
               path="/konto"
               element={

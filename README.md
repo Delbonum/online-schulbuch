@@ -77,6 +77,11 @@ Hosting. Daten liegen in **MySQL/MariaDB**; für die lokale Entwicklung genügt 
 Textbreite, Abstände und Überschriften. Das Layout ist für Handys ausgelegt: Die Navigation wird dort zum Overlay,
 breite Tabellen und Werkzeuge lassen sich seitlich scrollen, Illustrationen werden verkleinert.
 
+**Rollen** – Schüler/-innen, Lehrkräfte und ein **Master-Konto**. Das Master-Konto legt weitere Lehrkräfte an und
+gibt Registrierungen frei; festgelegt wird es mit `php bin/console.php make-master <name>` oder über `setup.php`.
+Lehrkräfte können sich selbst registrieren (Name, Schule, Ort, E-Mail); die Anfrage geht per E-Mail an die in
+`admin_email` hinterlegte Adresse und wird per Link oder im Dashboard entschieden.
+
 **Sicherheit**
 
 - Passwörter werden nur als Hash gespeichert (`password_hash`).
@@ -289,6 +294,14 @@ Alle Pfade relativ zu `…/api`. Anfragen und Antworten im JSON-Format.
 | `POST`   | `/classes`                | Lehrkraft  | Klasse anlegen (`name`)                                      |
 | `PATCH`  | `/classes/{id}`           | Lehrkraft  | Klasse umbenennen                                            |
 | `DELETE` | `/classes/{id}`           | Lehrkraft  | Klasse löschen (Schüler/-innen bleiben erhalten)             |
+| `POST`   | `/register`               | –          | Registrierung einer Lehrkraft beantragen                     |
+| `GET`    | `/register/{token}/{ja}`  | –          | Freigabe/Ablehnung über den Link aus der E-Mail (HTML-Seite) |
+| `GET`    | `/registrations`          | Master     | Alle Registrierungsanfragen                                  |
+| `POST`   | `/registrations/{id}/{e}` | Master     | Anfrage freigeben (`approve`) oder ablehnen (`reject`)       |
+| `GET`    | `/teachers`               | Master     | Alle Lehrkräfte                                              |
+| `POST`   | `/teachers`               | Master     | Lehrkraft anlegen                                            |
+| `PATCH`  | `/teachers/{id}`          | Master     | Name, Passwort oder Master-Rechte ändern                     |
+| `DELETE` | `/teachers/{id}`          | Master     | Lehrkraft mit allen Daten löschen                            |
 | `GET`    | `/statistics`             | Lehrkraft  | Auswertung; optional `?classId=<id>` oder `?classId=none`    |
 
 ## Roadmap
@@ -296,7 +309,6 @@ Alle Pfade relativ zu `…/api`. Anfragen und Antworten im JSON-Format.
 - [ ] Umzug der Live-Version auf das PHP-Backend (siehe [Deployment](#deployment) und [Umzug](#umzug-von-jsonbinrender))
 - [ ] Weitere mögliche Level: Transpositionsverfahren (Skytale), Enigma, Hashfunktionen, Zertifikate und HTTPS
 - [ ] Interaktive Man-in-the-Middle-Simulation in Level 4
-- [ ] Verwaltung von Lehrkräften in der Oberfläche (bisher über Kommandozeile/`setup.php`)
 - [ ] Klassen an mehrere Lehrkräfte freigeben (Teamteaching)
 - [ ] Prüfungsfragen aus einem Aufgabenpool zufällig ziehen
 

@@ -7,10 +7,27 @@ CREATE TABLE IF NOT EXISTS users (
     role          TEXT    NOT NULL CHECK (role IN ('teacher', 'student')),
     teacher_id    INTEGER NULL REFERENCES users (id) ON DELETE CASCADE,
     class_id      INTEGER NULL,
+    is_master     INTEGER NOT NULL DEFAULT 0,
     created_at    TEXT    NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_users_teacher ON users (teacher_id);
 CREATE INDEX IF NOT EXISTS idx_users_class ON users (class_id);
+
+CREATE TABLE IF NOT EXISTS teacher_requests (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    username      TEXT    NOT NULL COLLATE NOCASE,
+    password_hash TEXT    NOT NULL,
+    full_name     TEXT    NOT NULL,
+    school        TEXT    NOT NULL,
+    city          TEXT    NOT NULL,
+    email         TEXT    NOT NULL,
+    status        TEXT    NOT NULL CHECK (status IN ('pending', 'approved', 'rejected')),
+    token         TEXT    NOT NULL UNIQUE,
+    created_at    TEXT    NOT NULL,
+    decided_at    TEXT    NULL,
+    decided_by    INTEGER NULL
+);
+CREATE INDEX IF NOT EXISTS idx_requests_status ON teacher_requests (status);
 
 CREATE TABLE IF NOT EXISTS classes (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,

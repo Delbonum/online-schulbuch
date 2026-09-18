@@ -64,7 +64,12 @@ final class Database
     private function addMissingColumns(): void
     {
         $columns = [
-            'users' => ['class_id' => $this->driver() === 'mysql' ? 'INT UNSIGNED NULL' : 'INTEGER NULL'],
+            'users' => [
+                'class_id' => $this->driver() === 'mysql' ? 'INT UNSIGNED NULL' : 'INTEGER NULL',
+                'is_master' => $this->driver() === 'mysql'
+                    ? 'TINYINT(1) NOT NULL DEFAULT 0'
+                    : 'INTEGER NOT NULL DEFAULT 0',
+            ],
         ];
         foreach ($columns as $table => $definitions) {
             foreach ($definitions as $column => $type) {

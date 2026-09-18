@@ -12,6 +12,7 @@ use Kryptogame\Http\Request;
 use Kryptogame\Http\Response;
 use Kryptogame\LegacyImporter;
 use Kryptogame\Repository\UserRepository;
+use Kryptogame\Service\ArrayMailer;
 use Kryptogame\Service\QuizCatalog;
 use Kryptogame\Service\QuizGrader;
 
@@ -50,9 +51,21 @@ final class Client
 {
     private App $app;
 
-    public function __construct(Database $db, QuizCatalog $catalog, array $allowedOrigins = [])
+    public ArrayMailer $mailer;
+
+    public function __construct(Database $db, QuizCatalog $catalog, array $allowedOrigins = [], ?ArrayMailer $mailer = null)
     {
-        $this->app = new App($db, new ArraySession(), $catalog, true, $allowedOrigins);
+        $this->mailer = $mailer ?? new ArrayMailer();
+        $this->app = new App(
+            $db,
+            new ArraySession(),
+            $catalog,
+            true,
+            $allowedOrigins,
+            $this->mailer,
+            'admin@example.org',
+            'https://example.org/kryptogame',
+        );
     }
 
     /** @param array<string, mixed>|null $body */
@@ -462,6 +475,101 @@ test('Statistik', function () use ($catalog): void {
     $expectedGroups = array_pad([1, 1, 1], count($catalog->levels()) + 1, 0);
     check(array_column($stats['completion'], 'count') === $expectedGroups, 'Bestehensgruppen');
     check($stats['completion'][2]['label'] === 'Level 1–2 bestanden', 'Beschriftung der Gruppen');
+});
+
+test('Registrierung von Lehrkräften', function () use ($catalog): void {
+    $db = freshDatabase();
+    $mailer = new ArrayMailer();
+    $client = new Client($db, $catalog, [], $mailer);
+
+    $daten = [
+        'username' => 'neue.lehrkraft',
+        'password' => 'sicher123',
+        'fullName' => 'Erika Musterfrau',
+        'school' => 'Gymnasium Musterstadt',
+        'city' => 'Musterstadt',
+        'email' => 'erika@example.org',
+    ];
+
+    check($client->call('POST', '/register', ['username' => 'x'] + $daten)->status() === 400, 'zu kurzer Benutzername');
+    check($client->call('POST', '/register', ['email' => 'keine-mail'] + $daten)->status() === 400, 'ungültige E-Mail');
+    check($client->call('POST', '/register', ['school' => ''] + $daten)->status() === 400, 'Schule fehlt');
+
+    $response = $client->call('POST', '/register', $daten);
+    check($response->status() === 202 && $response->data()['status'] === 'pending', 'Anfrage angenommen');
+    check($client->login('neue.lehrkraft', 'sicher123')->status() === 401, 'vor der Freigabe kein Login');
+    check($client->call('POST', '/register', $daten)->status() === 409, 'kein zweiter Antrag mit gleichem Namen');
+
+    $mail = $mailer->last();
+    check($mail['to'] === 'admin@example.org', 'Benachrichtigung an die Admin-Adresse');
+    check(str_contains($mail['body'], 'Gymnasium Musterstadt') && str_contains($mail['body'], 'erika@example.org'), 'Angaben in der Mail');
+    check(preg_match('#/api/register/([0-9a-f]{32})/approve#', $mail['body'], $m) === 1, 'Freigabe-Link in der Mail');
+    $token = $m[1];
+
+    $page = $client->call('GET', "/register/{$token}/approve");
+    check($page->status() === 200 && str_contains((string) $page->data(), 'freigegeben'), 'Freigabe über den Link');
+    check($client->login('neue.lehrkraft', 'sicher123')->data()['user']['role'] === 'teacher', 'Login nach der Freigabe');
+    check($mailer->last()['to'] === 'erika@example.org', 'Bestätigung an die Lehrkraft');
+
+    $again = $client->call('GET', "/register/{$token}/approve");
+    check(str_contains((string) $again->data(), 'bereits'), 'Link lässt sich nicht zweimal nutzen');
+    check($client->call('GET', '/register/' . str_repeat('a', 32) . '/approve')->status() === 404, 'unbekannter Token');
+});
+
+test('Master-Konto verwaltet Lehrkräfte und Registrierungen', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $masterId = $users->create('Nix', password_hash('master-pw', PASSWORD_DEFAULT), 'teacher', null);
+    $users->setMaster($masterId, true);
+    $users->create('kollege', password_hash('kollege-pw', PASSWORD_DEFAULT), 'teacher', null);
+
+    $mailer = new ArrayMailer();
+    $master = new Client($db, $catalog, [], $mailer);
+    $master->login('Nix', 'master-pw');
+    $kollege = new Client($db, $catalog, [], $mailer);
+    $kollege->login('kollege', 'kollege-pw');
+
+    check($master->call('GET', '/auth/me')->data()['user']['isMaster'] === true, 'Master erkennt sich selbst');
+    check($kollege->call('GET', '/auth/me')->data()['user']['isMaster'] === false, 'normale Lehrkraft ist kein Master');
+    check($kollege->call('GET', '/teachers')->status() === 403, 'nur das Master-Konto sieht die Lehrkräfte');
+    check($kollege->call('GET', '/registrations')->status() === 403, 'nur das Master-Konto sieht Registrierungen');
+
+    $list = $master->call('GET', '/teachers')->data()['teachers'];
+    check(count($list) === 2, 'alle Lehrkräfte werden gelistet');
+    check(!isset($list[0]['password_hash']), 'keine Passwort-Hashes in der Antwort');
+
+    $created = $master->call('POST', '/teachers', ['username' => 'neu.lehrer', 'password' => 'passwort1']);
+    check($created->status() === 201 && $created->data()['teacher']['isMaster'] === false, 'Lehrkraft angelegt');
+    $neuId = $created->data()['teacher']['id'];
+    check($master->call('POST', '/teachers', ['username' => 'neu.lehrer', 'password' => 'passwort1'])->status() === 409, 'Name vergeben');
+
+    $updated = $master->call('PATCH', "/teachers/{$neuId}", ['username' => 'neu.lehrerin', 'isMaster' => true]);
+    check($updated->data()['teacher'] === ['id' => $neuId, 'username' => 'neu.lehrerin', 'isMaster' => true, 'studentCount' => 0], 'Lehrkraft geändert');
+    check((new Client($db, $catalog))->login('neu.lehrerin', 'passwort1')->data()['user']['isMaster'] === true, 'neue Master-Rechte wirken');
+
+    $selfId = $master->call('GET', '/auth/me')->data()['user']['id'];
+    check($master->call('PATCH', "/teachers/{$selfId}", ['isMaster' => false])->status() === 400, 'Master entzieht sich nicht selbst die Rechte');
+    check($master->call('DELETE', "/teachers/{$selfId}")->status() === 400, 'Master löscht sich nicht selbst');
+    check($master->call('DELETE', "/teachers/{$neuId}")->status() === 204, 'Lehrkraft gelöscht');
+
+    // Registrierung im Dashboard ablehnen
+    $gast = new Client($db, $catalog, [], $mailer);
+    $gast->call('POST', '/register', [
+        'username' => 'bewerber',
+        'password' => 'sicher123',
+        'fullName' => 'Max Muster',
+        'school' => 'Schule',
+        'city' => 'Ort',
+        'email' => 'max@example.org',
+    ]);
+    $offen = $master->call('GET', '/registrations')->data()['registrations'];
+    check(count($offen) === 1 && $offen[0]['status'] === 'pending' && $offen[0]['school'] === 'Schule', 'offene Anfrage sichtbar');
+
+    $decision = $master->call('POST', "/registrations/{$offen[0]['id']}/reject");
+    check($decision->status() === 200 && $decision->data()['status'] === 'rejected', 'Anfrage abgelehnt');
+    check($mailer->last()['to'] === 'max@example.org', 'Absage per Mail');
+    check($master->call('POST', "/registrations/{$offen[0]['id']}/reject")->status() === 409, 'keine zweite Entscheidung');
+    check((new Client($db, $catalog))->login('bewerber', 'sicher123')->status() === 401, 'abgelehnte Anfrage ergibt kein Konto');
 });
 
 test('Import der alten users.json', function () use ($catalog): void {

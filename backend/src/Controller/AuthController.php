@@ -71,6 +71,7 @@ final class AuthController
             'id' => $user['id'],
             'username' => $user['username'],
             'role' => $user['role'],
+            'isMaster' => (bool) ($user['is_master'] ?? false),
             'passedLevels' => $user['role'] === 'student' ? $this->progress->passedLevels($user['id']) : [],
             'optionalLevels' => $user['role'] === 'student' ? $this->classes->optionalLevelsForUser($user['id']) : [],
         ];
