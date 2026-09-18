@@ -52,9 +52,12 @@ function printList(prefix, rows) {
 /** Mehrere Schüler/-innen aus einer Namensliste anlegen. */
 export default function BulkCreateDialog({ classes = [], defaultClassId = null, onClose, onCreated }) {
   const [names, setNames] = useState("");
+  // Klasse: bestehende ID, null (ohne Klasse) oder "new" für eine neu anzulegende Klasse
   const [classId, setClassId] = useState(defaultClassId);
+  const [newClassName, setNewClassName] = useState("");
   const [running, setRunning] = useState(false);
   const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
 
   const candidates = names
     .split("\n")
@@ -64,11 +67,26 @@ export default function BulkCreateDialog({ classes = [], defaultClassId = null, 
 
   const create = async () => {
     setRunning(true);
+    setError(null);
+
+    // Falls gewünscht, zuerst die neue Klasse anlegen
+    let targetClassId = classId;
+    if (classId === "new") {
+      try {
+        const { class: created } = await api.createClass(newClassName.trim());
+        targetClassId = created.id;
+      } catch (err) {
+        setError(err.message);
+        setRunning(false);
+        return;
+      }
+    }
+
     const outcome = [];
     for (const candidate of candidates) {
       const password = generatePassword();
       try {
-        const { student } = await api.createStudent(candidate.username, password, classId);
+        const { student } = await api.createStudent(candidate.username, password, targetClassId);
         outcome.push({ ...candidate, password, ok: true });
         onCreated(student);
       } catch (err) {
@@ -101,7 +119,12 @@ export default function BulkCreateDialog({ classes = [], defaultClassId = null, 
       <button type="button" className="btn-dialog" onClick={onClose}>
         Abbrechen
       </button>
-      <button type="button" className="btn-dialog-primary" onClick={create} disabled={candidates.length === 0}>
+      <button
+        type="button"
+        className="btn-dialog-primary"
+        onClick={create}
+        disabled={candidates.length === 0 || (classId === "new" && newClassName.trim() === "")}
+      >
         {candidates.length} Zugänge anlegen
       </button>
     </>
@@ -115,25 +138,50 @@ export default function BulkCreateDialog({ classes = [], defaultClassId = null, 
             Ein Name pro Zeile (z. B. aus einer Klassenliste kopiert). Daraus werden Benutzernamen wie{" "}
             <code>max.mustermann</code> gebildet, die Passwörter werden zufällig erzeugt.
           </label>
-          {classes.length > 0 && (
+          <div>
+            <label htmlFor="bulk-class" className="block text-sm font-medium mb-1">
+              Klasse
+            </label>
+            <select
+              id="bulk-class"
+              value={classId === "new" ? "new" : (classId ?? "")}
+              onChange={(e) => {
+                const value = e.target.value;
+                setClassId(value === "" ? null : value === "new" ? "new" : Number(value));
+              }}
+              className="dialog-input"
+            >
+              <option value="">Ohne Klasse</option>
+              {classes.map((klass) => (
+                <option key={klass.id} value={klass.id}>
+                  {klass.name}
+                </option>
+              ))}
+              <option value="new">Neue Klasse anlegen …</option>
+            </select>
+          </div>
+
+          {classId === "new" && (
             <div>
-              <label htmlFor="bulk-class" className="block text-sm font-medium mb-1">
-                Klasse
+              <label htmlFor="bulk-new-class" className="block text-sm font-medium mb-1">
+                Name der neuen Klasse
               </label>
-              <select
-                id="bulk-class"
-                value={classId ?? ""}
-                onChange={(e) => setClassId(e.target.value === "" ? null : Number(e.target.value))}
+              <input
+                id="bulk-new-class"
+                type="text"
+                value={newClassName}
+                onChange={(e) => setNewClassName(e.target.value)}
                 className="dialog-input"
-              >
-                <option value="">Ohne Klasse</option>
-                {classes.map((klass) => (
-                  <option key={klass.id} value={klass.id}>
-                    {klass.name}
-                  </option>
-                ))}
-              </select>
+                placeholder="z. B. 9b"
+                maxLength={64}
+              />
             </div>
+          )}
+
+          {error && (
+            <p role="alert" className="text-sm text-red-700">
+              {error}
+            </p>
           )}
           <textarea
             id="bulk-names"

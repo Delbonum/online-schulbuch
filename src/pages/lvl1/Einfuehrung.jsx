@@ -10,7 +10,7 @@ export default function Einfuehrung() {
           <img loading="lazy" src={timemachine} alt="Zeitmaschine" className="illustration" />
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold mb-4 heading-style">Willkommen beim Krypto-Zeitkommando</h1>
           <p className="mb-6">
             Du bist Teil einer geheimen Organisation, die durch die Zeit reist, um die Menschheit vor

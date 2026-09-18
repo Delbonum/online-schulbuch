@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ALPHABET, applyMapping, frequencyMapping, letterCounts } from "../../lib/crypto";
 import FrequencyBars from "../FrequencyBars";
+import ScrollArea from "../ScrollArea";
 
 /** Kryptoanalyse des Ersetzungsverfahrens: Zuordnung Geheimtext → Klartext schrittweise ermitteln. */
 export default function HaeufigkeitsanalyseTool({ initialText = "" }) {
@@ -32,7 +33,7 @@ export default function HaeufigkeitsanalyseTool({ initialText = "" }) {
       {showFrequencies && <FrequencyBars counts={letterCounts(text)} />}
 
       <p className="mt-4 font-bold">Klartextalphabet ermitteln:</p>
-      <div className="overflow-x-auto">
+      <ScrollArea>
         <table className="table-auto text-sm border mb-4">
           <tbody>
             <tr>
@@ -63,7 +64,7 @@ export default function HaeufigkeitsanalyseTool({ initialText = "" }) {
             </tr>
           </tbody>
         </table>
-      </div>
+      </ScrollArea>
       <p className="mb-1 font-bold">Entschlüsselter Text mit deinem Alphabet:</p>
       <div className="panel text-sm mb-2 max-h-36 overflow-y-auto">{applyMapping(text, mapping)}</div>
       <div className="flex flex-wrap gap-2 mt-2">

@@ -1,3 +1,4 @@
+import ScrollArea from "../../../components/ScrollArea";
 const KasiskiTable = () => {
   const schluessel = "WOINWOINWOINWOINWOINWOINWOINWOINWO".split("");
   const klartext = "HABEEINENKLEINENESELIMSTALLGESEHEN".split("");
@@ -75,7 +76,7 @@ const KasiskiTable = () => {
   );
 
   return (
-    <div className="overflow-x-auto max-w-full">
+    <ScrollArea className="max-w-full">
       <table className="table-fixed text-sm">
         <tbody>
           {renderRow("Schlüssel", schluessel, "schluessel")}
@@ -84,7 +85,7 @@ const KasiskiTable = () => {
           {renderRow("Geheimtext", geheimtext, "geheimtext")}
         </tbody>
       </table>
-    </div>
+    </ScrollArea>
   );
 };
 

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { parseShiftRule, progressiveCaesar } from "../../lib/crypto";
+import ScrollArea from "../ScrollArea";
 
 export default function ProgressiveCaesarTool() {
   const [text, setText] = useState("");
@@ -80,7 +81,7 @@ export default function ProgressiveCaesarTool() {
       {error && <div className="text-red-400 font-semibold mb-4">{error}</div>}
 
       {text && transformed && (
-        <div className="mt-6 overflow-x-auto">
+        <ScrollArea className="mt-6">
           <table className="border-collapse text-center">
             <tbody>
               <tr>
@@ -115,7 +116,7 @@ export default function ProgressiveCaesarTool() {
               </tr>
             </tbody>
           </table>
-        </div>
+        </ScrollArea>
       )}
     </div>
   );

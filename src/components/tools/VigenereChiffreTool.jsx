@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { letterIndex, lettersOnly, repeatKey, vigenere } from "../../lib/crypto";
+import ScrollArea from "../ScrollArea";
 
 const MAX_LENGTH = 30;
 
@@ -48,7 +49,7 @@ export default function VigenereChiffreTool() {
         />
       </div>
       {plain.length > 0 && keyLine.length > 0 && (
-        <div className="overflow-x-auto mt-6">
+        <ScrollArea className="mt-6">
           <table className="table-auto border-collapse text-center mx-auto">
             <tbody>
               {rows.map(([label, cells, className]) => (
@@ -65,7 +66,7 @@ export default function VigenereChiffreTool() {
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollArea>
       )}
     </div>
   );

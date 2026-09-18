@@ -8,6 +8,7 @@ import HistoryDialog from "./HistoryDialog";
 import StatisticsDialog from "./StatisticsDialog";
 import BulkCreateDialog from "./BulkCreateDialog";
 import ClassesDialog from "./ClassesDialog";
+import ScrollArea from "../components/ScrollArea";
 
 export const ALL_CLASSES = "all";
 export const WITHOUT_CLASS = "none";
@@ -84,7 +85,7 @@ export default function Dashboard() {
             <UserPlus size={16} aria-hidden="true" /> Schüler/-in
           </button>
           <button type="button" onClick={() => setDialog({ type: "bulk" })} className="btn btn-sm">
-            <Users size={16} aria-hidden="true" /> Mehrere anlegen
+            <Users size={16} aria-hidden="true" /> Klasse anlegen
           </button>
         </div>
       </div>
@@ -117,7 +118,7 @@ export default function Dashboard() {
           Passwort.
         </p>
       ) : (
-        <div className="overflow-x-auto">
+        <ScrollArea>
           <table className="table-auto border border-white/30 w-full text-sm">
             <thead>
               <tr>
@@ -186,7 +187,7 @@ export default function Dashboard() {
               )}
             </tbody>
           </table>
-        </div>
+        </ScrollArea>
       )}
 
       {(dialog?.type === "create" || dialog?.type === "edit") && (

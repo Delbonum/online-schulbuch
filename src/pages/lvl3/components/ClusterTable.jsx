@@ -1,4 +1,5 @@
 import React from "react";
+import ScrollArea from "../../../components/ScrollArea";
 
 export default function ClusterTable() {
   const zeilen = [
@@ -17,7 +18,7 @@ export default function ClusterTable() {
   const clusterSpalte = ["Cluster", "Z", "E", "I", "T", ""];
 
   return (
-    <div className="overflow-x-auto mb-8">
+    <ScrollArea className="mb-8">
       <table className="table-fixed border-collapse mx-auto text-center [&_td]:min-w-[1.75rem]">
         <tbody>
           {zeilen.map((zeile, idx) => (
@@ -47,6 +48,6 @@ export default function ClusterTable() {
           </tr>
         </tbody>
       </table>
-    </div>
+    </ScrollArea>
   );
 }

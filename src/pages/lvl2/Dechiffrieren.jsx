@@ -9,8 +9,8 @@ export default function Dechiffrieren() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row items-start justify-between gap-6 text-style">
-        <div className="flex-1">
+      <div className="min-w-0">
+        <div>
           <h1 className="text-2xl font-bold mb-4 heading-style">Al-Kindi stellt eine Aufgabe</h1>
           <p className="mb-4">
             Al-Kindi legt dir ein neues Geheimtextalphabet sowie eine verschlüsselte Nachricht vor.
@@ -21,7 +21,7 @@ export default function Dechiffrieren() {
               „Entschlüssele diese Nachricht: <strong className="text-white font-bold">{botschaft}</strong>!“
             </i>
           </p>
-          <div className="overflow-x-auto mt-8 text-style">
+          <div className="mt-8 text-style">
             <h2 className="text-xl font-bold mb-2 heading-style">Klartext- und Geheimtextalphabet</h2>
             <div className="mb-4">
               <AlphabetTable cipher="MNBVCXZLKJHGFDSAPOIUYTREWQ" />
