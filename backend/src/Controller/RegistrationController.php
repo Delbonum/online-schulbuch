@@ -43,6 +43,8 @@ final class RegistrationController
             throw HttpException::conflict('Dieser Benutzername ist bereits vergeben.');
         }
 
+        $this->registrations->deleteExpired();
+
         $created = $this->registrations->create([
             'username' => $username,
             'password_hash' => password_hash($password, PASSWORD_DEFAULT),
@@ -90,6 +92,8 @@ final class RegistrationController
     public function index(): Response
     {
         $this->auth->requireMaster();
+        // Bearbeitete Anfragen werden nach einem Jahr automatisch gelöscht
+        $this->registrations->deleteExpired();
         return Response::json([
             'registrations' => array_map(static fn (array $row): array => [
                 'id' => $row['id'],

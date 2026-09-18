@@ -62,6 +62,31 @@ final class AuthController
     }
 
     /**
+     * Eigenes Konto endgültig löschen. Bei Lehrkräften verschwinden damit auch ihre
+     * Klassen sowie die Zugänge und Ergebnisse ihrer Schüler/-innen.
+     */
+    public function deleteAccount(Request $request): Response
+    {
+        $user = $this->auth->requireUser();
+        $password = $request->json()['password'] ?? '';
+
+        if (!is_string($password) || !password_verify($password, $user['password_hash'])) {
+            throw HttpException::forbidden('Das Passwort ist nicht korrekt.');
+        }
+
+        if (!empty($user['is_master']) && $this->users->countMasters() < 2) {
+            throw HttpException::badRequest(
+                'Du bist das einzige Master-Konto. Ernenne zuerst eine andere Lehrkraft zum Master-Konto.'
+            );
+        }
+
+        $this->users->delete($user['id']);
+        $this->auth->logout();
+
+        return Response::noContent();
+    }
+
+    /**
      * @param array<string, mixed> $user
      * @return array<string, mixed>
      */

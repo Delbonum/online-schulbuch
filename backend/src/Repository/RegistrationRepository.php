@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Kryptogame\Repository;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Kryptogame\Database;
 
 /**
@@ -58,6 +60,19 @@ final class RegistrationRepository
             "SELECT id FROM teacher_requests WHERE username = ? AND status = 'pending'",
             [$username],
         ) !== null;
+    }
+
+    /**
+     * Löscht bearbeitete Anfragen, deren Entscheidung länger zurückliegt.
+     * Damit verschwinden Name, Schule, Ort und E-Mail automatisch wieder.
+     */
+    public function deleteExpired(int $days = 365): int
+    {
+        $limit = (new DateTimeImmutable("-{$days} days", new DateTimeZone('UTC')))->format('Y-m-d H:i:s.v');
+        return $this->db->execute(
+            "DELETE FROM teacher_requests WHERE status <> 'pending' AND decided_at IS NOT NULL AND decided_at < ?",
+            [$limit],
+        );
     }
 
     /** @return list<array<string, mixed>> */

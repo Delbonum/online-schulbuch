@@ -69,6 +69,7 @@ final class App
         $r->add('POST', '/auth/logout', [$authController, 'logout']);
         $r->add('GET', '/auth/me', [$authController, 'me']);
         $r->add('POST', '/auth/password', [$authController, 'changePassword']);
+        $r->add('DELETE', '/auth/account', [$authController, 'deleteAccount']);
 
         $r->add('GET', '/quizzes/{level}', [$quizController, 'show']);
         $r->add('POST', '/quizzes/{level}/submit', [$quizController, 'submit']);

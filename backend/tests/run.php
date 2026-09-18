@@ -572,6 +572,80 @@ test('Master-Konto verwaltet Lehrkräfte und Registrierungen', function () use (
     check((new Client($db, $catalog))->login('bewerber', 'sicher123')->status() === 401, 'abgelehnte Anfrage ergibt kein Konto');
 });
 
+test('Eigenes Konto löschen', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $masterId = $users->create('master', password_hash('master-pw', PASSWORD_DEFAULT), 'teacher', null);
+    $users->setMaster($masterId, true);
+    $teacherId = $users->create('lehrer', password_hash('lehrer-pw', PASSWORD_DEFAULT), 'teacher', null);
+
+    $teacher = new Client($db, $catalog);
+    $teacher->login('lehrer', 'lehrer-pw');
+    $classId = $teacher->call('POST', '/classes', ['name' => '9a'])->data()['class']['id'];
+    $studentId = $teacher->call('POST', '/students', ['username' => 'kind', 'password' => 'kind-pw', 'classId' => $classId])
+        ->data()['student']['id'];
+
+    check($teacher->call('DELETE', '/auth/account', ['password' => 'falsch'])->status() === 403, 'falsches Passwort');
+    check($users->findById($teacherId) !== null, 'Konto besteht weiter');
+
+    check($teacher->call('DELETE', '/auth/account', ['password' => 'lehrer-pw'])->status() === 204, 'Konto gelöscht');
+    check($users->findById($teacherId) === null, 'Lehrkraft entfernt');
+    check($users->findById($studentId) === null, 'Schüler/-in entfernt');
+    check($db->fetchOne('SELECT id FROM classes WHERE id = ?', [$classId]) === null, 'Klasse entfernt');
+    check($teacher->call('GET', '/auth/me')->data() === ['user' => null], 'Sitzung beendet');
+
+    // Das letzte Master-Konto darf sich nicht selbst löschen
+    $master = new Client($db, $catalog);
+    $master->login('master', 'master-pw');
+    $response = $master->call('DELETE', '/auth/account', ['password' => 'master-pw']);
+    check($response->status() === 400 && str_contains($response->data()['error'], 'Master-Konto'), 'letztes Master-Konto bleibt bestehen');
+
+    $zweiterId = $users->create('master2', password_hash('pw-master2', PASSWORD_DEFAULT), 'teacher', null);
+    $users->setMaster($zweiterId, true);
+    check($master->call('DELETE', '/auth/account', ['password' => 'master-pw'])->status() === 204, 'mit zweitem Master ist das Löschen erlaubt');
+
+    // Schüler/-innen verwalten ihr Konto nicht selbst
+    $users->create('allein', password_hash('allein-pw', PASSWORD_DEFAULT), 'student', $zweiterId);
+    $student = new Client($db, $catalog);
+    $student->login('allein', 'allein-pw');
+    check($student->call('DELETE', '/auth/account', ['password' => 'allein-pw'])->status() === 204, 'auch Schüler/-innen können ihr Konto löschen');
+});
+
+test('Bearbeitete Registrierungen verfallen nach einem Jahr', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $masterId = $users->create('master', password_hash('master-pw', PASSWORD_DEFAULT), 'teacher', null);
+    $users->setMaster($masterId, true);
+
+    $registrations = new \Kryptogame\Repository\RegistrationRepository($db);
+    $alt = $registrations->create([
+        'username' => 'alt', 'password_hash' => 'x', 'full_name' => 'Alt', 'school' => 'S', 'city' => 'O',
+        'email' => 'alt@example.org',
+    ]);
+    $neu = $registrations->create([
+        'username' => 'neu', 'password_hash' => 'x', 'full_name' => 'Neu', 'school' => 'S', 'city' => 'O',
+        'email' => 'neu@example.org',
+    ]);
+    $offen = $registrations->create([
+        'username' => 'offen', 'password_hash' => 'x', 'full_name' => 'Offen', 'school' => 'S', 'city' => 'O',
+        'email' => 'offen@example.org',
+    ]);
+    $registrations->decide($alt['id'], 'rejected', $masterId);
+    $registrations->decide($neu['id'], 'approved', $masterId);
+    $db->execute('UPDATE teacher_requests SET decided_at = ? WHERE id = ?', ['2024-01-01 10:00:00.000', $alt['id']]);
+
+    $master = new Client($db, $catalog);
+    $master->login('master', 'master-pw');
+    $liste = $master->call('GET', '/registrations')->data()['registrations'];
+    $namen = array_column($liste, 'username');
+
+    check(!in_array('alt', $namen, true), 'alte Anfrage ist verschwunden');
+    check(in_array('neu', $namen, true), 'kürzlich bearbeitete Anfrage bleibt');
+    check(in_array('offen', $namen, true), 'offene Anfrage bleibt');
+    check($registrations->find($alt['id']) === null, 'Daten wirklich gelöscht');
+    check($registrations->find($offen['id']) !== null, 'offene Anfrage unangetastet');
+});
+
 test('Import der alten users.json', function () use ($catalog): void {
     $db = freshDatabase();
     $legacy = [

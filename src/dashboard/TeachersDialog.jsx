@@ -3,6 +3,7 @@ import { Check, KeyRound, Trash2, X } from "lucide-react";
 import Modal from "../components/Modal";
 import Spinner from "../components/Spinner";
 import { api } from "../lib/api";
+import Paginated from "./Paginated";
 
 const formatDate = (iso) => new Date(iso).toLocaleDateString("de-DE", { dateStyle: "medium" });
 
@@ -71,153 +72,168 @@ export default function TeachersDialog({ onClose, currentUserId }) {
             {pending.length === 0 ? (
               <p className="text-sm text-gray-600">Keine offenen Anfragen.</p>
             ) : (
-              <ul className="divide-y">
-                {pending.map((request) => (
-                  <li key={request.id} className="py-2 flex flex-wrap items-center gap-2">
-                    <span className="flex-1 text-sm">
-                      <strong>{request.fullName}</strong> ({request.username})
-                      <br />
-                      <span className="text-gray-600">
-                        {request.school}, {request.city} · {request.email} · {formatDate(request.createdAt)}
-                      </span>
-                    </span>
-                    <button
-                      type="button"
-                      className="btn-dialog-primary"
-                      disabled={busy}
-                      onClick={() => run(() => api.decideRegistration(request.id, "approve"))}
-                    >
-                      <Check size={16} aria-hidden="true" /> Freigeben
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-dialog-danger"
-                      disabled={busy}
-                      onClick={() => run(() => api.decideRegistration(request.id, "reject"))}
-                    >
-                      <X size={16} aria-hidden="true" /> Ablehnen
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <Paginated items={pending} label="Anfragen">
+                {(visible) => (
+                  <ul className="divide-y">
+                    {visible.map((request) => (
+                      <li key={request.id} className="py-2 flex flex-wrap items-center gap-2">
+                        <span className="flex-1 text-sm">
+                          <strong>{request.fullName}</strong> ({request.username})
+                          <br />
+                          <span className="text-gray-600">
+                            {request.school}, {request.city} · {request.email} · {formatDate(request.createdAt)}
+                          </span>
+                        </span>
+                        <button
+                          type="button"
+                          className="btn-dialog-primary"
+                          disabled={busy}
+                          onClick={() => run(() => api.decideRegistration(request.id, "approve"))}
+                        >
+                          <Check size={16} aria-hidden="true" /> Freigeben
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-dialog-danger"
+                          disabled={busy}
+                          onClick={() => run(() => api.decideRegistration(request.id, "reject"))}
+                        >
+                          <X size={16} aria-hidden="true" /> Ablehnen
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Paginated>
             )}
             {decided.length > 0 && (
               <details className="mt-2 text-sm">
                 <summary className="cursor-pointer text-blue-700">Bearbeitete Anfragen ({decided.length})</summary>
-                <ul className="mt-1 space-y-1 text-gray-600">
-                  {decided.map((request) => (
-                    <li key={request.id}>
-                      {formatDate(request.createdAt)} · {request.fullName} ({request.username}) –{" "}
-                      {request.status === "approved" ? "freigegeben" : "abgelehnt"}
-                    </li>
-                  ))}
-                </ul>
+                <Paginated items={decided} label="Anfragen">
+                  {(visible) => (
+                    <ul className="mt-1 space-y-1 text-gray-600">
+                      {visible.map((request) => (
+                        <li key={request.id}>
+                          {formatDate(request.createdAt)} · {request.fullName} ({request.username}) –{" "}
+                          {request.status === "approved" ? "freigegeben" : "abgelehnt"}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </Paginated>
+                <p className="mt-2 text-xs text-gray-500">
+                  Bearbeitete Anfragen werden ein Jahr nach der Entscheidung automatisch gelöscht.
+                </p>
               </details>
             )}
           </section>
 
           <section>
             <h3 className="font-semibold mb-2">Lehrkräfte ({teachers.length})</h3>
-            <ul className="divide-y">
-              {teachers.map((teacher) => (
-                <li key={teacher.id} className="py-2 flex flex-wrap items-center gap-2">
-                  <span className="flex-1">
-                    {teacher.username}
-                    {teacher.isMaster && (
-                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 rounded px-1">Master</span>
-                    )}
-                    <span className="text-gray-500 text-sm">
-                      {" "}
-                      · {teacher.studentCount} {teacher.studentCount === 1 ? "Schüler/-in" : "Schüler/-innen"}
-                    </span>
-                  </span>
-
-                  <label className="flex items-center gap-1 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={teacher.isMaster}
-                      disabled={busy || teacher.id === currentUserId}
-                      onChange={() => run(() => api.updateTeacher(teacher.id, { isMaster: !teacher.isMaster }))}
-                      aria-label={`${teacher.username} als Master-Konto`}
-                    />
-                    Master
-                  </label>
-
-                  <button
-                    type="button"
-                    className="p-1 rounded hover:bg-gray-100"
-                    onClick={() => setPasswordFor({ id: teacher.id, password: "" })}
-                    aria-label={`Passwort von ${teacher.username} ändern`}
-                    title="Neues Passwort setzen"
-                  >
-                    <KeyRound size={16} />
-                  </button>
-                  <button
-                    type="button"
-                    className="p-1 rounded hover:bg-gray-100 disabled:opacity-40"
-                    disabled={teacher.id === currentUserId}
-                    onClick={() => setConfirmDelete(teacher.id)}
-                    aria-label={`${teacher.username} löschen`}
-                    title="Löschen"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-
-                  {passwordFor?.id === teacher.id && (
-                    <div className="basis-full flex flex-wrap gap-2 items-center">
-                      <input
-                        type="text"
-                        className="dialog-input flex-1 font-mono"
-                        value={passwordFor.password}
-                        onChange={(e) => setPasswordFor({ ...passwordFor, password: e.target.value })}
-                        placeholder="Neues Passwort (mind. 6 Zeichen)"
-                        aria-label={`Neues Passwort für ${teacher.username}`}
-                      />
-                      <button
-                        type="button"
-                        className="btn-dialog-primary"
-                        disabled={busy || passwordFor.password.length < 6}
-                        onClick={() =>
-                          run(async () => {
-                            await api.updateTeacher(teacher.id, { password: passwordFor.password });
-                            setPasswordFor(null);
-                          })
-                        }
-                      >
-                        Speichern
-                      </button>
-                      <button type="button" className="btn-dialog" onClick={() => setPasswordFor(null)}>
-                        Abbrechen
-                      </button>
-                    </div>
-                  )}
-
-                  {confirmDelete === teacher.id && (
-                    <div className="basis-full flex flex-wrap gap-2 items-center">
-                      <span className="text-sm text-red-700 flex-1">
-                        {teacher.username} mit allen Klassen und Schüler/-innen löschen?
+            <Paginated items={teachers} label="Lehrkräfte">
+              {(visible) => (
+                <ul className="divide-y">
+                  {visible.map((teacher) => (
+                    <li key={teacher.id} className="py-2 flex flex-wrap items-center gap-2">
+                      <span className="flex-1">
+                        {teacher.username}
+                        {teacher.isMaster && (
+                          <span className="ml-2 text-xs bg-blue-100 text-blue-800 rounded px-1">Master</span>
+                        )}
+                        <span className="text-gray-500 text-sm">
+                          {" "}
+                          · {teacher.studentCount} {teacher.studentCount === 1 ? "Schüler/-in" : "Schüler/-innen"}
+                        </span>
                       </span>
+
+                      <label className="flex items-center gap-1 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={teacher.isMaster}
+                          disabled={busy || teacher.id === currentUserId}
+                          onChange={() => run(() => api.updateTeacher(teacher.id, { isMaster: !teacher.isMaster }))}
+                          aria-label={`${teacher.username} als Master-Konto`}
+                        />
+                        Master
+                      </label>
+
                       <button
                         type="button"
-                        className="btn-dialog-danger"
-                        disabled={busy}
-                        onClick={() =>
-                          run(async () => {
-                            await api.deleteTeacher(teacher.id);
-                            setConfirmDelete(null);
-                          })
-                        }
+                        className="p-1 rounded hover:bg-gray-100"
+                        onClick={() => setPasswordFor({ id: teacher.id, password: "" })}
+                        aria-label={`Passwort von ${teacher.username} ändern`}
+                        title="Neues Passwort setzen"
                       >
-                        Löschen
+                        <KeyRound size={16} />
                       </button>
-                      <button type="button" className="btn-dialog" onClick={() => setConfirmDelete(null)}>
-                        Abbrechen
+                      <button
+                        type="button"
+                        className="p-1 rounded hover:bg-gray-100 disabled:opacity-40"
+                        disabled={teacher.id === currentUserId}
+                        onClick={() => setConfirmDelete(teacher.id)}
+                        aria-label={`${teacher.username} löschen`}
+                        title="Löschen"
+                      >
+                        <Trash2 size={16} />
                       </button>
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
+
+                      {passwordFor?.id === teacher.id && (
+                        <div className="basis-full flex flex-wrap gap-2 items-center">
+                          <input
+                            type="text"
+                            className="dialog-input flex-1 font-mono"
+                            value={passwordFor.password}
+                            onChange={(e) => setPasswordFor({ ...passwordFor, password: e.target.value })}
+                            placeholder="Neues Passwort (mind. 6 Zeichen)"
+                            aria-label={`Neues Passwort für ${teacher.username}`}
+                          />
+                          <button
+                            type="button"
+                            className="btn-dialog-primary"
+                            disabled={busy || passwordFor.password.length < 6}
+                            onClick={() =>
+                              run(async () => {
+                                await api.updateTeacher(teacher.id, { password: passwordFor.password });
+                                setPasswordFor(null);
+                              })
+                            }
+                          >
+                            Speichern
+                          </button>
+                          <button type="button" className="btn-dialog" onClick={() => setPasswordFor(null)}>
+                            Abbrechen
+                          </button>
+                        </div>
+                      )}
+
+                      {confirmDelete === teacher.id && (
+                        <div className="basis-full flex flex-wrap gap-2 items-center">
+                          <span className="text-sm text-red-700 flex-1">
+                            {teacher.username} mit allen Klassen und Schüler/-innen löschen?
+                          </span>
+                          <button
+                            type="button"
+                            className="btn-dialog-danger"
+                            disabled={busy}
+                            onClick={() =>
+                              run(async () => {
+                                await api.deleteTeacher(teacher.id);
+                                setConfirmDelete(null);
+                              })
+                            }
+                          >
+                            Löschen
+                          </button>
+                          <button type="button" className="btn-dialog" onClick={() => setConfirmDelete(null)}>
+                            Abbrechen
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Paginated>
 
             <form
               className="mt-4 flex flex-wrap gap-2 items-end"

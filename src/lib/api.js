@@ -45,6 +45,7 @@ export const api = {
   login: (username, password) => request("POST", "/auth/login", { username, password }),
   logout: () => request("POST", "/auth/logout", {}),
   changePassword: (currentPassword, newPassword) => request("POST", "/auth/password", { currentPassword, newPassword }),
+  deleteAccount: (password) => request("DELETE", "/auth/account", { password }),
 
   quiz: (level) => request("GET", `/quizzes/${level}`),
   submitQuiz: (level, answers) => request("POST", `/quizzes/${level}/submit`, { answers }),

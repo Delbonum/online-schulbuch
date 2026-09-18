@@ -72,6 +72,12 @@ final class UserRepository
         return (int) ($row['n'] ?? 0);
     }
 
+    public function countMasters(): int
+    {
+        $row = $this->db->fetchOne("SELECT COUNT(*) AS n FROM users WHERE role = 'teacher' AND is_master = 1");
+        return (int) ($row['n'] ?? 0);
+    }
+
     public function setMaster(int $id, bool $isMaster): void
     {
         $this->db->execute('UPDATE users SET is_master = ? WHERE id = ?', [$isMaster ? 1 : 0, $id]);
