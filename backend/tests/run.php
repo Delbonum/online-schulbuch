@@ -12,6 +12,7 @@ use Kryptogame\Http\Request;
 use Kryptogame\Http\Response;
 use Kryptogame\LegacyImporter;
 use Kryptogame\Repository\UserRepository;
+use Kryptogame\Service\ArrayMailer;
 use Kryptogame\Service\QuizCatalog;
 use Kryptogame\Service\QuizGrader;
 
@@ -50,9 +51,21 @@ final class Client
 {
     private App $app;
 
-    public function __construct(Database $db, QuizCatalog $catalog, array $allowedOrigins = [])
+    public ArrayMailer $mailer;
+
+    public function __construct(Database $db, QuizCatalog $catalog, array $allowedOrigins = [], ?ArrayMailer $mailer = null)
     {
-        $this->app = new App($db, new ArraySession(), $catalog, true, $allowedOrigins);
+        $this->mailer = $mailer ?? new ArrayMailer();
+        $this->app = new App(
+            $db,
+            new ArraySession(),
+            $catalog,
+            true,
+            $allowedOrigins,
+            $this->mailer,
+            'admin@example.org',
+            'https://example.org/kryptogame',
+        );
     }
 
     /** @param array<string, mixed>|null $body */
@@ -66,6 +79,15 @@ final class Client
             $body === null ? '' : json_encode($body),
             '127.0.0.1',
         ));
+    }
+
+    /** @param array<string, string> $query */
+    public function callWithQuery(string $method, string $path, array $query): Response
+    {
+        return $this->app->handle(
+            (new Request($method, $path, ['Content-Type' => 'application/json', 'Host' => 'example.org'], '', '127.0.0.1'))
+                ->withQuery($query),
+        );
     }
 
     public function login(string $username, string $password): Response
@@ -274,7 +296,10 @@ test('Schülerverwaltung durch Lehrkräfte', function () use ($catalog): void {
 
     $updated = $teacherA->call('PATCH', "/students/{$annaId}", ['username' => 'anna2', 'password' => 'neu-pw', 'passedLevels' => [1, 2]]);
     check($updated->status() === 200, 'Schülerin bearbeitet');
-    check($updated->data()['student'] === ['id' => $annaId, 'username' => 'anna2', 'passedLevels' => [1, 2]], 'Änderungen übernommen');
+    check(
+        $updated->data()['student'] === ['id' => $annaId, 'username' => 'anna2', 'classId' => null, 'passedLevels' => [1, 2]],
+        'Änderungen übernommen',
+    );
     check((new Client($db, $catalog))->login('anna2', 'neu-pw')->status() === 200, 'Login mit neuen Daten');
     check($teacherA->call('PATCH', "/students/{$annaId}", ['passedLevels' => [99]])->status() === 400, 'unbekanntes Level');
     check($teacherA->call('PATCH', "/students/{$annaId}", ['role' => 'teacher'])->data()['student']['username'] === 'anna2', 'unbekannte Felder werden ignoriert');
@@ -299,6 +324,128 @@ test('Schülerverwaltung durch Lehrkräfte', function () use ($catalog): void {
     check($teacherA->call('DELETE', "/students/{$annaId}")->status() === 204, 'Schülerin gelöscht');
     check($teacherA->call('GET', '/students')->data()['students'] === [], 'Liste wieder leer');
     check($teacherA->call('DELETE', '/students/abc')->status() === 400, 'ungültige ID');
+});
+
+test('Klassenverwaltung', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $users->create('lehrerA', password_hash('lehrer-pw', PASSWORD_DEFAULT), 'teacher', null);
+    $users->create('lehrerB', password_hash('lehrer-pw', PASSWORD_DEFAULT), 'teacher', null);
+
+    $teacherA = new Client($db, $catalog);
+    $teacherA->login('lehrerA', 'lehrer-pw');
+    $teacherB = new Client($db, $catalog);
+    $teacherB->login('lehrerB', 'lehrer-pw');
+
+    check($teacherA->call('GET', '/classes')->data()['classes'] === [], 'anfangs keine Klassen');
+    check($teacherA->call('POST', '/classes', ['name' => ''])->status() === 400, 'leerer Name');
+
+    $created = $teacherA->call('POST', '/classes', ['name' => '9b']);
+    check($created->status() === 201 && $created->data()['class']['name'] === '9b', 'Klasse angelegt');
+    $classId = $created->data()['class']['id'];
+    check($teacherA->call('POST', '/classes', ['name' => '9b'])->status() === 409, 'Name doppelt');
+    check($teacherB->call('POST', '/classes', ['name' => '9b'])->status() === 201, 'andere Lehrkraft darf denselben Namen nutzen');
+    check($teacherB->call('PATCH', "/classes/{$classId}", ['name' => 'geklaut'])->status() === 404, 'fremde Klasse nicht änderbar');
+    check($teacherB->call('DELETE', "/classes/{$classId}")->status() === 404, 'fremde Klasse nicht löschbar');
+
+    $student = $teacherA->call('POST', '/students', ['username' => 'anna', 'password' => 'anna-pw', 'classId' => $classId]);
+    check($student->data()['student']['classId'] === $classId, 'Schülerin mit Klasse angelegt');
+    $annaId = $student->data()['student']['id'];
+    check(
+        $teacherA->call('POST', '/students', ['username' => 'ben', 'password' => 'ben-pw'])->data()['student']['classId'] === null,
+        'Anlegen ohne Klasse möglich',
+    );
+    $otherClassId = $teacherB->call('GET', '/classes')->data()['classes'][0]['id'];
+    check(
+        $teacherA->call('PATCH', "/students/{$annaId}", ['classId' => $otherClassId])->status() === 400,
+        'fremde Klasse nicht zuweisbar',
+    );
+
+    $list = $teacherA->call('GET', '/students')->data();
+    check(count($list['classes']) === 1 && $list['classes'][0]['studentCount'] === 1, 'Klassenliste mit Anzahl');
+    check($list['students'][0]['classId'] === $classId, 'Klasse in der Schülerliste');
+
+    $renamed = $teacherA->call('PATCH', "/classes/{$classId}", ['name' => '9c']);
+    check(
+        $renamed->data()['class'] === ['id' => $classId, 'name' => '9c', 'studentCount' => 1, 'optionalLevels' => []],
+        'Klasse umbenannt',
+    );
+
+    check($teacherA->call('PATCH', "/students/{$annaId}", ['classId' => null])->data()['student']['classId'] === null, 'Klasse entfernt');
+    $teacherA->call('PATCH', "/students/{$annaId}", ['classId' => $classId]);
+
+    check($teacherA->call('DELETE', "/classes/{$classId}")->status() === 204, 'Klasse gelöscht');
+    $after = $teacherA->call('GET', '/students')->data();
+    check(count($after['students']) === 2, 'Schüler/-innen bleiben erhalten');
+    check($after['students'][0]['classId'] === null, 'Klassenzuordnung aufgehoben');
+});
+
+test('Optionale Level einer Klasse', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $users->create('lehrer', password_hash('lehrer-pw', PASSWORD_DEFAULT), 'teacher', null);
+
+    $teacher = new Client($db, $catalog);
+    $teacher->login('lehrer', 'lehrer-pw');
+    $classId = $teacher->call('POST', '/classes', ['name' => '9a'])->data()['class']['id'];
+    $teacher->call('POST', '/students', ['username' => 'anna', 'password' => 'anna-pw', 'classId' => $classId]);
+    $teacher->call('POST', '/students', ['username' => 'ben', 'password' => 'ben-pw']);
+
+    $anna = new Client($db, $catalog);
+    $anna->login('anna', 'anna-pw');
+    check($anna->call('POST', '/quizzes/2/submit', ['answers' => []])->status() === 403, 'Level 2 zunächst gesperrt');
+
+    check($teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => [99]])->status() === 400, 'unbekanntes Level');
+    check($teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => 'x'])->status() === 400, 'keine Liste');
+
+    $updated = $teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => [1]]);
+    check($updated->data()['class']['optionalLevels'] === [1], 'Level 1 als optional gespeichert');
+
+    check($anna->call('POST', '/quizzes/2/submit', ['answers' => []])->status() === 200, 'Level 2 ohne Level-1-Prüfung offen');
+    check($anna->call('GET', '/auth/me')->data()['user']['optionalLevels'] === [1], 'optionale Level im Profil');
+
+    $ben = new Client($db, $catalog);
+    $ben->login('ben', 'ben-pw');
+    check($ben->call('POST', '/quizzes/2/submit', ['answers' => []])->status() === 403, 'ohne Klasse gilt die Regel weiter');
+    check($ben->call('GET', '/auth/me')->data()['user']['optionalLevels'] === [], 'ohne Klasse keine optionalen Level');
+
+    // Mehrere optionale Level hintereinander werden übersprungen
+    $teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => [1, 2]]);
+    check($anna->call('POST', '/quizzes/3/submit', ['answers' => []])->status() === 200, 'Level 3 nach zwei optionalen Leveln offen');
+    check($anna->call('POST', '/quizzes/4/submit', ['answers' => []])->status() === 403, 'Level 4 bleibt gesperrt');
+
+    $teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => []]);
+    check($anna->call('POST', '/quizzes/2/submit', ['answers' => []])->status() === 403, 'Zurücknehmen sperrt wieder');
+
+    $teacher->call('PATCH', "/classes/{$classId}", ['optionalLevels' => [1]]);
+    $teacher->call('DELETE', "/classes/{$classId}");
+    check($anna->call('POST', '/quizzes/2/submit', ['answers' => []])->status() === 403, 'nach dem Löschen der Klasse gilt wieder die Standardregel');
+});
+
+test('Statistik nach Klassen', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $users->create('lehrer', password_hash('lehrer-pw', PASSWORD_DEFAULT), 'teacher', null);
+    $teacher = new Client($db, $catalog);
+    $teacher->login('lehrer', 'lehrer-pw');
+    $classId = $teacher->call('POST', '/classes', ['name' => '10a'])->data()['class']['id'];
+    $teacher->call('POST', '/students', ['username' => 'mit', 'password' => 'passwort', 'classId' => $classId]);
+    $teacher->call('POST', '/students', ['username' => 'ohne', 'password' => 'passwort']);
+
+    $mit = new Client($db, $catalog);
+    $mit->login('mit', 'passwort');
+    $mit->call('POST', '/quizzes/1/submit', ['answers' => correctAnswers($catalog, 1)]);
+
+    $all = asArray($teacher->call('GET', '/statistics'));
+    check($all['studentCount'] === 2 && $all['passedCounts']['1'] === 1, 'Statistik über alle');
+
+    $withClass = asArray($teacher->callWithQuery('GET', '/statistics', ['classId' => (string) $classId]));
+    check($withClass['studentCount'] === 1 && $withClass['passedCounts']['1'] === 1, 'Statistik der Klasse');
+
+    $withoutClass = asArray($teacher->callWithQuery('GET', '/statistics', ['classId' => 'none']));
+    check($withoutClass['studentCount'] === 1 && $withoutClass['passedCounts']['1'] === 0, 'Statistik ohne Klasse');
+
+    check($teacher->callWithQuery('GET', '/statistics', ['classId' => '9999'])->status() === 404, 'unbekannte Klasse');
 });
 
 test('Statistik', function () use ($catalog): void {
@@ -330,6 +477,101 @@ test('Statistik', function () use ($catalog): void {
     check($stats['completion'][2]['label'] === 'Level 1–2 bestanden', 'Beschriftung der Gruppen');
 });
 
+test('Registrierung von Lehrkräften', function () use ($catalog): void {
+    $db = freshDatabase();
+    $mailer = new ArrayMailer();
+    $client = new Client($db, $catalog, [], $mailer);
+
+    $daten = [
+        'username' => 'neue.lehrkraft',
+        'password' => 'sicher123',
+        'fullName' => 'Erika Musterfrau',
+        'school' => 'Gymnasium Musterstadt',
+        'city' => 'Musterstadt',
+        'email' => 'erika@example.org',
+    ];
+
+    check($client->call('POST', '/register', ['username' => 'x'] + $daten)->status() === 400, 'zu kurzer Benutzername');
+    check($client->call('POST', '/register', ['email' => 'keine-mail'] + $daten)->status() === 400, 'ungültige E-Mail');
+    check($client->call('POST', '/register', ['school' => ''] + $daten)->status() === 400, 'Schule fehlt');
+
+    $response = $client->call('POST', '/register', $daten);
+    check($response->status() === 202 && $response->data()['status'] === 'pending', 'Anfrage angenommen');
+    check($client->login('neue.lehrkraft', 'sicher123')->status() === 401, 'vor der Freigabe kein Login');
+    check($client->call('POST', '/register', $daten)->status() === 409, 'kein zweiter Antrag mit gleichem Namen');
+
+    $mail = $mailer->last();
+    check($mail['to'] === 'admin@example.org', 'Benachrichtigung an die Admin-Adresse');
+    check(str_contains($mail['body'], 'Gymnasium Musterstadt') && str_contains($mail['body'], 'erika@example.org'), 'Angaben in der Mail');
+    check(preg_match('#/api/register/([0-9a-f]{32})/approve#', $mail['body'], $m) === 1, 'Freigabe-Link in der Mail');
+    $token = $m[1];
+
+    $page = $client->call('GET', "/register/{$token}/approve");
+    check($page->status() === 200 && str_contains((string) $page->data(), 'freigegeben'), 'Freigabe über den Link');
+    check($client->login('neue.lehrkraft', 'sicher123')->data()['user']['role'] === 'teacher', 'Login nach der Freigabe');
+    check($mailer->last()['to'] === 'erika@example.org', 'Bestätigung an die Lehrkraft');
+
+    $again = $client->call('GET', "/register/{$token}/approve");
+    check(str_contains((string) $again->data(), 'bereits'), 'Link lässt sich nicht zweimal nutzen');
+    check($client->call('GET', '/register/' . str_repeat('a', 32) . '/approve')->status() === 404, 'unbekannter Token');
+});
+
+test('Master-Konto verwaltet Lehrkräfte und Registrierungen', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $masterId = $users->create('Nix', password_hash('master-pw', PASSWORD_DEFAULT), 'teacher', null);
+    $users->setMaster($masterId, true);
+    $users->create('kollege', password_hash('kollege-pw', PASSWORD_DEFAULT), 'teacher', null);
+
+    $mailer = new ArrayMailer();
+    $master = new Client($db, $catalog, [], $mailer);
+    $master->login('Nix', 'master-pw');
+    $kollege = new Client($db, $catalog, [], $mailer);
+    $kollege->login('kollege', 'kollege-pw');
+
+    check($master->call('GET', '/auth/me')->data()['user']['isMaster'] === true, 'Master erkennt sich selbst');
+    check($kollege->call('GET', '/auth/me')->data()['user']['isMaster'] === false, 'normale Lehrkraft ist kein Master');
+    check($kollege->call('GET', '/teachers')->status() === 403, 'nur das Master-Konto sieht die Lehrkräfte');
+    check($kollege->call('GET', '/registrations')->status() === 403, 'nur das Master-Konto sieht Registrierungen');
+
+    $list = $master->call('GET', '/teachers')->data()['teachers'];
+    check(count($list) === 2, 'alle Lehrkräfte werden gelistet');
+    check(!isset($list[0]['password_hash']), 'keine Passwort-Hashes in der Antwort');
+
+    $created = $master->call('POST', '/teachers', ['username' => 'neu.lehrer', 'password' => 'passwort1']);
+    check($created->status() === 201 && $created->data()['teacher']['isMaster'] === false, 'Lehrkraft angelegt');
+    $neuId = $created->data()['teacher']['id'];
+    check($master->call('POST', '/teachers', ['username' => 'neu.lehrer', 'password' => 'passwort1'])->status() === 409, 'Name vergeben');
+
+    $updated = $master->call('PATCH', "/teachers/{$neuId}", ['username' => 'neu.lehrerin', 'isMaster' => true]);
+    check($updated->data()['teacher'] === ['id' => $neuId, 'username' => 'neu.lehrerin', 'isMaster' => true, 'studentCount' => 0], 'Lehrkraft geändert');
+    check((new Client($db, $catalog))->login('neu.lehrerin', 'passwort1')->data()['user']['isMaster'] === true, 'neue Master-Rechte wirken');
+
+    $selfId = $master->call('GET', '/auth/me')->data()['user']['id'];
+    check($master->call('PATCH', "/teachers/{$selfId}", ['isMaster' => false])->status() === 400, 'Master entzieht sich nicht selbst die Rechte');
+    check($master->call('DELETE', "/teachers/{$selfId}")->status() === 400, 'Master löscht sich nicht selbst');
+    check($master->call('DELETE', "/teachers/{$neuId}")->status() === 204, 'Lehrkraft gelöscht');
+
+    // Registrierung im Dashboard ablehnen
+    $gast = new Client($db, $catalog, [], $mailer);
+    $gast->call('POST', '/register', [
+        'username' => 'bewerber',
+        'password' => 'sicher123',
+        'fullName' => 'Max Muster',
+        'school' => 'Schule',
+        'city' => 'Ort',
+        'email' => 'max@example.org',
+    ]);
+    $offen = $master->call('GET', '/registrations')->data()['registrations'];
+    check(count($offen) === 1 && $offen[0]['status'] === 'pending' && $offen[0]['school'] === 'Schule', 'offene Anfrage sichtbar');
+
+    $decision = $master->call('POST', "/registrations/{$offen[0]['id']}/reject");
+    check($decision->status() === 200 && $decision->data()['status'] === 'rejected', 'Anfrage abgelehnt');
+    check($mailer->last()['to'] === 'max@example.org', 'Absage per Mail');
+    check($master->call('POST', "/registrations/{$offen[0]['id']}/reject")->status() === 409, 'keine zweite Entscheidung');
+    check((new Client($db, $catalog))->login('bewerber', 'sicher123')->status() === 401, 'abgelehnte Anfrage ergibt kein Konto');
+});
+
 test('Import der alten users.json', function () use ($catalog): void {
     $db = freshDatabase();
     $legacy = [
@@ -353,6 +595,23 @@ test('Import der alten users.json', function () use ($catalog): void {
     $history = asArray($teacher->call('GET', "/students/{$maxId}/history"))['history'];
     check($history[1][0]['timestamp'] === '2025-06-28T00:12:50.266Z' && $history[1][0]['score'] === 33, 'Versuch übernommen');
     check($history[1][1]['manual'] === 'freigeschaltet', 'manueller Eintrag übernommen');
+});
+
+test('Migration ergänzt fehlende Spalten in bestehenden Datenbanken', function (): void {
+    $db = freshDatabase();
+    if ($db->driver() === 'mysql') {
+        $db->pdo()->exec('ALTER TABLE users DROP INDEX idx_users_class, DROP COLUMN class_id');
+    } else {
+        $db->pdo()->exec('DROP INDEX idx_users_class');
+        $db->pdo()->exec('ALTER TABLE users DROP COLUMN class_id');
+    }
+    check(!$db->hasColumn('users', 'class_id'), 'Spalte fehlt vor der Migration');
+    $db->migrate();
+    check($db->hasColumn('users', 'class_id'), 'Spalte nach der Migration vorhanden');
+
+    $users = new UserRepository($db);
+    $id = $users->create('lehrer', 'x', 'teacher', null);
+    check($users->findById($id)['class_id'] === null, 'Benutzer weiterhin nutzbar');
 });
 
 test('Löschen einer Lehrkraft löscht ihre Schüler/-innen', function () use ($catalog): void {

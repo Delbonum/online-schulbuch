@@ -26,6 +26,8 @@ $usage = <<<TXT
       migrate                               Tabellen anlegen (kann gefahrlos wiederholt werden)
       create-teacher <name> [passwort]      Lehrkraft anlegen (ohne Passwort wird eines erzeugt)
       set-password <name> [passwort]        Passwort einer Person neu setzen
+      make-master <name>                    Lehrkraft zum Master-Konto machen (darf Lehrkräfte verwalten)
+      revoke-master <name>                  Master-Rechte wieder entziehen
       import-json <datei>                   Benutzer aus der alten users.json / JSONBin übernehmen
       check-quizzes                         Prüfungsdateien in quizzes/ auf Fehler prüfen
 
@@ -78,6 +80,18 @@ try {
             if ($generated) {
                 fwrite(STDOUT, "Passwort: {$password}\n");
             }
+            break;
+
+        case 'make-master':
+        case 'revoke-master':
+            $user = $users->findByUsername((string) ($argv[2] ?? ''))
+                ?? throw new RuntimeException('Benutzer nicht gefunden.');
+            if ($user['role'] !== 'teacher') {
+                throw new RuntimeException('Nur Lehrkräfte können Master-Konto werden.');
+            }
+            $makeMaster = $command === 'make-master';
+            $users->setMaster($user['id'], $makeMaster);
+            fwrite(STDOUT, "\"{$user['username']}\" " . ($makeMaster ? 'ist jetzt Master-Konto.' : 'hat keine Master-Rechte mehr.') . "\n");
             break;
 
         case 'import-json':

@@ -33,6 +33,33 @@ final class Validator
         return $password;
     }
 
+    public static function className(mixed $value): string
+    {
+        $name = is_string($value) ? trim($value) : '';
+        if (mb_strlen($name) < 1 || mb_strlen($name) > 64) {
+            throw HttpException::badRequest('Der Klassenname muss 1–64 Zeichen lang sein.');
+        }
+        return $name;
+    }
+
+    public static function text(mixed $value, string $label, int $max = 128): string
+    {
+        $text = is_string($value) ? trim($value) : '';
+        if ($text === '' || mb_strlen($text) > $max) {
+            throw HttpException::badRequest("Bitte {$label} angeben (höchstens {$max} Zeichen).");
+        }
+        return $text;
+    }
+
+    public static function email(mixed $value): string
+    {
+        $email = is_string($value) ? trim($value) : '';
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 190) {
+            throw HttpException::badRequest('Bitte eine gültige E-Mail-Adresse angeben.');
+        }
+        return $email;
+    }
+
     public static function positiveInt(mixed $value, string $label): int
     {
         if (is_int($value) && $value > 0) {

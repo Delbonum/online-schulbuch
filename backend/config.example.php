@@ -32,6 +32,11 @@ return [
     // Webordners ablegen, da manche Webserver .json-Dateien direkt ausliefern und .htaccess dabei ignorieren.
     // 'quizzes_dir' => __DIR__ . '/../../../../kryptogame-data/quizzes',
 
+    // Registrierung von Lehrkräften: Anfragen gehen an diese Adresse, versendet wird über mail()
+    'admin_email' => 'deine-adresse@example.org',
+    'mail_from' => 'kryptogame@example.org',
+    'app_url' => 'https://example.org/informatik/kryptogame',
+
     // Fehlermeldungen im Detail ausgeben – nur lokal auf true setzen!
     'debug' => false,
 

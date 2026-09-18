@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { modPow, powerSteps } from "../../lib/crypto";
+import ScrollArea from "../ScrollArea";
 
 /** Umkehrung ausprobieren: Für welches x gilt g^x mod p = target? */
 export default function DiscreteLogChallenge({ g = 3, p = 17, target = 13 }) {
@@ -57,7 +58,7 @@ export default function DiscreteLogChallenge({ g = 3, p = 17, target = 13 }) {
         {showAll ? "Tabelle ausblenden" : "Alle Möglichkeiten durchprobieren (Brute Force)"}
       </button>
       {showAll && (
-        <div className="overflow-x-auto">
+        <ScrollArea>
           <table className="text-sm text-center">
             <tbody>
               <tr>
@@ -89,7 +90,7 @@ export default function DiscreteLogChallenge({ g = 3, p = 17, target = 13 }) {
           <p className="text-xs text-white/60 mt-2">
             Die Werte springen scheinbar zufällig hin und her – es gibt kein Muster, das beim Zurückrechnen hilft.
           </p>
-        </div>
+        </ScrollArea>
       )}
     </div>
   );

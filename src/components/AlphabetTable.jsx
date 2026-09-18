@@ -1,4 +1,5 @@
 import { ALPHABET } from "../lib/crypto";
+import ScrollArea from "./ScrollArea";
 
 /** Klartextalphabet über einem Geheimtextalphabet. */
 export default function AlphabetTable({
@@ -8,7 +9,7 @@ export default function AlphabetTable({
   cipherLabel = "Geheimtext",
 }) {
   return (
-    <div className="overflow-x-auto">
+    <ScrollArea>
       <table className="table-auto border border-white text-center">
         <tbody>
           <tr>
@@ -33,6 +34,6 @@ export default function AlphabetTable({
           </tr>
         </tbody>
       </table>
-    </div>
+    </ScrollArea>
   );
 }

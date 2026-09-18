@@ -5,7 +5,14 @@ import {
   gcd,
   guessCaesarShift,
   isPrime,
+  factorSemiprime,
+  lettersToNumbers,
+  modInverse,
   modPow,
+  numbersToLetters,
+  parseNumberList,
+  rsaDecryptLetters,
+  rsaEncryptLetters,
   normalizeSubstitutionKey,
   parseShiftRule,
   powerSteps,
@@ -146,5 +153,34 @@ describe("Diffie-Hellman", () => {
     expect(mixColors(mixColors(common, alice), bob)).not.toBe(mixColors(common, alice, bob));
     expect(mixColors(common, alice, bob)).toBe(mixColors(bob, common, alice));
     expect(mixColors("#000000", "#ffffff")).toBe("#bcbcbc");
+  });
+});
+
+describe("RSA", () => {
+  test("Inverses und Faktorisierung", () => {
+    expect(modInverse(3, 352)).toBe(235);
+    expect((3 * 235) % 352).toBe(1);
+    expect(modInverse(2, 4)).toBeNull();
+    expect(factorSemiprime(3127)).toEqual([53, 59]);
+    expect(factorSemiprime(391)).toEqual([17, 23]);
+    expect(factorSemiprime(17)).toBeNull();
+  });
+
+  test("Buchstaben als Zahlen", () => {
+    expect(lettersToNumbers("AbZ!")).toEqual([1, 2, 26]);
+    expect(numbersToLetters([1, 2, 26, 99])).toBe("ABZ?");
+    expect(parseNumberList(" 12, 7  9 ")).toEqual([12, 7, 9]);
+  });
+
+  test("Beispiel aus Level 5: verschlüsseln und wieder entschlüsseln", () => {
+    const [p, q, e] = [17, 23, 3];
+    const n = p * q;
+    const phi = (p - 1) * (q - 1);
+    const d = modInverse(e, phi);
+    expect([n, phi, d]).toEqual([391, 352, 235]);
+
+    const cipher = rsaEncryptLetters("RSA IST SICHER", e, n);
+    expect(rsaDecryptLetters(cipher, d, n)).toBe("RSAISTSICHER");
+    expect(cipher).toEqual(rsaEncryptLetters("rsa ist sicher", e, n));
   });
 });

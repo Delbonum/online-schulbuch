@@ -296,3 +296,52 @@ export function powerSteps(g, x, p) {
   }
   return steps;
 }
+
+/** Multiplikatives Inverses: kleinste Zahl d > 0 mit (a · d) mod m = 1, sonst null. */
+export function modInverse(a, m) {
+  const base = mod(a, m);
+  for (let d = 1; d < m; d++) {
+    if ((base * d) % m === 1) return d;
+  }
+  return null;
+}
+
+/** Kleinster Primfaktor einer Zahl (null, wenn sie prim oder kleiner als 2 ist). */
+export function smallestFactor(n) {
+  if (!Number.isInteger(n) || n < 2) return null;
+  for (let d = 2; d * d <= n; d++) {
+    if (n % d === 0) return d;
+  }
+  return null;
+}
+
+/** Zerlegt ein Produkt zweier Primzahlen in seine Faktoren, sonst null. */
+export function factorSemiprime(n) {
+  const p = smallestFactor(n);
+  if (p === null) return null;
+  const q = n / p;
+  return isPrime(p) && isPrime(q) ? [p, q] : null;
+}
+
+/** Buchstaben als Zahlen: A = 1 … Z = 26 (andere Zeichen entfallen). */
+export const lettersToNumbers = (text) => [...lettersOnly(text)].map((char) => letterIndex(char) + 1);
+
+/** Umkehrung von lettersToNumbers; unbekannte Zahlen werden zu "?". */
+export const numbersToLetters = (numbers) => numbers.map((n) => (n >= 1 && n <= 26 ? ALPHABET[n - 1] : "?")).join("");
+
+/**
+ * RSA auf Buchstabenebene: Jeder Buchstabe wird einzeln als Zahl verschlüsselt.
+ * Nur für den Unterricht gedacht – echtes RSA verschlüsselt ganze Blöcke mit Zufallsanteil.
+ */
+export const rsaEncryptLetters = (text, exponent, modulus) =>
+  lettersToNumbers(text).map((m) => modPow(m, exponent, modulus));
+
+export const rsaDecryptLetters = (numbers, exponent, modulus) =>
+  numbersToLetters(numbers.map((c) => modPow(c, exponent, modulus)));
+
+/** "3 12 7" → [3, 12, 7] */
+export const parseNumberList = (text) =>
+  text
+    .split(/[^0-9]+/)
+    .filter((part) => part !== "")
+    .map(Number);

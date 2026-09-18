@@ -8,6 +8,7 @@ use Kryptogame\Database;
 use Kryptogame\Http\HttpException;
 use Kryptogame\Http\Request;
 use Kryptogame\Http\Response;
+use Kryptogame\Repository\ClassRepository;
 use Kryptogame\Repository\ProgressRepository;
 use Kryptogame\Repository\UserRepository;
 use Kryptogame\Service\Auth;
@@ -25,6 +26,7 @@ final class StudentController
         private UserRepository $users,
         private ProgressRepository $progress,
         private QuizCatalog $catalog,
+        private ClassRepository $classes,
     ) {
     }
 
@@ -36,9 +38,11 @@ final class StudentController
 
         return Response::json([
             'levels' => $this->catalog->levels(),
+            'classes' => $this->classes->forTeacher($teacher['id']),
             'students' => array_map(static fn (array $s): array => [
                 'id' => $s['id'],
                 'username' => $s['username'],
+                'classId' => $s['class_id'],
                 'passedLevels' => $passed[$s['id']],
             ], $students),
         ]);
@@ -54,7 +58,8 @@ final class StudentController
         if ($this->users->usernameExists($username)) {
             throw HttpException::conflict('Dieser Benutzername ist bereits vergeben.');
         }
-        $id = $this->users->create($username, password_hash($password, PASSWORD_DEFAULT), 'student', $teacher['id']);
+        $classId = $this->classIdFrom($body, $teacher['id']);
+        $id = $this->users->create($username, password_hash($password, PASSWORD_DEFAULT), 'student', $teacher['id'], $classId);
 
         return Response::json(['student' => $this->studentPayload($id)], 201);
     }
@@ -78,6 +83,10 @@ final class StudentController
             if (array_key_exists('password', $body) && $body['password'] !== '' && $body['password'] !== null) {
                 $password = Validator::password($body['password']);
                 $this->users->updatePasswordHash($student['id'], password_hash($password, PASSWORD_DEFAULT));
+            }
+
+            if (array_key_exists('classId', $body)) {
+                $this->users->setClass($student['id'], $this->classIdFrom($body, $teacher['id']));
             }
 
             if (array_key_exists('passedLevels', $body)) {
@@ -112,6 +121,25 @@ final class StudentController
         $teacher = $this->auth->requireTeacher();
         $student = $this->ownStudent($teacher, $params['id']);
         return Response::json(['history' => (object) $this->progress->history($student['id'])]);
+    }
+
+    /**
+     * Prüft, dass eine angegebene Klasse zur Lehrkraft gehört.
+     *
+     * @param array<string, mixed> $body
+     */
+    private function classIdFrom(array $body, int $teacherId): ?int
+    {
+        $value = $body['classId'] ?? null;
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $classId = Validator::positiveInt($value, 'Klasse');
+        $class = $this->classes->find($classId);
+        if ($class === null || $class['teacher_id'] !== $teacherId) {
+            throw HttpException::badRequest('Diese Klasse gibt es nicht.');
+        }
+        return $classId;
     }
 
     private function setPassedLevels(int $studentId, mixed $levels, int $teacherId): void
@@ -156,6 +184,7 @@ final class StudentController
         return [
             'id' => $id,
             'username' => $student['username'] ?? '',
+            'classId' => $student['class_id'] ?? null,
             'passedLevels' => $this->progress->passedLevels($id),
         ];
     }

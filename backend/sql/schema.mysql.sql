@@ -7,11 +7,49 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     role          ENUM('teacher', 'student') NOT NULL,
     teacher_id    INT UNSIGNED NULL,
+    class_id      INT UNSIGNED NULL,
+    is_master     TINYINT(1)   NOT NULL DEFAULT 0,
     created_at    DATETIME(3)  NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_users_username (username),
     KEY idx_users_teacher (teacher_id),
+    KEY idx_users_class (class_id),
     CONSTRAINT fk_users_teacher FOREIGN KEY (teacher_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS teacher_requests (
+    id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    username      VARCHAR(64)  NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name     VARCHAR(128) NOT NULL,
+    school        VARCHAR(128) NOT NULL,
+    city          VARCHAR(128) NOT NULL,
+    email         VARCHAR(190) NOT NULL,
+    status        ENUM('pending', 'approved', 'rejected') NOT NULL,
+    token         CHAR(32)     NOT NULL,
+    created_at    DATETIME(3)  NOT NULL,
+    decided_at    DATETIME(3)  NULL,
+    decided_by    INT UNSIGNED NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_requests_token (token),
+    KEY idx_requests_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS classes (
+    id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    teacher_id INT UNSIGNED NOT NULL,
+    name       VARCHAR(64)  NOT NULL,
+    created_at DATETIME(3)  NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_classes_teacher_name (teacher_id, name),
+    CONSTRAINT fk_classes_teacher FOREIGN KEY (teacher_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS class_optional_levels (
+    class_id INT UNSIGNED      NOT NULL,
+    level    SMALLINT UNSIGNED NOT NULL,
+    PRIMARY KEY (class_id, level),
+    CONSTRAINT fk_optional_class FOREIGN KEY (class_id) REFERENCES classes (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS level_progress (

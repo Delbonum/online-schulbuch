@@ -1,6 +1,6 @@
 export default function Level4Intro() {
   return (
-    <div className="text-style space-y-4 max-w-4xl">
+    <div className="text-style space-y-4">
       <h1 className="text-2xl font-bold heading-style">Das Schlüsselproblem</h1>
 
       <p>

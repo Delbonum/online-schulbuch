@@ -44,8 +44,57 @@
     @apply w-full border border-gray-300 rounded px-2 py-1.5 text-black;
   }
 
+  /* Einheitlicher Rahmen für jede Levelseite: Textbreite, Abstände und Überschriften */
+  .page {
+    @apply max-w-5xl space-y-4 text-style;
+  }
+
+  .page h1 {
+    @apply text-2xl font-bold heading-style mb-2;
+  }
+
+  .page h2 {
+    @apply text-xl font-semibold text-headinglight mt-6 mb-1;
+  }
+
+  .page h3 {
+    @apply text-lg font-semibold text-headinglight mt-4 mb-1;
+  }
+
+  .page > p,
+  .page section > p,
+  .page > div > p {
+    @apply leading-relaxed;
+  }
+
+  .page > ul,
+  .page section > ul,
+  .page > ol,
+  .page section > ol {
+    @apply space-y-1 ml-1;
+  }
+
+  .page > ul,
+  .page section > ul {
+    @apply list-disc list-inside;
+  }
+
+  .page > ol,
+  .page section > ol {
+    @apply list-decimal list-inside;
+  }
+
+  .page section {
+    @apply space-y-2;
+  }
+
+  /* Illustrationen: auf kleinen Bildschirmen zentriert und begrenzt */
+  .illustration {
+    @apply w-40 sm:w-56 md:w-72 h-auto mx-auto md:mx-0 object-contain;
+  }
+
   .panel {
-    @apply bg-white/10 p-4 rounded;
+    @apply bg-white/10 p-4 rounded break-words;
   }
 
   .highlight {

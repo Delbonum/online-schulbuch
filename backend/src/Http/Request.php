@@ -12,6 +12,9 @@ final class Request
     /** @var array<string, mixed>|null */
     private ?array $json = null;
 
+    /** @var array<string, string> */
+    private array $query = [];
+
     /**
      * @param array<string, string> $headers
      */
@@ -49,13 +52,26 @@ final class Request
             $headers['content-type'] = (string) $_SERVER['CONTENT_TYPE'];
         }
 
-        return new self(
+        $request = new self(
             (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'),
             $uriPath,
             $headers,
             (string) file_get_contents('php://input'),
             (string) ($_SERVER['REMOTE_ADDR'] ?? ''),
         );
+        return $request->withQuery(array_map('strval', $_GET));
+    }
+
+    /** @param array<string, string> $query */
+    public function withQuery(array $query): self
+    {
+        $this->query = $query;
+        return $this;
+    }
+
+    public function query(string $key): ?string
+    {
+        return $this->query[$key] ?? null;
     }
 
     public function method(): string

@@ -1,4 +1,5 @@
 import { sortedCounts } from "../lib/crypto";
+import ScrollArea from "./ScrollArea";
 
 /**
  * Balkendiagramm der Buchstabenh√§ufigkeiten.
@@ -13,7 +14,7 @@ export default function FrequencyBars({ counts, unit = "", label = "Buchstabenh√
   }
 
   return (
-    <div className="overflow-x-auto">
+    <ScrollArea>
       <div className="flex gap-1.5 mt-2 text-xs items-end min-w-max" role="img" aria-label={label}>
         {entries.map(([char, value]) => (
           <div key={char} className="text-center" title={`${char}: ${value}${unit}`}>
@@ -22,6 +23,6 @@ export default function FrequencyBars({ counts, unit = "", label = "Buchstabenh√
           </div>
         ))}
       </div>
-    </div>
+    </ScrollArea>
   );
 }

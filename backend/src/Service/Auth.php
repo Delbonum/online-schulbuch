@@ -73,6 +73,16 @@ final class Auth
         return $this->user() ?? throw HttpException::unauthorized();
     }
 
+    /** @return array<string, mixed> Lehrkraft mit Master-Rechten */
+    public function requireMaster(): array
+    {
+        $user = $this->requireTeacher();
+        if (empty($user['is_master'])) {
+            throw HttpException::forbidden('Nur für das Master-Konto.');
+        }
+        return $user;
+    }
+
     /** @return array<string, mixed> */
     public function requireTeacher(): array
     {

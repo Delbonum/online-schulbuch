@@ -1,11 +1,12 @@
 import AlphabetTable from "../../components/AlphabetTable";
 import alKindiImage from "../../img/alkindi.webp";
+import ScrollArea from "../../components/ScrollArea";
 
 export default function Chiffrieren() {
   return (
     <>
       <div className="flex flex-col md:flex-row items-start justify-between gap-6 text-style">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold mb-4 heading-style">Al-Kindi erklärt das Ersetzungsverfahren</h1>
           <p className="mb-4">
             <i>"Sieh her, Fremder"</i>, sagt Al-Kindi zu dir, nachdem du dich vorgestellt und dein Anliegen erläutert
@@ -33,11 +34,11 @@ export default function Chiffrieren() {
         </div>
 
         <div className="flex-shrink-0 w-full md:w-1/3">
-          <img loading="lazy" src={alKindiImage} alt="Al-Kindi erklärt" className="w-full h-auto object-contain" />
+          <img loading="lazy" src={alKindiImage} alt="Al-Kindi erklärt" className="illustration" />
         </div>
       </div>
 
-      <div className="overflow-x-auto mt-8 text-style">
+      <ScrollArea className="mt-8 text-style">
         <h2 className="text-xl font-bold mb-2 heading-style">Klartext- und Geheimtextalphabet</h2>
         <div className="mb-4">
           <AlphabetTable cipher="QWERTZUIOPASDFGHJKLYXCVBNM" />
@@ -51,7 +52,7 @@ export default function Chiffrieren() {
             Geheimtext: <strong className="text-white font-bold">CTKYKQXTF</strong>“
           </i>
         </p>
-      </div>
+      </ScrollArea>
     </>
   );
 }

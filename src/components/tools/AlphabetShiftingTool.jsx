@@ -9,6 +9,7 @@ import {
   shiftedAlphabet,
 } from "../../lib/crypto";
 import FrequencyBars from "../FrequencyBars";
+import ScrollArea from "../ScrollArea";
 
 /** Brute Force beim Verschiebeverfahren: alle 26 Schlüssel durchprobieren. */
 export default function AlphabetShiftingTool({ initialText = "" }) {
@@ -44,7 +45,7 @@ export default function AlphabetShiftingTool({ initialText = "" }) {
           <div>
             <strong>Verschiebezahl:</strong> {shift}
           </div>
-          <div className="overflow-x-auto">
+          <ScrollArea>
             <table className="table-fixed text-sm border mt-2">
               <tbody>
                 <tr>
@@ -63,7 +64,7 @@ export default function AlphabetShiftingTool({ initialText = "" }) {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         </div>
         <button
           type="button"

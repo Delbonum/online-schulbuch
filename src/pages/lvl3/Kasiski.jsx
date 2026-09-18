@@ -22,7 +22,7 @@ export default function Kasiski() {
       </p>
 
       <div className="flex flex-col md:flex-row-reverse items-start gap-4">
-        <img loading="lazy" src={babbage} alt="Babbage" className="w-40 h-auto self-start" />
+        <img loading="lazy" src={babbage} alt="Babbage" className="illustration self-start" />
         <p className="mb-4">
           Nein. Lange Zeit gilt das Verfahren zwar als unknackbar, doch schon bald lernst du jemanden kennen, dem es
           offenbar doch gelingt, die Chiffre zu knacken: Bei deinen weiteren Zeitreisen triffst du im 19. Jahrhundert
@@ -35,7 +35,7 @@ export default function Kasiski() {
       </div>
 
       <div className="flex flex-col md:flex-row items-start gap-4">
-        <img loading="lazy" src={kasiski} alt="Kasiski" className="w-40 h-auto self-start" />
+        <img loading="lazy" src={kasiski} alt="Kasiski" className="illustration self-start" />
         <p className="mb-4">
           Du triffst den preußischen Infanteriemajor Friedrich Wilhelm Kasiski, der ein Verfahren entwickelt hat, die
           Chiffre zu knacken. Ihm zu Ehren wird dieses Verfahren als <strong>Kasiski-Test</strong> bezeichnet – und
@@ -47,7 +47,7 @@ export default function Kasiski() {
         </p>
       </div>
 
-      <div className="bg-white/10 p-4 rounded text-sm mb-4 flex justify-center">
+      <div className="panel text-sm mb-4">
         <KasiskiTable />
       </div>
 

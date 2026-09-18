@@ -5,7 +5,7 @@ export default function Farbmischung() {
     <div className="text-style space-y-4">
       <h1 className="text-2xl font-bold heading-style">Geheimnisse mischen</h1>
 
-      <p className="max-w-4xl">
+      <p>
         Hellman stellt zwei Farbtöpfe vor dich.{" "}
         <i>
           „Stell dir vor, Alice und Bob tauschen Farben per Post aus – und Eve öffnet jedes Paket. Alles, was verschickt
@@ -13,7 +13,7 @@ export default function Farbmischung() {
         </i>
       </p>
 
-      <ol className="list-decimal list-inside space-y-1 max-w-4xl">
+      <ol className="list-decimal list-inside space-y-1">
         <li>
           Alice und Bob einigen sich <b>öffentlich</b> auf eine gemeinsame Farbe.
         </li>
@@ -30,7 +30,7 @@ export default function Farbmischung() {
 
       <ColorMixingTool />
 
-      <div className="panel border-l-4 border-sky-300 max-w-4xl">
+      <div className="panel border-l-4 border-sky-300">
         <p className="text-white font-semibold mb-1">Warum funktioniert das?</p>
         <p>
           Am Ende enthalten beide Töpfe genau dieselben Zutaten: die gemeinsame Farbe, Alices geheime Farbe und Bobs
@@ -39,7 +39,7 @@ export default function Farbmischung() {
         </p>
       </div>
 
-      <p className="max-w-4xl">
+      <p>
         <i>„Solche Vorgänge nennen wir Einwegfunktionen“</i>, sagt Diffie.{" "}
         <i>
           „In eine Richtung ganz einfach, zurück nahezu aussichtslos. Mit Farben kann man natürlich keine

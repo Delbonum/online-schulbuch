@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Kryptogame\Controller;
 
+use Kryptogame\Http\HttpException;
+use Kryptogame\Http\Request;
 use Kryptogame\Http\Response;
+use Kryptogame\Repository\ClassRepository;
 use Kryptogame\Repository\ProgressRepository;
 use Kryptogame\Repository\UserRepository;
 use Kryptogame\Service\Auth;
 use Kryptogame\Service\QuizCatalog;
+use Kryptogame\Service\Validator;
 
 final class StatisticsController
 {
@@ -17,14 +21,28 @@ final class StatisticsController
         private UserRepository $users,
         private ProgressRepository $progress,
         private QuizCatalog $catalog,
+        private ClassRepository $classes,
     ) {
     }
 
-    public function show(): Response
+    public function show(Request $request): Response
     {
         $teacher = $this->auth->requireTeacher();
         $levels = $this->catalog->levels();
         $students = $this->users->studentsOf($teacher['id']);
+
+        // Optional auf eine Klasse einschränken ("none" = Schüler/-innen ohne Klasse)
+        $filter = $request->query('classId');
+        if ($filter === 'none') {
+            $students = array_values(array_filter($students, static fn (array $s): bool => $s['class_id'] === null));
+        } elseif ($filter !== null && $filter !== '' && $filter !== 'all') {
+            $classId = Validator::positiveInt($filter, 'Klasse');
+            $class = $this->classes->find($classId);
+            if ($class === null || $class['teacher_id'] !== $teacher['id']) {
+                throw HttpException::notFound('Klasse nicht gefunden.');
+            }
+            $students = array_values(array_filter($students, static fn (array $s): bool => $s['class_id'] === $classId));
+        }
         $studentIds = array_column($students, 'id');
         $passedByStudent = $this->progress->passedLevelsForUsers($studentIds);
 

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { modPow, primitiveRoots } from "../../lib/crypto";
+import ScrollArea from "../ScrollArea";
 
 const PRIMES = [11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
 
@@ -101,7 +102,7 @@ export default function DiffieHellmanTool() {
         durchlaufen alle Zahlen von 1 bis {p - 1}.
       </p>
 
-      <div className="overflow-x-auto">
+      <ScrollArea>
         <table className="w-full min-w-[40rem] text-left text-sm">
           <thead>
             <tr className="text-white">
@@ -156,7 +157,7 @@ export default function DiffieHellmanTool() {
             </tr>
           </tbody>
         </table>
-      </div>
+      </ScrollArea>
 
       <p className="text-green-300 font-semibold" aria-live="polite">
         {keyAlice === keyBob

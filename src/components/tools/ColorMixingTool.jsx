@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { mixColors } from "../../lib/colors";
+import ScrollArea from "../ScrollArea";
 
 const COMMON_COLORS = [
   { name: "Gelb", hex: "#ffd700" },
@@ -94,7 +95,7 @@ export default function ColorMixingTool() {
         <ColorPicker label="Bobs geheime Farbe" colors={SECRET_COLORS} value={bob} onChange={setBob} name="bob" />
       </div>
 
-      <div className="overflow-x-auto">
+      <ScrollArea>
         <table className="w-full min-w-[36rem] text-left">
           <thead>
             <tr className="text-white">
@@ -138,7 +139,7 @@ export default function ColorMixingTool() {
             </tr>
           </tbody>
         </table>
-      </div>
+      </ScrollArea>
 
       <p className="text-green-300 font-semibold" aria-live="polite">
         {aliceResult === bobResult

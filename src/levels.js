@@ -28,6 +28,11 @@ import DiffieHellman from "./pages/lvl4/DiffieHellman";
 import FachkonzepteLvl4 from "./pages/lvl4/Fachkonzepte";
 import QuizLvl4 from "./pages/lvl4/Quiz";
 import Level5Intro from "./pages/lvl5/Level5Intro";
+import Primzahlen from "./pages/lvl5/Primzahlen";
+import Schluesselerzeugung from "./pages/lvl5/Schluesselerzeugung";
+import Verschluesseln from "./pages/lvl5/Verschluesseln";
+import FachkonzepteLvl5 from "./pages/lvl5/Fachkonzepte";
+import QuizLvl5 from "./pages/lvl5/Quiz";
 import LevelComplete from "./components/LevelComplete";
 
 /**
@@ -92,8 +97,16 @@ export const LEVELS = [
   },
   {
     number: 5,
-    title: "Ausblick",
-    pages: [{ slug: "start", title: "Baustelle", Component: Level5Intro }],
+    title: "RSA",
+    pages: [
+      { slug: "start", title: "Zwei Schlüssel", Component: Level5Intro },
+      { slug: "primzahlen", title: "Primzahlen als Einwegfunktion", Component: Primzahlen },
+      { slug: "schluessel", title: "Schlüssel erzeugen", Component: Schluesselerzeugung },
+      { slug: "verschluesseln", title: "Ver- und Entschlüsseln", Component: Verschluesseln },
+      { slug: "fachkonzepte", title: "Fachkonzepte", Component: FachkonzepteLvl5 },
+      { slug: "pruefung", title: "Zwischenprüfung", Component: QuizLvl5, quiz: true },
+      { slug: "abschluss", title: "Abschluss", Component: LevelComplete, hidden: true },
+    ],
   },
 ];
 

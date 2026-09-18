@@ -4,7 +4,7 @@ export default function Level2Intro() {
   return (
     <>
       <div className="flex flex-col md:flex-row items-start justify-between gap-6 text-style">
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-bold mb-4 heading-style">Die Reise geht weiter...</h1>
           <p className="mb-4">
             Nach deiner erfolgreichen Entschlüsselung einer wichtigen Nachricht konntest du Caesar warnen. Doch die
@@ -33,12 +33,7 @@ export default function Level2Intro() {
 
         <div className="flex-shrink-0 w-full md:w-1/5">
           <br></br>
-          <img
-            loading="lazy"
-            src={arabImage}
-            alt="Al-Kindi und die arabische Kryptologie"
-            className="w-full h-auto object-contain"
-          />
+          <img loading="lazy" src={arabImage} alt="Al-Kindi und die arabische Kryptologie" className="illustration" />
         </div>
       </div>
     </>

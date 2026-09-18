@@ -48,9 +48,57 @@ final class Database
         if (!is_file($file)) {
             throw new RuntimeException('Kein Schema für den Datenbanktreiber "' . $this->driver() . '" vorhanden.');
         }
+        // Erst fehlende Spalten ergänzen, damit anschließend auch neue Indizes darauf angelegt werden können
+        $this->addMissingColumns();
+
         $sql = (string) preg_replace('/^\s*--.*$/m', '', (string) file_get_contents($file));
         foreach (array_filter(array_map('trim', explode(';', $sql))) as $statement) {
             $this->pdo->exec($statement);
+        }
+    }
+
+    /**
+     * Ergänzt Spalten, die erst nach der ersten Installation dazugekommen sind.
+     * (CREATE TABLE IF NOT EXISTS lässt bestehende Tabellen unverändert.)
+     */
+    private function addMissingColumns(): void
+    {
+        $columns = [
+            'users' => [
+                'class_id' => $this->driver() === 'mysql' ? 'INT UNSIGNED NULL' : 'INTEGER NULL',
+                'is_master' => $this->driver() === 'mysql'
+                    ? 'TINYINT(1) NOT NULL DEFAULT 0'
+                    : 'INTEGER NOT NULL DEFAULT 0',
+            ],
+        ];
+        foreach ($columns as $table => $definitions) {
+            foreach ($definitions as $column => $type) {
+                // Bei einer frischen Datenbank existiert die Tabelle noch nicht – das Schema legt sie gleich an.
+                if (!$this->hasTable($table) || $this->hasColumn($table, $column)) {
+                    continue;
+                }
+                $this->pdo->exec("ALTER TABLE {$table} ADD COLUMN {$column} {$type}");
+            }
+        }
+    }
+
+    public function hasTable(string $table): bool
+    {
+        try {
+            $this->pdo->query("SELECT 1 FROM {$table} LIMIT 1");
+            return true;
+        } catch (\PDOException) {
+            return false;
+        }
+    }
+
+    public function hasColumn(string $table, string $column): bool
+    {
+        try {
+            $this->pdo->query("SELECT {$column} FROM {$table} LIMIT 1");
+            return true;
+        } catch (\PDOException) {
+            return false;
         }
     }
 

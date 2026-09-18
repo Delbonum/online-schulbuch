@@ -29,7 +29,7 @@ export default function KryptoanalyseVigenere() {
         </p>
       </div>
 
-      <div className="bg-white/10 p-4 rounded text-sm mb-4 flex justify-center">
+      <div className="panel text-sm mb-4">
         <ClusterTable />
       </div>
     </div>

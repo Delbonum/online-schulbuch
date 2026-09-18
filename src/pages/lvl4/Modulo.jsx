@@ -7,7 +7,7 @@ export default function Modulo() {
     <div className="text-style space-y-6">
       <h1 className="text-2xl font-bold heading-style">Rechnen im Kreis</h1>
 
-      <section className="space-y-3 max-w-4xl">
+      <section className="space-y-3">
         <p>
           Diffie greift zur Kreide.{" "}
           <i>„Du kennst die Rechenoperation schon, die wir brauchen – sie steckt in jeder Uhr.“</i> Wenn es jetzt 9 Uhr
@@ -24,7 +24,7 @@ export default function Modulo() {
 
       <ModuloClock />
 
-      <section className="space-y-3 max-w-4xl">
+      <section className="space-y-3">
         <h2 className="text-xl font-semibold text-white">Potenzieren mit Rest</h2>
         <p>
           <i>„Und jetzt kommt der Trick“</i>, sagt Diffie. Man nimmt eine Basis g, potenziert sie mit einem Exponenten x
@@ -39,7 +39,7 @@ export default function Modulo() {
 
       <ModPowTool />
 
-      <section className="space-y-3 max-w-4xl">
+      <section className="space-y-3">
         <h2 className="text-xl font-semibold text-white">Und jetzt rückwärts!</h2>
         <p>
           Oben hast du gesehen: 3<sup>4</sup> mod 17 = 13. Stell dir vor, du kennst nur das Ergebnis 13 sowie g = 3 und
@@ -49,7 +49,7 @@ export default function Modulo() {
 
       <DiscreteLogChallenge g={3} p={17} target={13} />
 
-      <div className="panel border-l-4 border-sky-300 max-w-4xl">
+      <div className="panel border-l-4 border-sky-300">
         <p className="text-white font-semibold mb-1">Eine mathematische Einwegfunktion</p>
         <p>
           Den Exponenten zu einem Ergebnis zu finden, nennt man den <b>diskreten Logarithmus</b>. Ein schnelles

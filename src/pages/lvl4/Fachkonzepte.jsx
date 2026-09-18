@@ -14,7 +14,7 @@ export default function FachkonzepteLvl4() {
     <div>
       <h1 className="text-2xl font-bold mb-4 heading-style">Fachkonzepte</h1>
 
-      <div className="space-y-6 text-style max-w-4xl">
+      <div className="space-y-6 text-style">
         <Concept title="Symmetrische Verfahren und das Schlüsselaustauschproblem">
           <p>
             Bei <b>symmetrischen Verfahren</b> wie Caesar, Ersetzungsverfahren, Vigenère oder One-Time-Pad verwenden

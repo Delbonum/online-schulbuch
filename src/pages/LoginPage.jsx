@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { firstPagePath } from "../levels";
 
@@ -77,6 +77,12 @@ export default function LoginPage() {
           Als Gast fortfahren
         </button>
         <p className="mt-2 text-xs text-white/50">Als Gast wird dein Fortschritt nur in diesem Browser gespeichert.</p>
+        <p className="mt-6">
+          Du unterrichtest und möchtest Klassen anlegen?{" "}
+          <Link to="/registrieren" className="underline hover:text-white">
+            Als Lehrkraft registrieren
+          </Link>
+        </p>
       </div>
     </div>
   );

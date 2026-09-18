@@ -10,7 +10,7 @@ export default function Historie() {
 
       <div className="space-y-8 text-style">
         <div className="flex flex-col md:flex-row items-start gap-4">
-          <img loading="lazy" src={trithemius} alt="Trithemius" className="w-80 h-auto self-start" />
+          <img loading="lazy" src={trithemius} alt="Trithemius" className="illustration self-start" />
           <p>
             Du findest dich im 16. Jahrhundert wieder. Bücher, Manuskripte und erste Drucke erzählen dir vom Werk des
             deutschen Benediktinermönchs <strong>Johannes Trithemius</strong>. In seiner Abhandlung{" "}
@@ -31,7 +31,7 @@ export default function Historie() {
         <TabulaRectaTool />
 
         <div className="flex flex-col md:flex-row-reverse items-start gap-4">
-          <img loading="lazy" src={bellaso} alt="Bellaso" className="w-40 h-auto self-start" />
+          <img loading="lazy" src={bellaso} alt="Bellaso" className="illustration self-start" />
           <p>
             Doch damit nicht genug. Du reist weiter nach Italien und triffst auf den Kryptologen{" "}
             <strong>Giovan Battista Bellaso</strong>. Dieser nutzt zur Verschlüsselung nach wie vor eine{" "}
@@ -45,7 +45,7 @@ export default function Historie() {
         </div>
 
         <div className="flex flex-col md:flex-row items-start gap-4">
-          <img loading="lazy" src={vigenere} alt="Vigenère" className="w-80 h-auto self-start" />
+          <img loading="lazy" src={vigenere} alt="Vigenère" className="illustration self-start" />
           <p>
             Schließlich begegnet dir der Franzose <strong>Blaise de Vigenère</strong>, der die Ideen von Trithemius und
             Bellaso aufgreift und verfeinert. Er schlägt vor, die Tabula Recta statt einer Chiffrierscheibe zu nutzen –

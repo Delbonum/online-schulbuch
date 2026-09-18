@@ -49,11 +49,26 @@ export const api = {
   quiz: (level) => request("GET", `/quizzes/${level}`),
   submitQuiz: (level, answers) => request("POST", `/quizzes/${level}/submit`, { answers }),
 
+  register: (data) => request("POST", "/register", data),
+  registrations: () => request("GET", "/registrations"),
+  decideRegistration: (id, decision) => request("POST", `/registrations/${id}/${decision}`, {}),
+
+  teachers: () => request("GET", "/teachers"),
+  createTeacher: (username, password) => request("POST", "/teachers", { username, password }),
+  updateTeacher: (id, changes) => request("PATCH", `/teachers/${id}`, changes),
+  deleteTeacher: (id) => request("DELETE", `/teachers/${id}`, {}),
+
+  classes: () => request("GET", "/classes"),
+  createClass: (name) => request("POST", "/classes", { name }),
+  updateClass: (id, changes) => request("PATCH", `/classes/${id}`, changes),
+  deleteClass: (id) => request("DELETE", `/classes/${id}`, {}),
+
   students: () => request("GET", "/students"),
-  createStudent: (username, password) => request("POST", "/students", { username, password }),
+  createStudent: (username, password, classId = null) => request("POST", "/students", { username, password, classId }),
   updateStudent: (id, changes) => request("PATCH", `/students/${id}`, changes),
   deleteStudent: (id) => request("DELETE", `/students/${id}`, {}),
   resetStudent: (id) => request("POST", `/students/${id}/reset`, {}),
   studentHistory: (id) => request("GET", `/students/${id}/history`),
-  statistics: () => request("GET", "/statistics"),
+  statistics: (classId) =>
+    request("GET", classId ? `/statistics?classId=${encodeURIComponent(classId)}` : "/statistics"),
 };
