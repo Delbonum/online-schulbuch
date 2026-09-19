@@ -94,7 +94,7 @@ class GameApp {
       h('span', {}, st.label),
       h('select', {
         onchange: (e) => this.changeSetting(st, e.target.value),
-      }, st.options.map((o) => h('option', { value: o.value, selected: String(o.value) === String(st.value) }, o.label)))));
+      }, st.options.map((o) => h('option', { value: String(o.value), selected: String(o.value) === String(st.value) }, o.label)))));
 
     this.speedInput = h('input', {
       type: 'range', min: 0, max: 2000, step: 100, value: this.speed,
