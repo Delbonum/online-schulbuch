@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kryptogame;
+
+use RuntimeException;
+
+final class Config
+{
+    /**
+     * @return array{
+     *     db: array{dsn: string, user?: ?string, password?: ?string},
+     *     base_path: string,
+     *     secure_cookies: bool,
+     *     session_lifetime: int,
+     *     debug: bool,
+     *     allowed_origins: list<string>,
+     *     quizzes_dir: string,
+     *     admin_email: string,
+     *     mail_from: string,
+     *     app_url: string
+     * }
+     */
+    public static function load(string $file): array
+    {
+        if (!is_file($file)) {
+            throw new RuntimeException('config.php fehlt. Bitte config.example.php kopieren und anpassen.');
+        }
+        $config = require $file;
+        if (!is_array($config) || !is_string($config['db']['dsn'] ?? null)) {
+            throw new RuntimeException('config.php ist unvollständig: db.dsn fehlt.');
+        }
+
+        // Relative SQLite-Pfade beziehen sich auf den Backend-Ordner
+        if (preg_match('#^sqlite:(?!/|[A-Za-z]:|:memory:)(.+)$#', $config['db']['dsn'], $m)) {
+            $config['db']['dsn'] = 'sqlite:' . dirname($file) . '/' . $m[1];
+        }
+
+        return [
+            'db' => $config['db'],
+            'base_path' => (string) ($config['base_path'] ?? '/informatik/kryptogame/api'),
+            'secure_cookies' => (bool) ($config['secure_cookies'] ?? true),
+            'session_lifetime' => (int) ($config['session_lifetime'] ?? 8 * 3600),
+            'debug' => (bool) ($config['debug'] ?? false),
+            'allowed_origins' => array_values(array_map(
+                static fn ($origin): string => rtrim((string) $origin, '/'),
+                (array) ($config['allowed_origins'] ?? []),
+            )),
+            // Prüfungen mit Lösungen – auf dem Server am besten außerhalb des öffentlichen Webordners
+            'quizzes_dir' => rtrim((string) ($config['quizzes_dir'] ?? dirname($file) . '/quizzes'), '/'),
+            // Adresse, an die Registrierungsanfragen gemeldet werden
+            'admin_email' => (string) ($config['admin_email'] ?? ''),
+            // Absenderadresse der E-Mails (leer = kein Versand)
+            'mail_from' => (string) ($config['mail_from'] ?? ''),
+            // Öffentliche Adresse der App, für Links in E-Mails
+            'app_url' => rtrim((string) ($config['app_url'] ?? ''), '/'),
+        ];
+    }
+}

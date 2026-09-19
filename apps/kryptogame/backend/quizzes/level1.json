@@ -1,0 +1,72 @@
+{
+  "level": 1,
+  "title": "Zwischenprüfung Level 1",
+  "questions": [
+    {
+      "id": 1,
+      "type": "text",
+      "prompt": "Welcher Geheimtext ergibt sich, wenn man den Klartext \"SCHLACHT VERLOREN\" mit dem Schlüssel 'D' verschlüsselt?",
+      "answer": "VFKODFKW YHUORUHQ"
+    },
+    {
+      "id": 2,
+      "type": "single",
+      "prompt": "Was macht das Caesar-Verschiebeverfahren?",
+      "options": [
+        "Ersetzt jeden Buchstaben durch ein zufälliges Symbol",
+        "Vertauscht Buchstaben in zufälliger Reihenfolge",
+        "Verschiebt Buchstaben um eine feste Anzahl im Alphabet",
+        "Komprimiert Text auf binäre Zahlen"
+      ],
+      "answer": 2
+    },
+    {
+      "id": 3,
+      "type": "single",
+      "prompt": "Welche Eigenschaft hat der Schlüssel beim Caesar-Verfahren?",
+      "options": [
+        "Er muss eine Primzahl sein",
+        "Er besteht aus einem Buchstaben",
+        "Er ist ein Passwort mit mindestens 8 Zeichen",
+        "Er ergibt die Anzahl der Buchstaben im Text"
+      ],
+      "answer": 1
+    },
+    {
+      "id": 4,
+      "type": "single",
+      "prompt": "Wie kann man eine Caesar-Verschlüsselung wieder entschlüsseln?",
+      "options": [
+        "Durch Spiegelung der Buchstaben",
+        "Durch Addition des Schlüssels",
+        "Durch Rückverschiebung (negative Verschiebezahl) bzw. positive Verschiebung um (26 - Verschiebezahl) mod 26",
+        "Gar nicht – sie ist nicht entschlüsselbar"
+      ],
+      "answer": 2
+    },
+    {
+      "id": 5,
+      "type": "single",
+      "prompt": "Welchen Zusammenhang gibt es zwischen Verschiebezahl und Schlüssel?",
+      "options": [
+        "Verschiebt man den Buchstaben 'A' um die Verschiebezahl, erhält man den Schlüssel",
+        "Der Schlüssel und die Verschiebezahl sind identisch",
+        "Die Verschiebezahl ergibt sich aus dem Inversen der Schlüsselstelle im Alphabet",
+        "Es gibt keinen Zusammenhang, da der Schlüssel zufällig ist"
+      ],
+      "answer": 0
+    },
+    {
+      "id": 6,
+      "type": "single",
+      "prompt": "Welche Aussage ist falsch?",
+      "options": [
+        "Wenn man den Schlüssel 'A' verwendet, sind Klartext und Geheimtext identisch",
+        "Die Position des Schlüssels im Alphabet (gezählt ab A = 0) ergibt die Verschiebezahl",
+        "Caesar hat das Verschiebeverfahren in der Regel mit dem Schlüssel 'D' verwendet",
+        "Bei einer Verschiebung über das Alphabetende hinaus wird wieder in die andere Richtung zurückverschoben"
+      ],
+      "answer": 3
+    }
+  ]
+}

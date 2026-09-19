@@ -1,0 +1,13 @@
+# Alle Anfragen, die keine vorhandene Datei betreffen, an index.php weiterleiten
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Konfiguration mit Zugangsdaten niemals ausliefern
+<FilesMatch "^config.*\.php$">
+    Require all denied
+</FilesMatch>
+
+Options -Indexes

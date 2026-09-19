@@ -1,0 +1,172 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Kryptogame;
+
+use DateTimeImmutable;
+use DateTimeZone;
+use PDO;
+use RuntimeException;
+
+final class Database
+{
+    private function __construct(private PDO $pdo)
+    {
+    }
+
+    /**
+     * @param array{dsn: string, user?: ?string, password?: ?string} $config
+     */
+    public static function connect(array $config): self
+    {
+        $pdo = new PDO($config['dsn'], $config['user'] ?? null, $config['password'] ?? null, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+        if ($pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite') {
+            $pdo->exec('PRAGMA foreign_keys = ON');
+        }
+        return new self($pdo);
+    }
+
+    public function pdo(): PDO
+    {
+        return $this->pdo;
+    }
+
+    public function driver(): string
+    {
+        return (string) $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+    }
+
+    /** Legt alle Tabellen an, sofern sie noch nicht existieren. */
+    public function migrate(): void
+    {
+        $file = __DIR__ . '/../sql/schema.' . $this->driver() . '.sql';
+        if (!is_file($file)) {
+            throw new RuntimeException('Kein Schema für den Datenbanktreiber "' . $this->driver() . '" vorhanden.');
+        }
+        // Erst fehlende Spalten ergänzen, damit anschließend auch neue Indizes darauf angelegt werden können
+        $this->addMissingColumns();
+
+        $sql = (string) preg_replace('/^\s*--.*$/m', '', (string) file_get_contents($file));
+        foreach (array_filter(array_map('trim', explode(';', $sql))) as $statement) {
+            $this->pdo->exec($statement);
+        }
+    }
+
+    /**
+     * Ergänzt Spalten, die erst nach der ersten Installation dazugekommen sind.
+     * (CREATE TABLE IF NOT EXISTS lässt bestehende Tabellen unverändert.)
+     */
+    private function addMissingColumns(): void
+    {
+        $columns = [
+            'users' => [
+                'class_id' => $this->driver() === 'mysql' ? 'INT UNSIGNED NULL' : 'INTEGER NULL',
+                'is_master' => $this->driver() === 'mysql'
+                    ? 'TINYINT(1) NOT NULL DEFAULT 0'
+                    : 'INTEGER NOT NULL DEFAULT 0',
+            ],
+        ];
+        foreach ($columns as $table => $definitions) {
+            foreach ($definitions as $column => $type) {
+                // Bei einer frischen Datenbank existiert die Tabelle noch nicht – das Schema legt sie gleich an.
+                if (!$this->hasTable($table) || $this->hasColumn($table, $column)) {
+                    continue;
+                }
+                $this->pdo->exec("ALTER TABLE {$table} ADD COLUMN {$column} {$type}");
+            }
+        }
+    }
+
+    public function hasTable(string $table): bool
+    {
+        try {
+            $this->pdo->query("SELECT 1 FROM {$table} LIMIT 1");
+            return true;
+        } catch (\PDOException) {
+            return false;
+        }
+    }
+
+    public function hasColumn(string $table, string $column): bool
+    {
+        try {
+            $this->pdo->query("SELECT {$column} FROM {$table} LIMIT 1");
+            return true;
+        } catch (\PDOException) {
+            return false;
+        }
+    }
+
+    /**
+     * @param array<int|string, mixed> $params
+     * @return list<array<string, mixed>>
+     */
+    public function fetchAll(string $sql, array $params = []): array
+    {
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute($params);
+        return $statement->fetchAll();
+    }
+
+    /**
+     * @param array<int|string, mixed> $params
+     * @return array<string, mixed>|null
+     */
+    public function fetchOne(string $sql, array $params = []): ?array
+    {
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute($params);
+        $row = $statement->fetch();
+        return $row === false ? null : $row;
+    }
+
+    /**
+     * @param array<int|string, mixed> $params
+     */
+    public function execute(string $sql, array $params = []): int
+    {
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute($params);
+        return $statement->rowCount();
+    }
+
+    public function lastInsertId(): int
+    {
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /**
+     * @template T
+     * @param callable(): T $callback
+     * @return T
+     */
+    public function transaction(callable $callback): mixed
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $result = $callback();
+            $this->pdo->commit();
+            return $result;
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    /** Aktueller Zeitpunkt in UTC im Datenbankformat. */
+    public static function now(): string
+    {
+        return (new DateTimeImmutable('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s.v');
+    }
+
+    /** Datenbankzeitpunkt (UTC) als ISO-8601-String für die API. */
+    public static function toIso(string $timestamp): string
+    {
+        return str_replace(' ', 'T', $timestamp) . 'Z';
+    }
+}
