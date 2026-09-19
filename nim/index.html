@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NIM gegen KI</title>
+  <meta name="description" content="Das Streichholzspiel NIM gegen Ada (Algorithmus) oder Kai (lernende KI).">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M30 25V90M50 25V90M70 25V90' stroke='%23e9c88f' stroke-width='10'/%3E%3Cpath d='M30 10V25M50 10V25M70 10V25' stroke='%23d9362b' stroke-width='12'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../">KI-Lernspiele</a>
+    <nav aria-label="Spiele">
+      <a href="../tictactoe/">Tic Tac Toe</a>
+      <a href="../nim/" aria-current="page">NIM</a>
+      <a href="../bauernschach/">Bauernschach</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      <h1>NIM – das Streichholzspiel</h1>
+      <p>
+        Nehmt abwechselnd 1, 2 oder 3 Hölzer. Wer das letzte Holz nehmen muss, verliert.
+        Klingt nach Glück? Ist es nicht: <strong>Ada</strong> kennt eine einfache Rechenregel.
+        <strong>Kai</strong> kennt sie nicht – aber vielleicht findet er sie durch Ausprobieren?
+      </p>
+    </section>
+
+    <div id="app"><noscript>Für dieses Lernspiel wird JavaScript benötigt.</noscript></div>
+
+    <section class="explain" aria-label="Erklärungen">
+      <details>
+        <summary>Spielregeln und Varianten</summary>
+        <p>
+          Auf dem Tisch liegen Hölzer. Wer am Zug ist, nimmt mindestens 1 und höchstens 3 Hölzer (einstellbar).
+          In der Standardvariante verliert, wer das letzte Holz nehmen muss. Du kannst auch einstellen, dass das
+          letzte Holz gewinnt. Klicke auf ein Holz: Es wird zusammen mit allen Hölzern rechts davon genommen.
+        </p>
+      </details>
+      <details>
+        <summary>Tipp: Wie gewinnt man? (erst selbst probieren!)</summary>
+        <p>
+          Überlege von hinten: Wenn nur noch 1 Holz übrig ist und du am Zug bist, hast du verloren. Also willst du
+          deinem Gegner genau 1 Holz übrig lassen. Bei wie vielen Hölzern kann dein Gegner dich nicht daran hindern?
+          Wenn er 5 Hölzer vor sich hat, kann er 1, 2 oder 3 nehmen – und du nimmst jeweils so viele, dass zusammen 4
+          weg sind. Dann bleibt 1 übrig. Die <strong>Zielzahlen</strong> sind also 1, 5, 9, 13, … – immer 4 mehr.
+        </p>
+        <p>
+          Genau diese Überlegung steckt in Adas Regel. Kai dagegen findet die Zielzahlen, ohne je nachzudenken: In seinen
+          Schachteln bleiben am Ende genau die Züge übrig, die auf eine Zielzahl führen. Vergleiche nach dem Training
+          Kais Gedächtnis mit Adas Regel!
+        </p>
+      </details>
+      <details>
+        <summary>Kai: Schachteln mit Kärtchen oder Perlen</summary>
+        <p>
+          Für jede Anzahl von Hölzern hat Kai eine Schachtel. Darin liegen die Kärtchen „−1“, „−2“ und „−3“. Kai zieht
+          blind eines und nimmt so viele Hölzer. Verliert er, wirft er das Kärtchen seines letzten Zuges weg. Wird eine
+          Schachtel leer, fliegt auch das Kärtchen davor raus. Im Modus „Perlen sammeln“ liegen stattdessen Perlen in den
+          Schachteln, und gute Züge bekommen mehr davon.
+        </p>
+        <p>
+          Du kannst das mit echten Schachteln und Gummibärchen nachbauen. Eine Schachtel, die komplett leer ist, bedeutet:
+          „Von hier aus verliere ich immer“ – Kai gibt dann sofort auf.
+        </p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a href="../">← Alle Spiele</a> · Quellcode auf <a href="https://github.com/Delbonum/TicTacToeAI">GitHub</a>
+  </footer>
+  <script type="module" src="../assets/js/apps/nim.js"></script>
+</body>
+</html>

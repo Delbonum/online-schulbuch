@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tic Tac Toe gegen KI</title>
+  <meta name="description" content="Tic Tac Toe gegen Ada (Algorithmus) oder Kai (lernende KI) – sieh zu, wie die KI denkt und lernt.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9D%8C%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../">KI-Lernspiele</a>
+    <nav aria-label="Spiele">
+      <a href="../tictactoe/" aria-current="page">Tic Tac Toe</a>
+      <a href="../nim/">NIM</a>
+      <a href="../bauernschach/">Bauernschach</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      <h1>Tic Tac Toe gegen die KI</h1>
+      <p>
+        Wähle deinen Gegner: <strong>Ada</strong> arbeitet ein festes Regelwerk ab,
+        <strong>Kai</strong> beginnt ahnungslos und lernt aus jedem Spiel. Rechts siehst du, was in ihrem „Kopf“ passiert.
+      </p>
+    </section>
+
+    <div id="app"><noscript>Für dieses Lernspiel wird JavaScript benötigt.</noscript></div>
+
+    <section class="explain" aria-label="Erklärungen">
+      <details>
+        <summary>Spielregeln</summary>
+        <p>
+          Zwei Spieler setzen abwechselnd ihr Zeichen (X oder O) in ein freies Feld. Wer zuerst drei Zeichen in einer
+          Reihe, Spalte oder Diagonale hat, gewinnt. Ist das Brett voll, ohne dass jemand gewonnen hat, endet das
+          Spiel unentschieden. X beginnt.
+        </p>
+      </details>
+      <details>
+        <summary>Ada: Regeln und Suchbaum</summary>
+        <p>
+          Im Modus <strong>Regeln</strong> prüft Ada ihre Wenn-dann-Regeln von oben nach unten. Die erste Regel, deren
+          Bedingung erfüllt ist, wird ausgeführt. Mit „Schritt für Schritt“ kannst du jeden Prüfschritt einzeln
+          nachvollziehen. Eine <em>Gabel</em> ist ein Zug, nach dem man an zwei Stellen gleichzeitig droht zu gewinnen –
+          der Gegner kann nur eine davon blockieren.
+        </p>
+        <p>
+          Im Modus <strong>Suchbaum</strong> hat Ada gar keine Tic-Tac-Toe-Regeln. Sie spielt im Kopf alle möglichen
+          Spielverläufe durch (das sind nur 5.478 verschiedene Stellungen) und bewertet jedes Spielende:
+          +1 = Ada gewinnt, 0 = unentschieden, −1 = Ada verliert. Dann rechnet sie rückwärts: Ist sie am Zug,
+          nimmt sie den größten Wert; bist du am Zug, rechnet sie mit deinem besten Zug, also dem kleinsten Wert.
+          Das heißt <strong>Minimax</strong>. Du kannst den Baum aufklappen und nachrechnen.
+        </p>
+        <p>Beide Varianten verlieren nie. Tic Tac Toe endet bei fehlerfreiem Spiel beider Seiten immer unentschieden.</p>
+      </details>
+      <details>
+        <summary>Kai: Schachteln, Kärtchen und Perlen</summary>
+        <p>
+          Kai hat für jede Stellung, die ihm begegnet, eine Schachtel. Auf dem Spielfeld siehst du, welche Züge in der
+          geöffneten Schachtel noch möglich sind. Unter „Kais Gedächtnis“ siehst du die Schachteln selbst:
+        </p>
+        <ul>
+          <li><strong>Züge streichen:</strong> grüne Punkte sind Kärtchen, die noch in der Schachtel liegen, rote Kreuze sind gestrichene Züge.</li>
+          <li><strong>Perlen sammeln:</strong> Die Zahl zeigt, wie viele Perlen für diesen Zug in der Schachtel liegen.</li>
+        </ul>
+        <p>
+          Mit <strong>Symmetrie</strong> nutzt Kai aus, dass eine gedrehte oder gespiegelte Stellung eigentlich dieselbe ist.
+          Dann braucht er viel weniger Schachteln und lernt schneller. Schalte die Symmetrie aus und vergleiche die Lernkurven!
+        </p>
+        <p>
+          <strong>Training:</strong> Gegen den Zufallsspieler lernt Kai viele verschiedene Stellungen kennen. Gegen Ada lernt er
+          schnell, nicht zu verlieren – aber nur in den wenigen Stellungen, die Ada herbeiführt. Probier aus, was passiert,
+          wenn du danach selbst gegen Kai spielst.
+        </p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a href="../">← Alle Spiele</a> · Quellcode auf <a href="https://github.com/Delbonum/TicTacToeAI">GitHub</a>
+  </footer>
+  <script type="module" src="../assets/js/apps/tictactoe.js"></script>
+</body>
+</html>

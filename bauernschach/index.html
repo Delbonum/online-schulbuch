@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bauernschach gegen KI</title>
+  <meta name="description" content="Bauernschach (Hexapawn) auf einem 3×3-Brett gegen Ada (Algorithmus) oder Kai (lernende KI).">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%99%9F%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../">KI-Lernspiele</a>
+    <nav aria-label="Spiele">
+      <a href="../tictactoe/">Tic Tac Toe</a>
+      <a href="../nim/">NIM</a>
+      <a href="../bauernschach/" aria-current="page">Bauernschach</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      <h1>Bauernschach</h1>
+      <p>
+        Drei weiße gegen drei schwarze Bauern auf einem winzigen Schachbrett. Du spielst Weiß und beginnst.
+        Am Anfang gewinnst du gegen <strong>Kai</strong> ganz leicht – doch jede Niederlage macht ihn klüger.
+        Wie lange hältst du durch?
+      </p>
+    </section>
+
+    <div id="app"><noscript>Für dieses Lernspiel wird JavaScript benötigt.</noscript></div>
+
+    <section class="explain" aria-label="Erklärungen">
+      <details open>
+        <summary>Spielregeln</summary>
+        <ul>
+          <li>Ein Bauer zieht ein Feld geradeaus nach vorne, wenn das Feld frei ist.</li>
+          <li>Ein Bauer schlägt schräg nach vorne einen gegnerischen Bauern.</li>
+          <li>Gewonnen hat, wer mit einem Bauern die gegnerische Grundreihe erreicht, alle gegnerischen Bauern schlägt
+            oder den Gegner in eine Lage bringt, in der er nicht mehr ziehen kann.</li>
+        </ul>
+        <p>Klicke zuerst auf deinen Bauern, dann auf das Zielfeld.</p>
+      </details>
+      <details>
+        <summary>Kai: Wie lernt eine Maschine aus Streichholzschachteln?</summary>
+        <p>
+          1962 beschrieb Martin Gardner eine „Maschine“ aus Streichholzschachteln, die Bauernschach lernt. Auf jede Schachtel
+          ist eine Spielstellung gemalt, darin liegen farbige Bonbons – eins für jeden möglichen Zug (die bunten Pfeile).
+          Die Maschine zieht blind ein Bonbon und macht den passenden Zug. Verliert sie, wird das Bonbon ihres letzten Zuges
+          aufgegessen. So verschwinden die schlechten Züge nach und nach. Diese Idee greift auch „Schlag das Krokodil“ auf.
+        </p>
+        <p>
+          Kai braucht hier 19 Schachteln, weil er gespiegelte Stellungen zusammenfasst. Mit dem Symmetrie-Schalter kannst du
+          das abschalten – dann sind es 37 Schachteln und Kai lernt langsamer.
+        </p>
+        <p>
+          Nach etwa 10 bis 15 verlorenen Spielen gewinnt Kai immer. Denn bei Bauernschach kann Schwarz bei richtigem Spiel
+          immer gewinnen – der Beginner (Weiß) hat dann keine Chance mehr.
+        </p>
+      </details>
+      <details>
+        <summary>Ada: der Suchbaum</summary>
+        <p>
+          Ada kennt keine Bauernschach-Tricks. Sie probiert im Kopf jede Zugfolge bis zum Spielende aus und bewertet sie
+          (+1 = Ada gewinnt, −1 = Ada verliert). Dann wählt sie den Zug, der ihr sicher den Sieg bringt – unter der Annahme,
+          dass du immer deinen besten Zug findest. Deshalb gewinnt Ada jedes Spiel. Klappe den Suchbaum auf und überprüfe
+          ihre Rechnung.
+        </p>
+      </details>
+      <details>
+        <summary>Inspiration und Quellen</summary>
+        <ul>
+          <li>Martin Gardner: „A matchbox game-learning machine“, Scientific American, März 1962</li>
+          <li>Stefan Seegerer: <a href="https://www.stefanseegerer.de/schlag-das-krokodil" rel="noopener">Schlag das Krokodil</a></li>
+          <li><a href="https://www.mrozilla.cz/lab/hexapawn/" rel="noopener">Hexapawn von mrozilla</a></li>
+        </ul>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a href="../">← Alle Spiele</a> · Quellcode auf <a href="https://github.com/Delbonum/TicTacToeAI">GitHub</a>
+  </footer>
+  <script type="module" src="../assets/js/apps/bauernschach.js"></script>
+</body>
+</html>
