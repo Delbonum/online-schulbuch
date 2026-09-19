@@ -12,20 +12,6 @@
   --sq-dark: #c79a6b;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ada: #a48cff;
-    --ada-soft: #2c2645;
-    --kai: #ffa04d;
-    --kai-soft: #3a2a1a;
-    --x: #7aa2ff;
-    --o: #ff7d93;
-    --cell: #23272e;
-    --sq-light: #6b5a44;
-    --sq-dark: #4a3b2b;
-  }
-}
-
 .small { font-size: .88rem; }
 .muted { color: var(--muted); }
 #app h2 { font-size: 1.3rem; }

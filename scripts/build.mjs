@@ -191,8 +191,11 @@ ${robots}
 <meta property="og:title" content="${esc(volltitel)}">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="de_DE">
-<meta name="theme-color" content="#5b3cc4">
-<link rel="icon" href="${u('assets/img/logo.svg')}" type="image/svg+xml">
+<link rel="icon" href="${u('assets/img/favicon-32.png')}" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="${u('assets/img/apple-touch-icon.png')}">
+<link rel="preload" href="${u('assets/fonts/sarabun-latin-400.woff2')}" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="${u('assets/fonts/raleway-latin.woff2')}" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="${u('assets/css/schriften.css')}">
 <link rel="stylesheet" href="${u('assets/css/schulbuch.css')}">
 ${stile.map((st) => `<link rel="stylesheet" href="${u(st)}">`).join('\n')}
 <script>document.documentElement.classList.add('js')</script>
@@ -208,7 +211,7 @@ ${VORSCHAU ? '<div class="vorschau-band">Vorschau – diese Seiten sind noch nic
 <header class="kopf">
 <div class="kopf-innen">
 ${mitMenue ? `<button type="button" class="kopf-knopf menue-knopf" aria-controls="seitenleiste" aria-expanded="false">${icon('menue')}<span>Inhalt</span></button>` : ''}
-<a class="marke" href="${u('/')}"><img src="${u('assets/img/logo.svg')}" alt="" width="32" height="32"><span>${esc(site.titel)}</span></a>
+<a class="marke" href="${u('/')}"><img src="${u('assets/img/logo.png')}" alt="" width="32" height="32"><span>${esc(site.titel)}</span></a>
 <nav class="faecher-nav" aria-label="Fächer">${faecherNav}</nav>
 <button type="button" class="kopf-knopf suche-knopf" data-suche-oeffnen aria-label="Suchen">${icon('suche')}<span>Suchen</span><kbd>/</kbd></button>
 </div>
@@ -218,7 +221,7 @@ ${mitMenue ? `<button type="button" class="kopf-knopf menue-knopf" aria-controls
 function fuss() {
   return `<footer class="fuss">
 <div class="fuss-innen">
-<p><img src="${u('assets/img/logo.svg')}" alt="" width="20" height="20"> ${esc(site.titel)} von ${esc(site.autor)} · Inhalte unter <a href="${u('/lizenz/')}">${esc(site.lizenz.name)}</a></p>
+<p><img src="${u('assets/img/logo.png')}" alt="" width="20" height="20"> ${esc(site.titel)} von ${esc(site.autor)} · Inhalte unter <a href="${u('/lizenz/')}">${esc(site.lizenz.name)}</a></p>
 <nav aria-label="Rechtliches"><a href="${u('/impressum/')}">Impressum</a><a href="${u('/datenschutz/')}">Datenschutz</a><a href="${u('/lizenz/')}">Lizenz</a></nav>
 </div>
 </footer>
@@ -370,7 +373,7 @@ function startseite() {
 ${kopfleiste({})}
 <main id="inhalt" class="breit-seite">
 <header class="held start-held">
-<img src="${u('assets/img/logo.svg')}" alt="" width="88" height="88">
+<img src="${u('assets/img/logo.png')}" alt="" width="88" height="88">
 <div><h1>${esc(site.titel)}</h1><p>${esc(site.beschreibung)}</p></div>
 </header>
 <section aria-label="Fächer"><div class="kacheln faecher-kacheln">${faecher.map(fachKachel).join('')}</div></section>
