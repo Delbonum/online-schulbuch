@@ -13,3 +13,6 @@ Thumbs.db
 
 # Unterrichtsmaterial, das (noch) nicht veröffentlicht wird – bleibt nur lokal
 /materialien/
+
+# Lokale Hinweise für Claude (Serverzugang usw.) – nicht veröffentlichen
+CLAUDE.local.md
