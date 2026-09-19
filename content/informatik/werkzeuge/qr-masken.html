@@ -1,0 +1,47 @@
+<!--
+beschreibung: Die acht Maskenmuster eines QR-Codes auf eine eigene 21×21-Matrix anwenden und vergleichen.
+layout: breit
+stile: assets/werkzeuge/qr-code/qr.css
+skripte: assets/werkzeuge/qr-code/masken.js
+-->
+<div class="text">
+<p>Damit ein QR-Code gut lesbar ist, wird sein Datenbereich mit einem von acht Mustern „maskiert“: Überall, wo die Maskenformel zutrifft, wird ein Modul umgefärbt. Füge links eine 21×21-Matrix ein (zum Beispiel aus dem <a href="/informatik/werkzeuge/qr-pixel-editor/">QR-Pixel-Editor</a>) und probiere die Masken aus. In den Formeln steht <em>r</em> für die Zeile und <em>c</em> für die Spalte, jeweils ab 0 gezählt.</p>
+</div>
+
+<div class="qr-werkzeug">
+<section class="qr-panel" aria-label="Eingabe">
+<h2>Eingabe</h2>
+<textarea id="inputMatrix" class="qr-matrix" spellcheck="false" placeholder="21 Zeilen mit je 21 Nullen und Einsen einfügen …" aria-label="Eingabe-Matrix"></textarea>
+<div class="qr-knoepfe"><button type="button" class="knopf" id="pasteButton">Aus Zwischenablage einfügen</button></div>
+<h2 style="margin-top:18px">Original</h2>
+<div id="inputPreview" class="qr-raster klein"></div>
+<p class="qr-status" id="inputStatus" aria-live="polite">Warte auf Eingabe …</p>
+</section>
+
+<section class="qr-panel" aria-label="Masken">
+<h2>Masken</h2>
+<div class="qr-masken">
+<button type="button" data-mask="0">0: (r + c) mod 2 = 0</button>
+<button type="button" data-mask="1">1: r mod 2 = 0</button>
+<button type="button" data-mask="2">2: c mod 3 = 0</button>
+<button type="button" data-mask="3">3: (r + c) mod 3 = 0</button>
+<button type="button" data-mask="4">4: (⌊r/2⌋ + ⌊c/3⌋) mod 2 = 0</button>
+<button type="button" data-mask="5">5: (r·c) mod 2 + (r·c) mod 3 = 0</button>
+<button type="button" data-mask="6">6: ((r·c) mod 2 + (r·c) mod 3) mod 2 = 0</button>
+<button type="button" data-mask="7">7: ((r+c) mod 2 + (r·c) mod 3) mod 2 = 0</button>
+</div>
+</section>
+
+<section class="qr-panel" aria-label="Ausgabe">
+<h2>Maskierter QR-Code</h2>
+<div id="outputPreview" class="qr-raster klein"></div>
+<p class="qr-status" id="outputStatus" aria-live="polite">Wähle eine Maske aus.</p>
+<div class="qr-knoepfe">
+<button type="button" class="knopf" id="exportPngOutput">Als PNG speichern</button>
+<button type="button" class="knopf" id="exportSvgOutput">Als SVG speichern</button>
+</div>
+<h2 style="margin-top:18px">Maskierte Matrix</h2>
+<textarea id="outputMatrix" class="qr-matrix" readonly aria-label="Maskierte Matrix"></textarea>
+<div class="qr-knoepfe"><button type="button" class="knopf" id="copyOutput">Kopieren</button></div>
+</section>
+</div>

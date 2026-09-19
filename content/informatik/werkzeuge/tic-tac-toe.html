@@ -1,0 +1,34 @@
+<!--
+beschreibung: Tic Tac Toe gegen Ada (Algorithmus) oder Kai (lernende KI) – sieh zu, wie die KI denkt und lernt.
+layout: breit
+stile: assets/werkzeuge/ki-lernspiele/css/ki-lernspiele.css
+skripte: assets/werkzeuge/ki-lernspiele/js/apps/tictactoe.js
+-->
+<div class="text">
+<p>Wähle deinen Gegner: <strong>Ada</strong> arbeitet ein festes Regelwerk ab, <strong>Kai</strong> beginnt ahnungslos und lernt aus jedem Spiel. Rechts siehst du, was in ihrem „Kopf“ passiert.</p>
+</div>
+
+<div id="app"><noscript>Für dieses Lernspiel wird JavaScript benötigt.</noscript></div>
+
+<div class="text">
+<details class="aufklapp">
+<summary>Spielregeln</summary>
+<p>Zwei Spieler setzen abwechselnd ihr Zeichen (X oder O) in ein freies Feld. Wer zuerst drei Zeichen in einer Reihe, Spalte oder Diagonale hat, gewinnt. Ist das Brett voll, ohne dass jemand gewonnen hat, endet das Spiel unentschieden. X beginnt.</p>
+</details>
+<details class="aufklapp">
+<summary>Ada: Regeln und Suchbaum</summary>
+<p>Im Modus <strong>Regeln</strong> prüft Ada ihre Wenn-dann-Regeln von oben nach unten. Die erste Regel, deren Bedingung erfüllt ist, wird ausgeführt. Mit „Schritt für Schritt“ kannst du jeden Prüfschritt einzeln nachvollziehen. Eine <em>Gabel</em> ist ein Zug, nach dem man an zwei Stellen gleichzeitig droht zu gewinnen – der Gegner kann nur eine davon blockieren.</p>
+<p>Im Modus <strong>Suchbaum</strong> hat Ada gar keine Tic-Tac-Toe-Regeln. Sie spielt im Kopf alle möglichen Spielverläufe durch (das sind nur 5.478 verschiedene Stellungen) und bewertet jedes Spielende: +1 = Ada gewinnt, 0 = unentschieden, −1 = Ada verliert. Dann rechnet sie rückwärts: Ist sie am Zug, nimmt sie den größten Wert; bist du am Zug, rechnet sie mit deinem besten Zug, also dem kleinsten Wert. Das heißt <strong>Minimax</strong>. Du kannst den Baum aufklappen und nachrechnen.</p>
+<p>Beide Varianten verlieren nie. Tic Tac Toe endet bei fehlerfreiem Spiel beider Seiten immer unentschieden.</p>
+</details>
+<details class="aufklapp">
+<summary>Kai: Schachteln, Kärtchen und Perlen</summary>
+<p>Kai hat für jede Stellung, die ihm begegnet, eine Schachtel. Auf dem Spielfeld siehst du, welche Züge in der geöffneten Schachtel noch möglich sind. Unter „Kais Gedächtnis“ siehst du die Schachteln selbst:</p>
+<ul>
+<li><strong>Züge streichen:</strong> Grüne Punkte sind Kärtchen, die noch in der Schachtel liegen, rote Kreuze sind gestrichene Züge.</li>
+<li><strong>Perlen sammeln:</strong> Die Zahl zeigt, wie viele Perlen für diesen Zug in der Schachtel liegen.</li>
+</ul>
+<p>Mit <strong>Symmetrie</strong> nutzt Kai aus, dass eine gedrehte oder gespiegelte Stellung eigentlich dieselbe ist. Dann braucht er viel weniger Schachteln und lernt schneller. Schalte die Symmetrie aus und vergleiche die Lernkurven!</p>
+<p><strong>Training:</strong> Gegen den Zufallsspieler lernt Kai viele verschiedene Stellungen kennen. Gegen Ada lernt er schnell, nicht zu verlieren – aber nur in den wenigen Stellungen, die Ada herbeiführt. Probier aus, was passiert, wenn du danach selbst gegen Kai spielst.</p>
+</details>
+</div>

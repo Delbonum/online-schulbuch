@@ -1,0 +1,27 @@
+.zs-aufgabe { text-align: center; padding: 8px 0 4px; }
+.zs-aufgabe p { margin: 0 0 6px; }
+.zs-frage { color: var(--muted); }
+.zs-zahl { font: 700 clamp(2rem, 7vw, 3rem)/1.2 ui-monospace, "Cascadia Mono", Consolas, monospace; color: var(--fach); letter-spacing: .04em; margin: 8px 0 !important; word-break: break-all; }
+.zs-zahl sub, .zs-ergebnis sub { font-size: .45em; color: var(--muted); letter-spacing: 0; }
+.zs-form { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 16px 0 8px; }
+.zs-form input {
+  font: 600 1.3rem ui-monospace, "Cascadia Mono", Consolas, monospace;
+  width: min(100%, 280px);
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  text-transform: uppercase;
+}
+.zs-form input::placeholder { font-size: .85rem; text-transform: none; font-weight: 400; }
+.zs-ergebnis { text-align: center; min-height: 1.6em; font-weight: 600; margin: 0 0 10px; }
+.zs-ergebnis.richtig { color: var(--good); }
+.zs-ergebnis.falsch { color: var(--bad); }
+.zs-leiste { display: flex; justify-content: center; align-items: center; gap: 16px; flex-wrap: wrap; }
+#zs-zaehler { color: var(--muted); font-size: .92rem; }
+.zs-einstellungen { margin-top: 22px; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; }
+.zs-einstellungen legend { font-weight: 700; padding: 0 6px; }
+.zs-einstellungen label { display: inline-flex; align-items: center; gap: 6px; margin: 4px 14px 4px 0; }
+.zs-einstellungen input[type="range"] { width: min(260px, 60vw); accent-color: var(--fach); }
+.zs-basen { margin-top: 8px; }

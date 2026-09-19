@@ -1,0 +1,32 @@
+<!--
+alt: /informatik/zahlensystemumstellung.html
+beschreibung: Übe das Umrechnen von Zahlen zwischen Dual-, Oktal-, Dezimal- und Hexadezimalsystem.
+stile: assets/werkzeuge/zahlensysteme/zahlensysteme.css
+skripte: assets/werkzeuge/zahlensysteme/zahlensysteme.js
+-->
+<p>Übe das Umrechnen zwischen Zahlensystemen. Wähle unten aus, welche Zahlensysteme vorkommen sollen und wie groß die Zahlen höchstens werden dürfen.</p>
+
+<section class="werkzeug" aria-label="Zahlensysteme üben">
+<div id="zs-aufgabe" class="zs-aufgabe" aria-live="polite"></div>
+<form id="zs-form" class="zs-form">
+<input id="zs-antwort" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Deine Antwort">
+<button type="submit" class="knopf primaer">Prüfen</button>
+</form>
+<p id="zs-ergebnis" class="zs-ergebnis" aria-live="polite"></p>
+<div class="zs-leiste">
+<button type="button" class="knopf" id="zs-neu">Neue Aufgabe</button>
+<span id="zs-zaehler"></span>
+</div>
+<fieldset class="zs-einstellungen">
+<legend>Einstellungen</legend>
+<label>Größte Zahl (dezimal): <input type="range" id="zs-max" min="15" max="1023" step="1" value="255"> <strong id="zs-max-wert">255</strong></label>
+<div class="zs-basen">
+<label><input type="checkbox" name="zs-basis" value="2" checked> Basis 2</label>
+<label><input type="checkbox" name="zs-basis" value="3"> Basis 3</label>
+<label><input type="checkbox" name="zs-basis" value="8"> Basis 8</label>
+<label><input type="checkbox" name="zs-basis" value="10" checked> Basis 10</label>
+<label><input type="checkbox" name="zs-basis" value="12"> Basis 12</label>
+<label><input type="checkbox" name="zs-basis" value="16" checked> Basis 16</label>
+</div>
+</fieldset>
+</section>

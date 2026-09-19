@@ -1,0 +1,12 @@
+# Build-Ausgabe
+/dist/
+/dist-*/
+
+# Abhängigkeiten
+node_modules/
+
+# IDE / Betriebssystem
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,146 @@
+{
+  "titel": "Informatik",
+  "beschreibung": "Von Bits und Bytes über Algorithmen bis zur Künstlichen Intelligenz – mit interaktiven Werkzeugen zum Ausprobieren.",
+  "icon": "chip",
+  "kapitel": [
+    {
+      "titel": "Information und ihre Darstellung",
+      "slug": "information-und-darstellung",
+      "icon": "binaer",
+      "beschreibung": "Zahlensysteme, Codierung von Text und Bildern, QR-Codes.",
+      "geplant": true
+    },
+    {
+      "titel": "Programmieren & Software-Entwicklung",
+      "kurz": "Programmieren",
+      "slug": "programmieren",
+      "icon": "code",
+      "beschreibung": "Variablen, Kontrollstrukturen, Funktionen und Objekte.",
+      "geplant": true
+    },
+    {
+      "titel": "Algorithmen",
+      "slug": "algorithmen",
+      "icon": "algorithmus",
+      "beschreibung": "Suchen, Sortieren und die Frage, wie effizient ein Verfahren ist.",
+      "geplant": true
+    },
+    {
+      "titel": "Rechnersysteme",
+      "slug": "rechnersysteme",
+      "icon": "rechner",
+      "beschreibung": "Vom Logikgatter zum Prozessor: Wie ein Computer aufgebaut ist.",
+      "geplant": true
+    },
+    {
+      "titel": "Netzwerksysteme",
+      "slug": "netzwerke",
+      "icon": "netzwerk",
+      "beschreibung": "Wie Daten ihren Weg durch das Internet finden.",
+      "geplant": true
+    },
+    {
+      "titel": "Kryptologie",
+      "slug": "kryptologie",
+      "icon": "schloss",
+      "beschreibung": "Geheimschriften von Caesar bis RSA – und wie man sie knackt."
+    },
+    {
+      "titel": "Formale Sprachen & Automaten",
+      "kurz": "Formale Sprachen",
+      "slug": "formale-sprachen",
+      "icon": "automat",
+      "beschreibung": "Grammatiken, reguläre Ausdrücke und endliche Automaten.",
+      "geplant": true
+    },
+    {
+      "titel": "Künstliche Intelligenz",
+      "slug": "kuenstliche-intelligenz",
+      "icon": "ki",
+      "beschreibung": "Wie Maschinen Entscheidungen treffen und aus Erfahrung lernen.",
+      "geplant": true
+    },
+    {
+      "titel": "Datenbanken",
+      "slug": "datenbanken",
+      "icon": "datenbank",
+      "beschreibung": "Daten modellieren, speichern und mit SQL abfragen.",
+      "geplant": true
+    },
+    {
+      "titel": "Informatik & Gesellschaft",
+      "slug": "informatik-und-gesellschaft",
+      "icon": "gesellschaft",
+      "beschreibung": "Datenschutz, Urheberrecht und die Folgen der Digitalisierung.",
+      "geplant": true
+    },
+    {
+      "titel": "Toolsammlung",
+      "slug": "werkzeuge",
+      "icon": "werkzeug",
+      "beschreibung": "Alle interaktiven Werkzeuge und Lernspiele auf einen Blick.",
+      "seiten": [
+        {
+          "titel": "KI-Lernspiele",
+          "slug": "ki-lernspiele",
+          "thema": "kuenstliche-intelligenz",
+          "beschreibung": "Algorithmus gegen lernende KI – an Tic Tac Toe, NIM und Bauernschach.",
+          "seiten": [
+            {
+              "titel": "Tic Tac Toe",
+              "slug": "tic-tac-toe",
+              "thema": "kuenstliche-intelligenz",
+              "beschreibung": "Ada verliert nie – kann Kai das auch lernen? Und wie viele Spiele braucht er dafür?"
+            },
+            {
+              "titel": "NIM",
+              "slug": "nim",
+              "thema": "kuenstliche-intelligenz",
+              "beschreibung": "Hinter dem Streichholzspiel steckt eine Rechenregel. Findest du sie vor Kai?"
+            },
+            {
+              "titel": "Bauernschach",
+              "slug": "bauernschach",
+              "thema": "kuenstliche-intelligenz",
+              "beschreibung": "Drei gegen drei Bauern – das Spiel, mit dem Martin Gardner 1962 zeigte, wie Maschinen lernen."
+            }
+          ],
+          "icon": "ki"
+        },
+        {
+          "titel": "Zahlensysteme üben",
+          "slug": "zahlensysteme",
+          "thema": "information-und-darstellung",
+          "beschreibung": "Zahlen zwischen Dual-, Oktal-, Dezimal- und Hexadezimalsystem umrechnen.",
+          "icon": "binaer"
+        },
+        {
+          "titel": "QR-Code: Pixel-Editor",
+          "kurz": "QR-Pixel-Editor",
+          "slug": "qr-pixel-editor",
+          "thema": "information-und-darstellung",
+          "beta": true,
+          "beschreibung": "Einen 21×21-QR-Code Pixel für Pixel selbst zusammensetzen.",
+          "icon": "qr"
+        },
+        {
+          "titel": "QR-Code: Masken anwenden",
+          "kurz": "QR-Masken",
+          "slug": "qr-masken",
+          "thema": "information-und-darstellung",
+          "beta": true,
+          "beschreibung": "Die acht Masken-Muster eines QR-Codes ausprobieren.",
+          "icon": "qr"
+        },
+        {
+          "titel": "KryptoGAME",
+          "slug": "kryptogame",
+          "thema": "kryptologie",
+          "extern": "/informatik/kryptogame/",
+          "beschreibung": "Die Krypto-Zeitreise von Caesar bis RSA: Verschlüsselungsverfahren kennenlernen, anwenden und knacken.",
+          "icon": "schloss"
+        }
+      ]
+    }
+  ]
+}

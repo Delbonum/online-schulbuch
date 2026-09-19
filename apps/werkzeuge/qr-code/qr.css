@@ -1,0 +1,63 @@
+/* QR-Code-Werkzeuge (Pixel-Editor und Masken) */
+
+.qr-werkzeug { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.qr-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 18px 20px;
+  min-width: 0;
+}
+.qr-panel h2 { font-size: 1.05rem; margin: 0 0 12px; }
+.qr-panel h2 + p { margin-top: -6px; }
+
+.qr-raster {
+  --n: 21;
+  display: grid;
+  grid-template-columns: repeat(var(--n), 1fr);
+  gap: 1px;
+  width: min(100%, 460px);
+  aspect-ratio: 1;
+  background: var(--border);
+  border: 1px solid var(--border);
+  user-select: none;
+}
+.qr-raster.klein { width: min(100%, 300px); }
+.qr-zelle { background: #fff; border: 0; padding: 0; min-width: 0; min-height: 0; font: 600 6px/1 system-ui, sans-serif; color: #888; overflow: hidden; }
+.qr-zelle.black { background: #111; color: #aaa; }
+.qr-zelle.reserved { box-shadow: inset 0 0 0 1px rgb(91 60 196 / 35%); }
+#grid .qr-zelle { cursor: pointer; }
+#grid .qr-zelle.gesperrt { cursor: not-allowed; }
+
+.qr-matrix {
+  display: block;
+  width: 100%;
+  min-width: 230px;
+  height: 360px;
+  font: .9rem/1.25 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  resize: vertical;
+}
+.qr-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.qr-optionen { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; font-size: .92rem; }
+.qr-optionen label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.qr-status { margin-top: 10px; font-size: .9rem; color: var(--muted); }
+
+.qr-masken { display: grid; gap: 6px; }
+.qr-masken button {
+  font: .9rem ui-monospace, "Cascadia Mono", Consolas, monospace;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+.qr-masken button:hover { border-color: var(--muted); }
+.qr-masken button.active { background: var(--fach-soft); border-color: var(--fach); color: var(--fach); font-weight: 700; }

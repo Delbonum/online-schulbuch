@@ -1,0 +1,72 @@
+{
+  "titel": "Deutsch",
+  "beschreibung": "Textgattungen und die Epochen der deutschsprachigen Literatur – von der Antike bis zur Gegenwart.",
+  "icon": "buch",
+  "kapitel": [
+    {
+      "titel": "Textgattungen",
+      "slug": "textgattungen",
+      "icon": "feder",
+      "beschreibung": "Epik, Lyrik, Dramatik – wie sich literarische Texte einteilen lassen.",
+      "seiten": [
+        { "titel": "Großgattungen", "slug": "grossgattungen" }
+      ]
+    },
+    {
+      "titel": "Literaturepochen",
+      "slug": "literaturepochen",
+      "icon": "zeitstrahl",
+      "beschreibung": "Eine Reise durch die deutschsprachige Literaturgeschichte in drei Blöcken.",
+      "seiten": [
+        { "titel": "Die Antike", "slug": "antike", "zeitraum": "ca. 800 v. Chr. – 400 n. Chr." },
+        {
+          "titel": "Block I", "slug": "block-1", "zeitraum": "750 – 1805", "lang": "Block I: 750 – 1805",
+          "seiten": [
+            { "titel": "Mittelalter", "slug": "mittelalter", "zeitraum": "750 – 1470" },
+            { "titel": "Humanismus & Renaissance", "slug": "humanismus-renaissance", "zeitraum": "1470 – 1600" },
+            { "titel": "Barock", "slug": "barock", "zeitraum": "1600 – 1720" },
+            { "titel": "Aufklärung (und Empfindsamkeit)", "kurz": "Aufklärung", "slug": "aufklaerung", "zeitraum": "1720 – 1800" },
+            { "titel": "Sturm & Drang", "slug": "sturm-und-drang", "zeitraum": "1765 – 1785" },
+            { "titel": "Weimarer Klassik", "slug": "weimarer-klassik", "zeitraum": "1786 – 1805" }
+          ]
+        },
+        {
+          "titel": "Block II", "slug": "block-2", "zeitraum": "1795 – 1925", "lang": "Block II: 1795 – 1925",
+          "seiten": [
+            { "titel": "Romantik", "slug": "romantik", "zeitraum": "1795 – 1835" },
+            { "titel": "Biedermeier", "slug": "biedermeier", "zeitraum": "1815 – 1848" },
+            { "titel": "Junges Deutschland", "slug": "junges-deutschland", "zeitraum": "1825 – 1848" },
+            { "titel": "Vormärz", "slug": "vormaerz", "zeitraum": "1840 – 1848" },
+            { "titel": "Realismus", "slug": "realismus", "zeitraum": "1850 – 1890" },
+            { "titel": "Naturalismus", "slug": "naturalismus", "zeitraum": "1880 – 1900" },
+            { "titel": "Impressionismus", "slug": "impressionismus", "zeitraum": "1890 – 1910" },
+            { "titel": "Moderne", "slug": "moderne", "zeitraum": "1890 – 1920" },
+            { "titel": "Expressionismus", "slug": "expressionismus", "zeitraum": "1910 – 1925" }
+          ]
+        },
+        {
+          "titel": "Block III", "slug": "block-3", "zeitraum": "1915 – heute", "lang": "Block III: 1915 – heute",
+          "seiten": [
+            { "titel": "Avantgarde & Dadaismus", "slug": "avantgarde-dadaismus", "zeitraum": "1915 – 1925" },
+            { "titel": "Literatur der Weimarer Republik / Neue Sachlichkeit", "kurz": "Weimarer Republik", "slug": "weimarer-republik", "zeitraum": "1918 – 1933" },
+            { "titel": "Exilliteratur", "slug": "exilliteratur", "zeitraum": "1933 – 1945" },
+            { "titel": "Nachkriegsliteratur / Trümmerliteratur", "kurz": "Nachkriegsliteratur", "slug": "nachkriegsliteratur", "zeitraum": "1945 – 1960" },
+            { "titel": "Literatur der BRD", "slug": "literatur-der-brd", "zeitraum": "1950 – 1990" },
+            { "titel": "Literatur der DDR", "slug": "literatur-der-ddr", "zeitraum": "1950 – 1990" },
+            { "titel": "Neue Subjektivität", "slug": "neue-subjektivitaet", "zeitraum": "seit 1970" },
+            { "titel": "Postmoderne / Gegenwartsliteratur", "kurz": "Postmoderne", "slug": "postmoderne", "zeitraum": "seit 1980" }
+          ]
+        },
+        { "titel": "Literaturepochen im Überblick", "kurz": "Überblick", "slug": "ueberblick" },
+        { "titel": "Zeitstrahl", "slug": "zeitstrahl", "entwurf": true }
+      ]
+    },
+    {
+      "titel": "Grammatik",
+      "slug": "grammatik",
+      "icon": "grammatik",
+      "beschreibung": "Wortarten, Satzglieder und Zeichensetzung.",
+      "geplant": true
+    }
+  ]
+}

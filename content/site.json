@@ -1,0 +1,17 @@
+{
+  "titel": "Online-Schulbuch",
+  "beschreibung": "Ein freies digitales Schulbuch mit Texten, Aufgaben und interaktiven Werkzeugen für Deutsch und Informatik.",
+  "domain": "https://online-schulbuch.de",
+  "autor": "Philippe Nix",
+  "faecher": [
+    "deutsch",
+    "informatik"
+  ],
+  "lizenz": {
+    "name": "CC BY-NC-SA 4.0",
+    "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"
+  },
+  "eigenstaendig": [
+    "/informatik/kryptogame/"
+  ]
+}

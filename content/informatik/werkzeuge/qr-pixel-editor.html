@@ -1,0 +1,31 @@
+<!--
+beschreibung: Einen 21×21-QR-Code (Version 1) Pixel für Pixel selbst zusammensetzen und als Bild exportieren.
+layout: breit
+stile: assets/werkzeuge/qr-code/qr.css
+skripte: assets/werkzeuge/qr-code/pixel-editor.js
+-->
+<div class="text">
+<p>Klicke auf ein Modul, um es schwarz oder weiß zu färben. Die Positionsmarker, die Synchronisationslinien und das dunkle Modul sind schon gesetzt und geschützt. Rechts siehst du dieselbe Matrix als Nullen und Einsen – Änderungen dort werden sofort übernommen.</p>
+</div>
+
+<div class="qr-werkzeug">
+<section class="qr-panel" aria-label="Pixel-Editor">
+<h2>Pixel-Editor</h2>
+<div id="grid" class="qr-raster"></div>
+<div class="qr-knoepfe">
+<button type="button" class="knopf" id="exportPng">Als PNG speichern</button>
+<button type="button" class="knopf" id="exportSvg">Als SVG speichern</button>
+<button type="button" class="knopf" id="clear">Datenbereich leeren</button>
+</div>
+<div class="qr-optionen">
+<label><input type="checkbox" id="editReserved"> Geschützte Bereiche bearbeiten</label>
+<label><input type="checkbox" id="showCoords"> Koordinaten anzeigen (Zeile, Spalte)</label>
+</div>
+</section>
+<section class="qr-panel" aria-label="Binäre Matrix">
+<h2>Binäre Matrix</h2>
+<textarea id="matrixText" class="qr-matrix" spellcheck="false" aria-label="Matrix als Nullen und Einsen"></textarea>
+<div class="qr-knoepfe"><button type="button" class="knopf" id="copyMatrix">Kopieren</button></div>
+<p class="qr-status">Tipp: Die kopierte Matrix kannst du im Werkzeug <a href="/informatik/werkzeuge/qr-masken/">QR-Masken</a> weiterverwenden.</p>
+</section>
+</div>

@@ -1,0 +1,12 @@
+{
+  "name": "online-schulbuch",
+  "private": true,
+  "type": "module",
+  "description": "Online-Schulbuch für Deutsch und Informatik – https://online-schulbuch.de",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "vorschau": "node scripts/build.mjs --basis=vorschau",
+    "test": "node --test \"apps/ki-lernspiele/tests/*.test.mjs\" \"tests/*.test.mjs\""
+  },
+  "license": "CC-BY-NC-SA-4.0"
+}
