@@ -1,7 +1,5 @@
 {
-  "umleiten": [
-    ["/deutsch/index.html", "/deutsch/"]
-  ],
+  "umleiten": [],
   "entfernt": [
     "/informatik/test.html",
     "/api.php"
