@@ -204,6 +204,9 @@ ${skripte.map((sk) => `<script type="module" src="${u(sk)}"></script>`).join('\n
 </head>`;
 }
 
+// Logo in der Farbe des Fachs; außerhalb der Fächer neutral
+const logo = (fach) => u(`assets/img/logo-${fach && existsSync(join(ROOT, 'site', 'assets', 'img', `logo-${fach.slug}.png`)) ? fach.slug : 'neutral'}.png`);
+
 function kopfleiste({ fach, mitMenue }) {
   const faecherNav = faecher.map((f) => `<a href="${u(f.url)}"${fach === f ? ' aria-current="true"' : ''}>${esc(f.titel)}</a>`).join('');
   return `<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
@@ -211,17 +214,17 @@ ${VORSCHAU ? '<div class="vorschau-band">Vorschau – diese Seiten sind noch nic
 <header class="kopf">
 <div class="kopf-innen">
 ${mitMenue ? `<button type="button" class="kopf-knopf menue-knopf" aria-controls="seitenleiste" aria-expanded="false">${icon('menue')}<span>Inhalt</span></button>` : ''}
-<a class="marke" href="${u('/')}"><img src="${u('assets/img/logo.png')}" alt="" width="32" height="32"><span>${esc(site.titel)}</span></a>
+<a class="marke" href="${u('/')}"><img src="${logo(fach)}" alt="" width="44" height="44"><span>${esc(site.titel)}</span></a>
 <nav class="faecher-nav" aria-label="Fächer">${faecherNav}</nav>
 <button type="button" class="kopf-knopf suche-knopf" data-suche-oeffnen aria-label="Suchen">${icon('suche')}<span>Suchen</span><kbd>/</kbd></button>
 </div>
 </header>`;
 }
 
-function fuss() {
+function fuss(fach) {
   return `<footer class="fuss">
 <div class="fuss-innen">
-<p><img src="${u('assets/img/logo.png')}" alt="" width="20" height="20"> ${esc(site.titel)} von ${esc(site.autor)} · Inhalte unter <a href="${u('/lizenz/')}">${esc(site.lizenz.name)}</a></p>
+<p><img src="${logo(fach)}" alt="" width="22" height="22"> ${esc(site.titel)} von ${esc(site.autor)} · Inhalte unter <a href="${u('/lizenz/')}">${esc(site.lizenz.name)}</a></p>
 <nav aria-label="Rechtliches"><a href="${u('/impressum/')}">Impressum</a><a href="${u('/datenschutz/')}">Datenschutz</a><a href="${u('/lizenz/')}">Lizenz</a></nav>
 </div>
 </footer>
@@ -340,7 +343,7 @@ ${meta.unterseiten === 'nein' ? '' : unterseiten(knoten)}
 ${blaettern(seite)}
 </main>
 </div>
-${fuss()}`;
+${fuss(fach)}`;
 }
 
 function fachseite(fach) {
@@ -357,7 +360,7 @@ ${kopfleiste({ fach })}
 ${intro ? `<div class="text">${intro}</div>` : ''}
 <div class="kacheln">${fach.kapitel.map((k) => kachel(k)).join('')}</div>
 </main>
-${fuss()}`;
+${fuss(fach)}`;
 }
 
 function startseite() {
@@ -373,7 +376,7 @@ function startseite() {
 ${kopfleiste({})}
 <main id="inhalt" class="breit-seite">
 <header class="held start-held">
-<img src="${u('assets/img/logo.png')}" alt="" width="88" height="88">
+<img src="${logo()}" alt="" width="96" height="96">
 <div><h1>${esc(site.titel)}</h1><p>${esc(site.beschreibung)}</p></div>
 </header>
 <section aria-label="Fächer"><div class="kacheln faecher-kacheln">${faecher.map(fachKachel).join('')}</div></section>

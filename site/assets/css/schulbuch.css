@@ -29,9 +29,13 @@
   --informatik: #0b6b72;
   --informatik-soft: #e1f0ef;
 
+  /* Neutral: Startseite, Impressum usw. (auch Logo und Favicon) */
+  --neutral-akzent: #3d4a5c;
+  --neutral-soft: #e8ebef;
+
   --band: #ffffff;
-  --fach: #4743c5;
-  --fach-soft: #ecebfa;
+  --fach: var(--neutral-akzent);
+  --fach-soft: var(--neutral-soft);
   color-scheme: light;
 }
 
