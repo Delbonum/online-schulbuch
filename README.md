@@ -22,6 +22,7 @@ apps/
 scripts/build.mjs         baut aus content/, site/ und apps/ die fertige Website nach dist/
 scripts/deploy.sh         lädt die Vorschau oder die Live-Version hoch
 tests/                    Tests für den Seitengenerator
+materialien/              unveröffentlichtes Unterrichtsmaterial (nur lokal, nicht im Repository)
 ```
 
 ## Eine Seite hinzufügen
