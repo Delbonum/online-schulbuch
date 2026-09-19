@@ -58,6 +58,7 @@ def main():
     neutral = Image.open(IMG / "logo-neutral.png")
     neutral.resize((32, 32), Image.LANCZOS).save(IMG / "favicon-32.png", optimize=True)
     neutral.resize((180, 180), Image.LANCZOS).save(IMG / "apple-touch-icon.png", optimize=True)
+    neutral.save(IMG.parent.parent / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)])
     print("Logos erzeugt:", ", ".join(f"logo-{n}.png" for n in FARBEN))
 
 
