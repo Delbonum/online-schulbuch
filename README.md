@@ -54,7 +54,12 @@ npm run build             # baut die Live-Version (bricht ab, solange Platzhalte
 npm test                  # Tests für Spiele, Werkzeuge und den Seitengenerator
 scripts/deploy.sh vorschau
 scripts/deploy.sh live
+scripts/pruefen.sh live   # prüft nach dem Hochladen, was auf dem Server liegt
 ```
+
+`scripts/pruefen.sh` fasst alle Server-Abfragen in einem einzigen SSH-Aufruf zusammen und begrenzt
+die HTTP-Stichproben. Das ist Absicht: Der Server sperrt die eigene IP-Adresse, wenn in kurzer Zeit
+zu viele Verbindungen eintreffen.
 
 Lokal ansehen: nach `npm run build` im Ordner `dist/` z. B. `python -m http.server 8000` starten.
 Es gibt keine Abhängigkeiten außer Node.js (ab Version 20).
