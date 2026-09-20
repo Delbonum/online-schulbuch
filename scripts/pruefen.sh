@@ -40,6 +40,16 @@ done
 
 # ---------------------------------------------------------------- SSH (ein Aufruf)
 
+# ~/.ssh/config bündelt alle Aufrufe über eine Steuerverbindung (ControlMaster).
+# Wird diese Verbindung vom Server abgeschossen, bleibt ein toter Socket liegen und
+# jeder weitere Aufruf scheitert mit „Failed to connect to new control master“.
+# Deshalb vorher prüfen und die Leiche wegräumen – das kostet keine Verbindung.
+socket=$(ssh -G "$HOST" | sed -n 's/^controlpath //p')
+if [ -n "$socket" ] && [ -e "$socket" ] && ! ssh -O check "$HOST" >/dev/null 2>&1; then
+  echo "(toter Steuer-Socket entfernt)"
+  rm -f "$socket"
+fi
+
 echo "== Server ($fern) =="
 ssh -o BatchMode=yes -o ConnectTimeout=20 "$HOST" "
   cd '$fern' || exit 1
