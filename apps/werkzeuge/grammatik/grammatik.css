@@ -1,0 +1,135 @@
+/* Grammatik: Übungsmaschine, Tabellen und die Wortmurmelbahn */
+
+/* ------------------------------------------------------------ Tabellen */
+
+.gr-tabelle { overflow-x: auto; margin: 1.6em 0; }
+.gr-tabelle table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+.gr-tabelle caption { text-align: left; color: var(--muted); font-size: .9rem; padding-bottom: 6px; }
+.gr-tabelle th, .gr-tabelle td { border: 1px solid var(--border); padding: 7px 10px; text-align: left; vertical-align: top; }
+.gr-tabelle thead th { background: var(--fach-soft); font-family: var(--schrift-titel); }
+.gr-tabelle tbody th { background: var(--surface-2); font-weight: 700; white-space: nowrap; }
+.gr-tabelle td em { color: var(--muted); font-style: italic; }
+
+/* Beispielsätze im Fließtext */
+.gr-bsp { margin: 0 0 1em; padding-left: 14px; border-left: 3px solid var(--fach-soft); }
+.gr-bsp b { font-weight: 700; color: var(--fach); }
+
+/* ------------------------------------------------------------ Übung */
+
+.gr-uebung { margin: 0; }
+.gr-uebung h2, .gr-uebung h3 { margin-top: 0; }
+.gr-kopf { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: .9rem; margin-bottom: 10px; }
+.gr-kopf p { margin: 0; }
+.gr-balken { height: 4px; border-radius: 4px; background: var(--surface-2); overflow: hidden; margin-bottom: 16px; }
+.gr-balken span { display: block; height: 100%; background: var(--fach); transition: width .2s; }
+
+.gr-frage { margin-bottom: 14px; }
+.gr-frage p { margin: 0 0 .5em; }
+.gr-anweisung { color: var(--muted); font-size: .92rem; }
+.gr-satz { font-size: 1.15rem; line-height: 1.5; }
+.gr-satz b { color: var(--fach); }
+.gr-wort { font: 700 1.5rem/1.3 var(--schrift-titel); color: var(--fach); }
+
+.gr-wahl { display: flex; flex-wrap: wrap; gap: 8px; }
+.gr-wahl button {
+  font: inherit;
+  font-size: .95rem;
+  text-align: left;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+}
+.gr-wahl button:hover:not(:disabled) { border-color: var(--fach); background: var(--fach-soft); }
+.gr-wahl button:disabled { cursor: default; opacity: .75; }
+.gr-wahl button.richtig { border-color: var(--good); background: var(--good-soft); color: var(--text); opacity: 1; font-weight: 700; }
+.gr-wahl button.falsch { border-color: var(--bad); background: var(--bad-soft); color: var(--text); opacity: 1; }
+
+.gr-eingabe { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.gr-eingabe input, .gr-frei textarea {
+  font: inherit;
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+}
+.gr-eingabe input { width: min(100%, 320px); }
+.gr-eingabe .gr-vor, .gr-eingabe .gr-nach { color: var(--muted); }
+.gr-frei textarea { width: 100%; min-height: 5em; resize: vertical; }
+
+/* Kommas setzen */
+.gr-komma { font-size: 1.1rem; line-height: 2.2; }
+.gr-komma .gr-luecke {
+  font: inherit;
+  border: none;
+  background: none;
+  color: var(--border);
+  cursor: pointer;
+  padding: 0 1px;
+  border-radius: 4px;
+  width: 1.1em;
+}
+.gr-komma .gr-luecke::before { content: "·"; }
+.gr-komma .gr-luecke:hover:not(:disabled) { background: var(--fach-soft); color: var(--fach); }
+.gr-komma .gr-luecke.gesetzt { color: var(--fach); font-weight: 700; }
+.gr-komma .gr-luecke.gesetzt::before { content: ","; }
+.gr-komma .gr-luecke.richtig { color: var(--good); font-weight: 700; }
+.gr-komma .gr-luecke.richtig::before { content: ","; }
+.gr-komma .gr-luecke.falsch { color: var(--bad); font-weight: 700; text-decoration: line-through; }
+.gr-komma .gr-luecke.fehlt { color: var(--bad); font-weight: 700; outline: 2px dashed var(--bad); }
+.gr-komma .gr-luecke.fehlt::before { content: ","; }
+.gr-komma .gr-luecke:disabled { cursor: default; }
+
+/* Felder des topologischen Modells */
+.gr-felder { display: flex; flex-direction: column; gap: 8px; }
+.gr-felder-zeile { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.gr-felder-teil { font-weight: 700; min-width: 8em; }
+.gr-felder select { font: inherit; padding: 6px 8px; border: 2px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); }
+.gr-felder select.richtig { border-color: var(--good); background: var(--good-soft); }
+.gr-felder select.falsch { border-color: var(--bad); background: var(--bad-soft); }
+
+/* Rückmeldung und Leiste */
+.gr-rueckmeldung { margin: 14px 0 0; min-height: 1.6em; }
+.gr-rueckmeldung p { margin: 0 0 .4em; }
+.gr-rueckmeldung .gr-urteil { font-weight: 700; }
+.gr-rueckmeldung.richtig .gr-urteil { color: var(--good); }
+.gr-rueckmeldung.falsch .gr-urteil { color: var(--bad); }
+.gr-rueckmeldung .gr-erklaerung { color: var(--muted); font-size: .95rem; }
+.gr-rueckmeldung .gr-erklaerung b { color: var(--text); }
+
+.gr-leiste { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+.gr-leiste .gr-rest { color: var(--muted); font-size: .9rem; margin: 0 0 0 auto; }
+
+.gr-bilanz { text-align: center; padding: 10px 0; }
+.gr-bilanz .gr-note { font: 700 2.2rem/1.2 var(--schrift-titel); color: var(--fach); }
+.gr-bilanz ul { text-align: left; display: inline-block; margin: 12px 0 0; }
+
+/* ------------------------------------------------------------ Wortmurmelbahn */
+
+.wm-wort { text-align: center; margin-bottom: 18px; }
+.wm-wort .gr-wort { display: block; }
+.wm-wort p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+.wm-frage { margin: 0 0 12px; font-weight: 700; }
+.wm-hilfe { color: var(--muted); font-size: .92rem; margin: 0 0 12px; }
+.wm-knoepfe { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.wm-weg { list-style: none; margin: 18px 0 0; padding: 0; font-size: .92rem; }
+.wm-weg li { padding: 4px 0 4px 22px; position: relative; color: var(--muted); }
+.wm-weg li::before { content: "↓"; position: absolute; left: 4px; color: var(--fach); }
+.wm-weg li:first-child::before { content: "•"; }
+.wm-weg b { color: var(--text); }
+.wm-ziel { font: 700 1.3rem/1.3 var(--schrift-titel); color: var(--fach); margin: 14px 0 0; }
+
+/* Diagramm der Murmelbahn */
+.wm-bahn { overflow-x: auto; margin: 1.6em 0; }
+.wm-bahn svg { min-width: 640px; max-width: 1000px; display: block; margin: 0 auto; }
+.wm-bahn .wm-linie { stroke: var(--fach); stroke-width: 1.4; fill: none; marker-end: url(#wm-pfeil); }
+.wm-bahn .wm-knoten { font: 400 14px var(--schrift-text); fill: var(--text); }
+.wm-bahn .wm-blatt { font: 700 15px var(--schrift-titel); fill: var(--fach); }
+.wm-bahn .wm-start { font: 700 16px var(--schrift-titel); fill: var(--text); }
+.wm-bahn #wm-pfeil path { fill: var(--fach); }
+.gr-bsp span { color: var(--fach); font-weight: 700; }

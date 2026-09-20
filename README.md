@@ -17,7 +17,7 @@ content/                  Inhalte (das „Manuskript“ des Buchs)
 site/                     Design und Skripte (werden 1:1 übernommen)
 apps/
   ki-lernspiele/          Tic Tac Toe, NIM, Bauernschach (Spiellogik + Tests)
-  werkzeuge/              Zahlensysteme, QR-Code-Werkzeuge
+  werkzeuge/              Zahlensysteme, QR-Code-Werkzeuge, Grammatik-Übungen
   kryptogame/             KryptoGAME – eigenständige App mit eigenem Build und PHP-Backend
 scripts/build.mjs         baut aus content/, site/ und apps/ die fertige Website nach dist/
 scripts/deploy.sh         lädt die Vorschau oder die Live-Version hoch

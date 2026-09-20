@@ -1,0 +1,168 @@
+<!--
+beschreibung: Die Wortmurmelbahn: ein Entscheidungsbaum mit sieben Weichen, an dessen Ende immer genau eine Wortart steht – zum Nachvollziehen und interaktiv zum Üben.
+stile: assets/werkzeuge/grammatik/grammatik.css
+layout: breit
+skripte: assets/werkzeuge/grammatik/wortmurmelbahn.js
+-->
+<div class="text">
+<p>Wortarten bestimmt man am sichersten nicht nach Gefühl, sondern mit <strong>Proben</strong>. Die <strong>Wortmurmelbahn</strong> macht daraus ein festes Verfahren: Du wirfst ein Wort oben hinein, es rollt durch mehrere Weichen, und an jeder Weiche entscheidet eine einzige Ja-Nein-Frage, wohin es weiterrollt. Unten fällt es in genau ein Fach – seine Wortart.</p>
+
+<h2>Die Bahn</h2>
+</div>
+
+<div class="wm-bahn">
+<svg viewBox="0 0 960 545" role="img" aria-label="Entscheidungsbaum zur Bestimmung der Wortart. Die Beschreibung steht direkt unter der Grafik.">
+<defs>
+<marker id="wm-pfeil" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z"/></marker>
+</defs>
+
+<text class="wm-start" x="480" y="26" text-anchor="middle">Wort X</text>
+
+<text class="wm-knoten" x="190" y="99" text-anchor="middle">flektierbar</text>
+<text class="wm-knoten" x="700" y="99" text-anchor="middle">nicht flektierbar</text>
+
+<text class="wm-knoten" x="55" y="164" text-anchor="middle">konjugierbar</text>
+<text class="wm-knoten" x="300" y="164" text-anchor="middle">deklinierbar</text>
+<text class="wm-knoten" x="545" y="164" text-anchor="middle">vorfeldfähig</text>
+<text class="wm-knoten" x="800" y="164" text-anchor="middle">nicht vorfeldfähig</text>
+
+<text class="wm-knoten" x="170" y="230" text-anchor="middle">komparierbar und<tspan x="170" dy="16">zwischen Artikel</tspan><tspan x="170" dy="16">und Nomen einsetzbar</tspan></text>
+<text class="wm-knoten" x="380" y="246" text-anchor="middle">nicht komparierbar</text>
+<text class="wm-knoten" x="650" y="246" text-anchor="middle">Kasusforderung</text>
+<text class="wm-knoten" x="855" y="246" text-anchor="middle">keine Kasusforderung</text>
+
+<text class="wm-knoten" x="290" y="334" text-anchor="middle">artikelfähig</text>
+<text class="wm-knoten" x="440" y="334" text-anchor="middle">nicht artikelfähig</text>
+<text class="wm-knoten" x="770" y="334" text-anchor="middle">Verknüpfung</text>
+<text class="wm-knoten" x="895" y="334" text-anchor="middle">keine Verknüpfung</text>
+
+<text class="wm-blatt" x="55" y="530" text-anchor="middle">Verb</text>
+<text class="wm-blatt" x="170" y="530" text-anchor="middle">Adjektiv</text>
+<text class="wm-blatt" x="290" y="530" text-anchor="middle">Nomen</text>
+<text class="wm-blatt" x="440" y="530" text-anchor="middle">Artikel/Pronomen</text>
+<text class="wm-blatt" x="545" y="530" text-anchor="middle">Adverb</text>
+<text class="wm-blatt" x="650" y="530" text-anchor="middle">Präposition</text>
+<text class="wm-blatt" x="770" y="530" text-anchor="middle">Konjunktion</text>
+<text class="wm-blatt" x="895" y="530" text-anchor="middle">Partikel</text>
+
+<path class="wm-linie" d="M465 33 L205 86"/>
+<path class="wm-linie" d="M495 33 L685 86"/>
+<path class="wm-linie" d="M175 106 L70 151"/>
+<path class="wm-linie" d="M210 106 L290 151"/>
+<path class="wm-linie" d="M675 106 L560 151"/>
+<path class="wm-linie" d="M720 106 L785 151"/>
+<path class="wm-linie" d="M285 171 L185 210"/>
+<path class="wm-linie" d="M315 171 L370 233"/>
+<path class="wm-linie" d="M780 171 L665 233"/>
+<path class="wm-linie" d="M820 171 L845 233"/>
+<path class="wm-linie" d="M370 253 L300 321"/>
+<path class="wm-linie" d="M395 253 L435 321"/>
+<path class="wm-linie" d="M840 253 L780 321"/>
+<path class="wm-linie" d="M870 253 L890 321"/>
+<path class="wm-linie" d="M55 171 L55 508"/>
+<path class="wm-linie" d="M170 268 L170 508"/>
+<path class="wm-linie" d="M545 171 L545 508"/>
+<path class="wm-linie" d="M650 253 L650 508"/>
+<path class="wm-linie" d="M290 341 L290 508"/>
+<path class="wm-linie" d="M440 341 L440 508"/>
+<path class="wm-linie" d="M770 341 L770 508"/>
+<path class="wm-linie" d="M895 341 L895 508"/>
+</svg>
+</div>
+
+<div class="text">
+<details class="aufklapp">
+<summary>Die Bahn als Text</summary>
+<ul>
+<li><strong>flektierbar?</strong>
+  <ul>
+  <li><strong>Ja</strong> → <strong>konjugierbar?</strong>
+    <ul>
+    <li>Ja → <strong>Verb</strong></li>
+    <li>Nein (nur deklinierbar) → <strong>komparierbar und zwischen Artikel und Nomen einsetzbar?</strong>
+      <ul>
+      <li>Ja → <strong>Adjektiv</strong></li>
+      <li>Nein → <strong>artikelfähig?</strong> Ja → <strong>Nomen</strong> · Nein → <strong>Artikel/Pronomen</strong></li>
+      </ul>
+    </li>
+    </ul>
+  </li>
+  <li><strong>Nein</strong> → <strong>vorfeldfähig?</strong>
+    <ul>
+    <li>Ja → <strong>Adverb</strong></li>
+    <li>Nein → <strong>Kasusforderung?</strong>
+      <ul>
+      <li>Ja → <strong>Präposition</strong></li>
+      <li>Nein → <strong>Verknüpfung?</strong> Ja → <strong>Konjunktion</strong> · Nein → <strong>Partikel</strong></li>
+      </ul>
+    </li>
+    </ul>
+  </li>
+  </ul>
+</li>
+</ul>
+</details>
+
+<h2>Die sieben Weichen im Einzelnen</h2>
+
+<h3>1. Flektierbar?</h3>
+
+<p>Verändert das Wort seine Form? Probiere es mit verschiedenen Personen, Fällen oder Zahlen.</p>
+
+<p class="gr-bsp">laufen → ich laufe, du liefst · Baum → des Baumes, die Bäume · schnell → schneller<br>
+aber: <em>und</em>, <em>sehr</em>, <em>wegen</em>, <em>oft</em> bleiben immer gleich.</p>
+
+<h3>2. Konjugierbar?</h3>
+
+<p>Lässt sich das Wort nach Person, Zahl und Zeit beugen? Dann ist es ein <strong>Verb</strong>. Wenn es sich zwar beugen lässt, aber nur nach Fall, Zahl und Geschlecht, dann ist es <em>deklinierbar</em> und die Bahn geht weiter.</p>
+
+<h3>3. Komparierbar und zwischen Artikel und Nomen einsetzbar?</h3>
+
+<p>Beide Proben zusammen ergeben ein <strong>Adjektiv</strong>:</p>
+
+<p class="gr-bsp">leise → leiser – am leisesten ✓ · der <b>leise</b> Regen ✓ → Adjektiv</p>
+
+<aside class="box hinweis">
+<p>Einige Adjektive lassen sich nicht steigern (<em>tot</em>, <em>hölzern</em>, <em>viereckig</em>). Bei ihnen entscheidet die zweite Probe: <em>der <b>hölzerne</b> Steg</em> funktioniert, also Adjektiv. Umgekehrt lassen sich ein paar Adverbien steigern (<em>gern – lieber</em>), aber sie passen nicht zwischen Artikel und Nomen. Deshalb müssen beide Proben zusammen betrachtet werden.</p>
+</aside>
+
+<h3>4. Artikelfähig?</h3>
+
+<p>Kann ein Artikel davorstehen? <em>der Baum</em>, <em>eine Idee</em> → <strong>Nomen</strong>. Wenn nicht, steht das Wort selbst an der Artikelstelle oder ersetzt das ganze Nomen → <strong>Artikel oder Pronomen</strong>.</p>
+
+<p class="gr-bsp"><em>der Baum</em> ✓ → Nomen · <em>der dieser</em> ✗ → Artikel/Pronomen</p>
+
+<h3>5. Vorfeldfähig?</h3>
+
+<p>Das <strong>Vorfeld</strong> ist der Platz vor dem gebeugten Verb (siehe <a href="/deutsch/grammatik/feldermodell/">Feldermodell</a>). Kann das Wort dort <em>allein</em> stehen? Dann ist es ein <strong>Adverb</strong>.</p>
+
+<p class="gr-bsp"><b>Heute</b> kommt sie. ✓ → Adverb<br>
+<b>Sehr</b> kommt sie. ✗ · <b>Und</b> kommt sie. ✗ · <b>Mit</b> kommt sie. ✗</p>
+
+<h3>6. Kasusforderung?</h3>
+
+<p>Verlangt das Wort, dass das folgende Element in einem bestimmten Fall steht? Dann ist es eine <strong>Präposition</strong>.</p>
+
+<p class="gr-bsp">mit <b>dem</b> Auto (Dativ) · ohne <b>den</b> Schlüssel (Akkusativ) · wegen <b>des</b> Regens (Genitiv)</p>
+
+<h3>7. Verknüpfung?</h3>
+
+<p>Verbindet das Wort Wörter, Satzteile oder Sätze? Dann ist es eine <strong>Konjunktion</strong>. Wenn nicht, bleibt die <strong>Partikel</strong> – das Auffangbecken ganz am Ende der Bahn.</p>
+
+<p class="gr-bsp">Brot <b>und</b> Butter · Sie blieb zu Hause, <b>weil</b> es regnete. → Konjunktion<br>
+Das war <b>sehr</b> nett. · Komm <b>doch</b> mit! → Partikel</p>
+
+<aside class="box tipp">
+<p>Die Bahn entscheidet nach <strong>Form und Verhalten</strong>, nicht nach Bedeutung. Deshalb funktioniert sie auch bei Wörtern, die du noch nie gesehen hast – und deshalb ist sie in Prüfungen so zuverlässig.</p>
+</aside>
+
+</div>
+<div class="text">
+<h2>Die Bahn ausprobieren</h2>
+
+<p>Stell an jeder Weiche selbst – wenn du dich vertust, korrigiert die Bahn und erklärt, warum. Unten siehst du den Weg, den das Wort genommen hat.</p>
+
+<section class="werkzeug" id="murmelbahn" aria-label="Wortmurmelbahn">
+<p>Dieses Werkzeug braucht JavaScript. Die Bahn als Diagramm und als Text findest du oben auf dieser Seite.</p>
+</section>
+</div>

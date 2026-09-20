@@ -65,8 +65,58 @@
       "titel": "Grammatik",
       "slug": "grammatik",
       "icon": "grammatik",
-      "beschreibung": "Wortarten, Satzglieder und Zeichensetzung.",
-      "geplant": true
+      "beschreibung": "Wortarten, Satzglieder, Satzbau und Zeichensetzung – mit interaktiven Übungen zu jedem Thema.",
+      "seiten": [
+        { "titel": "Die drei Ebenen", "slug": "ebenen" },
+        {
+          "titel": "Grundbegriffe", "slug": "grundbegriffe",
+          "beschreibung": "Verbformen, Zeiten, Modi, Fälle und Steigerung – das Handwerkszeug für alles Weitere.",
+          "seiten": [
+            { "titel": "Verben und ihre Formen", "kurz": "Verbformen", "slug": "verbformen" },
+            { "titel": "Die Zeitformen", "slug": "zeitformen" },
+            { "titel": "Die drei Modi", "slug": "modi" },
+            { "titel": "Die vier Fälle (Kasus)", "kurz": "Kasus", "slug": "kasus" },
+            { "titel": "Steigerung (Komparation)", "kurz": "Steigerung", "slug": "steigerung" }
+          ]
+        },
+        {
+          "titel": "Wortarten", "slug": "wortarten",
+          "beschreibung": "Was für ein sprachliches Ding ist das? Zehn Wortarten und ein Weg, sie sicher zu bestimmen.",
+          "seiten": [
+            { "titel": "Die Wortmurmelbahn", "slug": "wortmurmelbahn" },
+            { "titel": "Flektierbare Wortarten", "kurz": "Flektierbare", "slug": "flektierbare-wortarten" },
+            { "titel": "Nicht flektierbare Wortarten", "kurz": "Nicht flektierbare", "slug": "nicht-flektierbare-wortarten" }
+          ]
+        },
+        {
+          "titel": "Satzglieder", "slug": "satzglieder",
+          "beschreibung": "Welche Aufgabe hat ein Element im Satz? Subjekt, Prädikat, Objekte und Adverbiale.",
+          "seiten": [
+            { "titel": "Die Satzgliedproben", "kurz": "Satzgliedproben", "slug": "satzgliedproben" },
+            { "titel": "Subjekt und Prädikat", "slug": "subjekt-praedikat" },
+            { "titel": "Die Objekte", "slug": "objekte" },
+            { "titel": "Die adverbialen Bestimmungen", "kurz": "Adverbiale", "slug": "adverbiale" },
+            { "titel": "Sonderfall Prädikativ", "kurz": "Prädikativ", "slug": "praedikativ" },
+            { "titel": "Attribute – keine Satzglieder", "kurz": "Attribute", "slug": "attribute" }
+          ]
+        },
+        {
+          "titel": "Nebensätze", "slug": "nebensaetze",
+          "beschreibung": "Ganze Sätze als Satzglied: nach Funktion und nach Form bestimmt.",
+          "seiten": [
+            { "titel": "Nebensätze nach Funktion", "kurz": "Nach Funktion", "slug": "nebensaetze-funktion" },
+            { "titel": "Nebensätze nach Form", "kurz": "Nach Form", "slug": "nebensaetze-form" },
+            { "titel": "Die Adverbialsätze", "kurz": "Adverbialsätze", "slug": "adverbialsaetze" }
+          ]
+        },
+        { "titel": "Semantische Rollen", "slug": "semantische-rollen" },
+        { "titel": "Das topologische Feldermodell", "kurz": "Feldermodell", "slug": "feldermodell" },
+        { "titel": "Aktiv und Passiv", "slug": "aktiv-passiv" },
+        { "titel": "Konjunktiv I und II", "kurz": "Konjunktiv", "slug": "konjunktiv" },
+        { "titel": "Präfix- und Partikelverben", "kurz": "Präfix- und Partikelverben", "slug": "praefix-partikelverben" },
+        { "titel": "Die Kommaregeln", "kurz": "Kommaregeln", "slug": "kommaregeln" },
+        { "titel": "Prüfungstraining", "slug": "training" }
+      ]
     }
   ]
 }
