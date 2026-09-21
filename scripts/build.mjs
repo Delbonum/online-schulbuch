@@ -10,6 +10,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { icon } from './icons.mjs';
 
@@ -44,6 +45,10 @@ const u = (pfad) => {
   if (/^[a-z]+:/i.test(pfad) || EIGENSTAENDIG.some((e) => `/${pfad.replace(/^\//, '')}`.startsWith(e))) return pfad;
   return BASIS + pfad.replace(/^\//, '');
 };
+// Skripte und Stylesheets mit Versionskennung, damit Browser und Server-Cache nach
+// einer Änderung nicht die alte Datei weiterverwenden.
+let VERSION = '';
+const uv = (pfad) => `${u(pfad)}?v=${VERSION}`;
 
 function leseFragment(datei) {
   const roh = readFileSync(datei, 'utf8');
@@ -195,12 +200,12 @@ ${robots}
 <link rel="apple-touch-icon" href="${u('assets/img/apple-touch-icon.png')}">
 <link rel="preload" href="${u('assets/fonts/sarabun-latin-400.woff2')}" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="${u('assets/fonts/raleway-latin.woff2')}" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="${u('assets/css/schriften.css')}">
-<link rel="stylesheet" href="${u('assets/css/schulbuch.css')}">
-${stile.map((st) => `<link rel="stylesheet" href="${u(st)}">`).join('\n')}
+<link rel="stylesheet" href="${uv('assets/css/schriften.css')}">
+<link rel="stylesheet" href="${uv('assets/css/schulbuch.css')}">
+${stile.map((st) => `<link rel="stylesheet" href="${uv(st)}">`).join('\n')}
 <script>document.documentElement.classList.add('js')</script>
-<script src="${u('assets/js/schulbuch.js')}" defer></script>
-${skripte.map((sk) => `<script type="module" src="${u(sk)}"></script>`).join('\n')}
+<script src="${uv('assets/js/schulbuch.js')}" defer></script>
+${skripte.map((sk) => `<script type="module" src="${uv(sk)}"></script>`).join('\n')}
 </head>`;
 }
 
@@ -417,6 +422,25 @@ const APPS = [
 for (const [von, nach] of APPS) {
   if (!existsSync(join(ROOT, von))) { fehler.push(`Werkzeug-Ordner fehlt: ${von}`); continue; }
   cpSync(join(ROOT, von), join(ZIEL, nach), { recursive: true, filter: (p) => !/[\\/](tests?|README\.md)$/.test(p) });
+}
+
+// Versionskennung = Prüfsumme über alle Skripte und Stylesheets. Relative Importe in den
+// Modulen bekommen sie ebenfalls, sonst bliebe z. B. eine geänderte uebung.js im Cache hängen.
+{
+  const dateien = (ordner) => readdirSync(ordner).flatMap((n) => {
+    const p = join(ordner, n);
+    return statSync(p).isDirectory() ? dateien(p) : /\.(m?js|css)$/.test(n) ? [p] : [];
+  }).sort();
+  const alle = dateien(join(ZIEL, 'assets'));
+  const hash = createHash('sha1');
+  for (const p of alle) hash.update(p.slice(ZIEL.length)).update(readFileSync(p));
+  VERSION = hash.digest('hex').slice(0, 10);
+  const importe = /(\b(?:from|import)\s*\(?\s*)(['"])(\.{1,2}\/[^'"?]+\.m?js)\2/g;
+  for (const p of alle.filter((d) => /\.m?js$/.test(d))) {
+    const alt = readFileSync(p, 'utf8');
+    const neu = alt.replace(importe, `$1$2$3?v=${VERSION}$2`);
+    if (neu !== alt) writeFileSync(p, neu);
+  }
 }
 
 schreibe('/', startseite());
