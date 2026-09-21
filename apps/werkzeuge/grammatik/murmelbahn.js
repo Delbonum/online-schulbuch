@@ -123,6 +123,10 @@ export function murmelbahn(ziel, woerter) {
     return b;
   }
 
+  // Den Fokus erst nach der ersten Eingabe setzen – sonst springt die Seite beim Öffnen zur Übung.
+  let fokusErlaubt = false;
+  const fokus = (el) => { if (fokusErlaubt) el?.focus(); };
+
   function neuesWort() {
     if (!vorrat.length) vorrat = mische(woerter);
     aktuell = vorrat.pop();
@@ -152,7 +156,7 @@ export function murmelbahn(ziel, woerter) {
       b.addEventListener('click', () => antworte(wert));
       box.append(b);
     }
-    box.firstElementChild.focus();
+    fokus(box.firstElementChild);
   }
 
   function antworte(wahl) {
@@ -180,8 +184,9 @@ export function murmelbahn(ziel, woerter) {
       + (aktuell.beispiel ? `<p class="gr-erklaerung">${esc(aktuell.beispiel)}</p>` : '');
     kopfRechts.textContent = `${geloest} von ${gespielt} Wörtern ohne Fehler`;
     leiste.innerHTML = '';
-    knopf('Nächstes Wort', 'primaer', neuesWort).focus();
+    fokus(knopf('Nächstes Wort', 'primaer', neuesWort));
   }
 
   neuesWort();
+  fokusErlaubt = true;
 }

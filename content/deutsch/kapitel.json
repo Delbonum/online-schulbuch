@@ -67,7 +67,6 @@
       "icon": "grammatik",
       "beschreibung": "Wortarten, Satzglieder, Satzbau und Zeichensetzung – mit interaktiven Übungen zu jedem Thema.",
       "seiten": [
-        { "titel": "Die drei Ebenen", "slug": "ebenen" },
         {
           "titel": "Grundbegriffe", "slug": "grundbegriffe",
           "beschreibung": "Verbformen, Zeiten, Modi, Fälle und Steigerung – das Handwerkszeug für alles Weitere.",
@@ -79,6 +78,8 @@
             { "titel": "Steigerung (Komparation)", "kurz": "Steigerung", "slug": "steigerung" }
           ]
         },
+        { "titel": "Die drei Ebenen – ein Überblick", "kurz": "Die drei Ebenen", "slug": "ebenen" },
+        { "titel": "Das topologische Feldermodell", "kurz": "Feldermodell", "slug": "feldermodell" },
         {
           "titel": "Wortarten", "slug": "wortarten",
           "beschreibung": "Was für ein sprachliches Ding ist das? Zehn Wortarten und ein Weg, sie sicher zu bestimmen.",
@@ -106,11 +107,12 @@
           "seiten": [
             { "titel": "Nebensätze nach Funktion", "kurz": "Nach Funktion", "slug": "nebensaetze-funktion" },
             { "titel": "Nebensätze nach Form", "kurz": "Nach Form", "slug": "nebensaetze-form" },
-            { "titel": "Die Adverbialsätze", "kurz": "Adverbialsätze", "slug": "adverbialsaetze" }
+            { "titel": "Die Adverbialsätze", "kurz": "Adverbialsätze", "slug": "adverbialsaetze" },
+            { "titel": "Nebensätze im Feldermodell", "kurz": "Im Feldermodell", "slug": "nebensaetze-feldermodell" }
           ]
         },
         { "titel": "Semantische Rollen", "slug": "semantische-rollen" },
-        { "titel": "Das topologische Feldermodell", "kurz": "Feldermodell", "slug": "feldermodell" },
+        { "titel": "Die drei Ebenen auseinanderhalten", "kurz": "Ebenen auseinanderhalten", "slug": "ebenen-auseinanderhalten" },
         { "titel": "Aktiv und Passiv", "slug": "aktiv-passiv" },
         { "titel": "Konjunktiv I und II", "kurz": "Konjunktiv", "slug": "konjunktiv" },
         { "titel": "Präfix- und Partikelverben", "kurz": "Präfix- und Partikelverben", "slug": "praefix-partikelverben" },

@@ -50,6 +50,9 @@ export function uebung(ziel, konfig) {
   let richtigZahl = 0;
   let offen = true; // Aufgabe noch nicht beantwortet
   let fehlerListe = [];
+  // Den Fokus erst nach der ersten Eingabe setzen – sonst springt die Seite beim Öffnen zur Übung.
+  let fokusErlaubt = false;
+  const fokus = (el) => { if (fokusErlaubt) el?.focus(); };
 
   wurzel.innerHTML = `<div class="gr-uebung">
 <div class="gr-kopf"><p class="gr-fortschritt"></p><p class="gr-punkte"></p></div>
@@ -90,7 +93,7 @@ export function uebung(ziel, konfig) {
     else fehlerListe.push(aufgabe);
     punkte.textContent = `${richtigZahl} von ${nr + 1} richtig`;
     leiste.innerHTML = '';
-    knopf(nr + 1 < reihe.length ? 'Weiter' : 'Auswertung', 'primaer', naechste).focus();
+    fokus(knopf(nr + 1 < reihe.length ? 'Weiter' : 'Auswertung', 'primaer', naechste));
   }
 
   // ---------------------------------------------------------------- Typen
@@ -116,7 +119,7 @@ export function uebung(ziel, konfig) {
       box.append(b);
     }
     antwortEl.append(box);
-    box.querySelector('button')?.focus();
+    fokus(box.querySelector('button'));
   }
 
   function baueEingabe(a) {
@@ -141,7 +144,7 @@ ${a.nach ? `<span class="gr-nach">${text(a.nach)}</span>` : ''}`;
     });
     antwortEl.append(form);
     const pruefKnopf = knopf('Prüfen', 'primaer', () => form.requestSubmit());
-    feld.focus();
+    fokus(feld);
   }
 
   function baueFelder(a) {
@@ -170,7 +173,7 @@ ${a.nach ? `<span class="gr-nach">${text(a.nach)}</span>` : ''}`;
       melde(ok, ok ? '' : 'Die richtige Zuordnung steht jetzt in den Feldern.', a.erklaerung);
       bewerte(ok, a);
     });
-    auswahl[0]?.focus();
+    fokus(auswahl[0]);
   }
 
   function baueKomma(a) {
@@ -213,7 +216,7 @@ ${a.nach ? `<span class="gr-nach">${text(a.nach)}</span>` : ''}`;
         : 'Grün = richtig gesetzt, gestrichelt = hier fehlt ein Komma, durchgestrichen = hier gehört keines hin.', a.erklaerung);
       bewerte(ok, a);
     });
-    luecken[0]?.focus();
+    fokus(luecken[0]);
   }
 
   function baueFrei(a) {
@@ -233,7 +236,7 @@ ${a.nach ? `<span class="gr-nach">${text(a.nach)}</span>` : ''}`;
       knopf('Hat gepasst', 'primaer', () => bewerteFrei(true, a));
       knopf('Noch nicht', '', () => bewerteFrei(false, a));
     });
-    feld.focus();
+    fokus(feld);
   }
 
   function bewerteFrei(ok, a) {
@@ -287,7 +290,7 @@ ${a.nach ? `<span class="gr-nach">${text(a.nach)}</span>` : ''}`;
       + (fehlerListe.length ? `<ul>${fehlerListe.slice(0, 8).map((a) => `<li>${text(a.wort ?? a.satz ?? a.frage ?? (a.woerter ? a.woerter.join(' ') : ''))}</li>`).join('')}</ul>` : '')
       + '</div>';
     leiste.innerHTML = '';
-    knopf('Noch einmal üben', 'primaer', start).focus();
+    fokus(knopf('Noch einmal üben', 'primaer', start));
   }
 
   function start() {
@@ -300,6 +303,7 @@ ${a.nach ? `<span class="gr-nach">${text(a.nach)}</span>` : ''}`;
   }
 
   start();
+  fokusErlaubt = true;
 }
 
 export { FELDNAME };

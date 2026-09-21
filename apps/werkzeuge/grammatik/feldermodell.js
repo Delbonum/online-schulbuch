@@ -45,7 +45,7 @@ uebung('#uebung', {
 
     f('Nebensatz allein: weil es in Strömen regnete', [
       ['weil', 'lsk'], ['es in Strömen', 'mf'], ['regnete', 'rsk'],
-    ], 'Im Nebensatz übernimmt die Konjunktion die linke Satzklammer, das finite Verb rutscht in die rechte. Das Vorfeld bleibt leer.'),
+    ], 'Im Nebensatz übernimmt das Einleitungswort die linke Satzklammer, das finite Verb rutscht in die rechte. Das Vorfeld bleibt leer.'),
 
     f('Heute weiß ich, dass du da bist.', [
       ['Heute', 'vf'], ['weiß', 'lsk'], ['ich', 'mf'], ['dass du da bist', 'nf'],
@@ -53,15 +53,7 @@ uebung('#uebung', {
 
     f('Nebensatz allein: dass du da bist', [
       ['dass', 'lsk'], ['du da', 'mf'], ['bist', 'rsk'],
-    ], 'Auch hier: Konjunktion links, finites Verb rechts.'),
-
-    f('Als die Sonne unterging, kehrten die Wanderer um.', [
-      ['Als die Sonne unterging', 'vf'], ['kehrten', 'lsk'], ['die Wanderer', 'mf'], ['um', 'rsk'],
-    ], 'Der ganze Nebensatz besetzt das Vorfeld – er ist ein einziges Satzglied. „Um“ ist die Partikel von „umkehren“.'),
-
-    f('Nebensatz allein: Als die Sonne unterging', [
-      ['Als', 'lsk'], ['die Sonne', 'mf'], ['unterging', 'rsk'],
-    ], 'Derselbe Nebensatz, nun für sich betrachtet.'),
+    ], 'Auch hier: Einleitungswort links, finites Verb rechts.'),
 
     f('Er ist deutlich größer als sein Bruder.', [
       ['Er', 'vf'], ['ist', 'lsk'], ['deutlich größer', 'mf'], ['als sein Bruder', 'nf'],
@@ -81,14 +73,6 @@ uebung('#uebung', {
     },
     {
       anweisung: 'Beantworte die Frage zum Feldermodell.',
-      satz: 'Obwohl es früh war, standen alle auf.',
-      frage: 'In welchem Feld des Hauptsatzes steht der Nebensatz?',
-      optionen: ['Vorfeld', 'Mittelfeld', 'Nachfeld', 'linke Satzklammer'],
-      richtig: 'Vorfeld',
-      erklaerung: 'Direkt nach dem Nebensatz folgt das finite Verb „standen“ – also besetzt der Nebensatz das Vorfeld.',
-    },
-    {
-      anweisung: 'Beantworte die Frage zum Feldermodell.',
       satz: 'Sie räumte am Abend noch die Küche auf.',
       frage: 'Was steht in der rechten Satzklammer?',
       optionen: ['auf', 'die Küche', 'räumte', 'am Abend'],
@@ -96,12 +80,19 @@ uebung('#uebung', {
       erklaerung: 'Die abgetrennte Verbpartikel von „aufräumen“ gehört in die rechte Satzklammer.',
     },
     {
-      anweisung: 'Beantworte die Frage zum Feldermodell.',
-      satz: 'Sie fragte, ob noch jemand mitkommt.',
-      frage: 'Was steht in der linken Satzklammer des Nebensatzes?',
-      optionen: ['ob', 'noch jemand', 'mitkommt', 'nichts'],
-      richtig: 'ob',
-      erklaerung: 'Im Nebensatz besetzt das Einleitungswort die linke Satzklammer.',
+      anweisung: 'Nutze das Vorfeld als Werkzeug.',
+      satz: 'Mein Bruder streicht morgen das alte Gartenhaus.',
+      frage: 'Welche Wortgruppe kannst du gemeinsam ins Vorfeld schieben?',
+      optionen: ['das alte Gartenhaus', 'streicht morgen', 'morgen das', 'Bruder streicht'],
+      richtig: 'das alte Gartenhaus',
+      erklaerung: '„Das alte Gartenhaus streicht mein Bruder morgen.“ – Die drei Wörter passen nur gemeinsam vor das finite Verb. Sie bilden ein Satzglied.',
+    },
+    {
+      anweisung: 'Nutze das Vorfeld als Werkzeug.',
+      frage: 'Welches Wort kann allein im Vorfeld stehen?',
+      optionen: ['dort', 'sehr', 'und', 'mit'],
+      richtig: 'dort',
+      erklaerung: '„Dort wartet sie.“ funktioniert. „Sehr“, „und“ und „mit“ können nicht allein vor dem finiten Verb stehen. „Dort“ ist vorfeldfähig – ein Adverb.',
     },
   ],
 });
