@@ -11,13 +11,15 @@ content/                  Inhalte (das „Manuskript“ des Buchs)
   index.html              Text auf der Startseite
   deutsch/kapitel.json    Kapitelstruktur Deutsch: Reihenfolge, Titel, Zeiträume, URLs
   deutsch/<kapitel>/…     eine HTML-Datei pro Seite (Kapitelseite: index.html)
+  deutsch/lektueren/…     Unterrichtsreihen zu Lektüren, verschachtelt: <autor>/<werk>/<seite>.html
   informatik/…            dasselbe für Informatik
   seiten/                 Impressum, Datenschutz, Lizenz
   weiterleitungen.json    zusätzliche Umleitungen und entfernte Adressen
 site/                     Design und Skripte (werden 1:1 übernommen)
 apps/
   ki-lernspiele/          Tic Tac Toe, NIM, Bauernschach (Spiellogik + Tests)
-  werkzeuge/              Zahlensysteme, QR-Code-Werkzeuge, Grammatik-Übungen
+  werkzeuge/              Zahlensysteme, QR-Code-Werkzeuge, Grammatik-Übungen,
+                          arbeitsblatt/ (Bausteine für digitale Arbeitsblätter)
   kryptogame/             KryptoGAME – eigenständige App mit eigenem Build und PHP-Backend
 scripts/build.mjs         baut aus content/, site/ und apps/ die fertige Website nach dist/
 scripts/deploy.sh         lädt die Vorschau oder die Live-Version hoch
@@ -34,17 +36,89 @@ materialien/              unveröffentlichtes Unterrichtsmaterial (nur lokal, ni
 
 Ein Kapitel mit `"geplant": true` erscheint als „in Vorbereitung“, ohne dass es schon eine Seite braucht.
 
+Normalerweise liegen alle Seiten eines Kapitels flach in seinem Ordner. Ein Eintrag mit `"ordner": true`
+öffnet eine eigene Ebene – für die Adresse und für die Dateien. Beispiel Lektüren:
+`content/deutsch/lektueren/brecht/index.html` (Autor), `…/brecht/der-gute-mensch-von-sezuan/index.html` (Werk),
+`…/der-gute-mensch-von-sezuan/vorspiel.html` → `/deutsch/lektueren/brecht/der-gute-mensch-von-sezuan/vorspiel/`.
+`"lehrkraft": true` markiert eine Seite für Lehrkräfte (Schloss im Menü). `"icon"` und `"beschreibung"`
+machen aus Unterseiten Kacheln; die Icons stehen in `scripts/icons.mjs`.
+
 Bausteine für den Inhalt:
 
 ```html
 <aside class="box aufgabe"><p>…</p></aside>        <!-- Aufgabe -->
-<aside class="box hinweis"><p>…</p></aside>        <!-- Hinweis -->
+<aside class="box hinweis"><p>…</p></aside>        <!-- Hinweis; ebenso tipp, merke, info, material -->
+<aside class="box material" data-titel="M1 · Titel"> … <p class="quelle">S. 16</p></aside>
+<blockquote class="zitat"><p>…</p><span class="beleg">S. 16</span></blockquote>   <!-- Zitat; Verse: <div class="vers"> -->
+<lehrkraft titel="Lösungsvorschlag"> … </lehrkraft>   <!-- nur für Lehrkräfte, siehe unten -->
 <div class="einbettung" data-src="https://learningapps.org/watch?v=…" data-anbieter="LearningApps"></div>
 ```
 
 Externe Übungen werden erst nach einem Klick geladen (Datenschutz). Optional steht am Anfang einer Datei ein
 Kopfkommentar, z. B. mit `alt: /alte-adresse` (erzeugt eine Weiterleitung), `layout: breit` (für Werkzeuge),
 `stile:` und `skripte:`.
+
+### Digitale Arbeitsblätter
+
+Diese Bausteine werden nur mit HTML geschrieben; `apps/werkzeuge/arbeitsblatt/arbeitsblatt.js` macht sie
+interaktiv und wird vom Build automatisch eingebunden, sobald einer davon auf einer Seite vorkommt
+(Beschreibung aller Attribute im Kopf der Datei):
+
+```html
+<textarea class="notiz" data-notiz="sezuan-vorspiel-1" aria-label="Aufgabe 1: …"></textarea>
+<div class="notiz-rueckblick" data-notiz="sezuan-vermutung-1">Ersatztext</div>   <!-- frühere Antwort zeigen -->
+<div class="quiz" data-anweisung="…"><div class="frage" data-erklaerung="…"><p>Frage</p>
+  <ul><li>falsch</li><li data-richtig>richtig</li></ul></div></div>
+<div class="sortieren" data-kategorien="A|B"><p>Anweisung</p><ul><li data-gehoert="A" data-erklaerung="…">…</li></ul></div>
+<ol class="reihenfolge"><li>erstes</li><li>zweites</li></ol>           <!-- in richtiger Reihenfolge notieren -->
+<div class="position" data-id="sezuan-pos-1" data-vergleich="…"><p>Aussage</p></div>   <!-- Meinungslinie -->
+<figure class="skizze"><svg …>…</svg><figcaption>…</figcaption></figure>   <!-- eigene Grafik, Farben per CSS-Klassen -->
+```
+
+Antworten werden nur im Browser gespeichert (`localStorage`, Schlüssel `ab:<id>`); unter jeder Seite gibt es
+„Als Textdatei sichern“, „Drucken“ und „Löschen“. Die `data-notiz`-ids müssen im ganzen Schulbuch eindeutig
+sein – deshalb mit dem Kürzel der Reihe beginnen (`sezuan-…`). Gleiche id auf einer späteren Seite = Rückblick.
+
+### Inhalte für Lehrkräfte
+
+Alles in `<lehrkraft titel="…">…</lehrkraft>` wird beim Bauen mit AES-GCM verschlüsselt (Schlüssel aus dem
+Passwort per PBKDF2) und erst im Browser nach der Anmeldung über „Für Lehrkräfte“ in der Fußzeile entschlüsselt.
+Das Passwort steht in der Datei `.lehrkraft-passwort` im Projektordner (gitignored, nie committen) oder in der
+Umgebungsvariable `LEHRKRAFT_PASSWORT`. Ohne Passwort enthält die Vorschau statt der Inhalte einen Hinweis; der
+Live-Build bricht ab. Lehrkraft-Inhalte erscheinen nicht im Suchindex.
+
+Hinweis: Das Repository ist öffentlich – im Quelltext unter `content/` sind die Lösungen lesbar. Geschützt ist nur
+die Website.
+
+## Lektüren: Unterrichtsreihen anlegen
+
+Jede Lektüre bekommt eine Reihe unter `content/deutsch/lektueren/<autor>/<werk>/` (Autor- und Werk-Eintrag mit
+`"ordner": true` in `content/deutsch/kapitel.json`). Vorbild ist *Der gute Mensch von Sezuan*
+(`…/brecht/der-gute-mensch-von-sezuan/`). Für alle Reihen gilt:
+
+1. **Kein Vorwissen voraussetzen.** Die Schülerinnen und Schüler haben das Buch zu Beginn noch nicht gelesen.
+   Die ersten Seiten und Arbeitsblätter funktionieren ohne Kenntnis des Textes (Einstieg über die Grundfrage,
+   Alltagsbezug, Vermutungen zu Titel, Personen, Klappentext). Der Anfang wird gemeinsam gelesen.
+2. **Lesebegleitend und spoilerfrei.** Danach folgt pro Leseabschnitt eine Seite (Lesecheck-Quiz, Aufgaben,
+   Vermutung zum Weiterlesen, Leseauftrag als Hausaufgabe). Keine Seite verrät mehr als bis dahin gelesen ist –
+   auch nicht in Beispielen, Quizfragen oder Lösungshinweisen. Frühe Vermutungen werden mit
+   `notiz-rueckblick` später wieder aufgerufen.
+3. **Erst danach die Gesamtdeutung:** Überblick/Aufbau, Figuren, zentrale Themen, Gattung und Form,
+   Kontext und Rezeption, Bezug zur Gegenwart (mit Vorher-nachher-Vergleich der Meinungslinie), Klausurtraining.
+   Zum Schluss eine Seite „Hinweise für Lehrkräfte“ (`"lehrkraft": true`) mit Konzeption, Verlaufsplan,
+   Kompetenzen, Differenzierung, Leistungsüberprüfung, Literatur.
+4. **Seitenangaben beziehen sich immer auf die gedruckten Seitenzahlen der Buchausgabe**, nie auf die
+   Seitennummer einer PDF-Datei. Die Ausgabe steht auf der Werkseite; zusätzlich die Szene/das Kapitel nennen,
+   damit man die Stelle auch in anderen Ausgaben findet. Zitate wörtlich aus dem Buch übernehmen.
+5. **Lösungen und Lehrerhinweise** stehen in `<lehrkraft>` direkt unter den Aufgaben, auf die sie sich beziehen.
+6. **Modern und mehrperspektivisch:** handlungs- und produktionsorientierte Aufgaben, kooperative Formen,
+   interaktive Bausteine, Gegenwartsbezug; Deutungen als Angebote nebeneinanderstellen statt eine vorzugeben.
+7. **Rechte beachten:** Texte von Autorinnen und Autoren, die vor weniger als 70 Jahren gestorben sind, sind
+   geschützt – nur kurze Zitate mit Beleg (Brecht: bis 31.12.2026). Keine Bilder aus Schulbüchern, Verlagen oder
+   von Inszenierungen ohne Nutzungsrecht; Skizzen lieber selbst als SVG (`figure.skizze`) zeichnen.
+8. **Das Buch selbst** (z. B. als PDF) gehört nach `materialien/` und wird nie committet. Text lässt sich mit
+   `pdftotext` herausziehen; dabei die PDF-Seiten den gedruckten Seitenzahlen zuordnen (die Zahl steht meist
+   unten auf der Seite) und jede Seitenangabe danach prüfen.
 
 ## Befehle
 
@@ -62,6 +136,8 @@ die HTTP-Stichproben. Das ist Absicht: Der Server sperrt die eigene IP-Adresse, 
 zu viele Verbindungen eintreffen.
 
 Lokal ansehen: nach `npm run build` im Ordner `dist/` z. B. `python -m http.server 8000` starten.
+Für die Vorschau (`npm run vorschau`) den Server im Ordner über `dist/` starten und `dist` in `vorschau` umbenennen
+bzw. kopieren, da alle Adressen mit `/vorschau/` beginnen. Die Lehrkraft-Anmeldung braucht `https` oder `localhost`.
 Es gibt keine Abhängigkeiten außer Node.js (ab Version 20).
 
 ## KryptoGAME

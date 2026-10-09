@@ -394,6 +394,17 @@ a.nav-link:hover { background: var(--surface-2); }
 .lk-dialog .lk-knoepfe { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 .lk-link[aria-pressed="true"]::before { content: "✓ "; }
 
+/* Tabellen im Fließtext (z. B. Verlaufspläne) und Zitate aus Lektüren */
+.verlauf { width: 100%; border-collapse: collapse; font-size: .92rem; margin: 1em 0 1.6em; display: block; overflow-x: auto; }
+.verlauf th, .verlauf td { border: 1px solid var(--border); padding: 6px 9px; text-align: left; vertical-align: top; }
+.verlauf thead th { background: var(--fach-soft); font-family: var(--schrift-titel); }
+.verlauf tbody th { background: var(--surface-2); }
+.zitat { margin: 1.2em 0; padding: 4px 0 4px 18px; border-left: 3px solid var(--fach); font-style: italic; }
+.zitat p { margin: 0 0 .3em; }
+.zitat .beleg, .beleg { font-style: normal; font-size: .85rem; color: var(--muted); }
+.vers { white-space: pre-line; }
+.box h2 { font-size: 1.2rem; margin: 1.4em 0 .5em; }
+
 details.aufklapp {
   margin: 0 0 12px;
   padding: 12px 18px;

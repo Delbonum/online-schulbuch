@@ -217,7 +217,7 @@ function wandle(html, quelle) {
   s = s.replace(LK_MUSTER, (m, titel = 'Für Lehrkräfte', inhalt) => {
     const kopf = `<p class="box-titel">${icon('schloss')}${esc(titel)}</p>`;
     if (!LK_SCHLUESSEL) {
-      if (!VORSCHAU) fehler.push(`Kein Lehrkraft-Passwort (.lehrkraft-passwort) für die Inhalte in ${quelle}`);
+      if (!VORSCHAU) fehler.push('Inhalte für Lehrkräfte vorhanden, aber kein Passwort: Datei .lehrkraft-passwort anlegen oder LEHRKRAFT_PASSWORT setzen');
       return `<aside class="box lehrkraft gesperrt">${kopf}<p>In dieser Vorschau sind keine Inhalte für Lehrkräfte enthalten.</p></aside>`;
     }
     return `<aside class="box lehrkraft gesperrt" data-lk="${verschluessle(inhalt.trim())}">${kopf}<p>Nur für Lehrkräfte – nach der <a href="#lehrkraft" data-lk-anmelden>Anmeldung</a> sichtbar.</p></aside>`;
@@ -369,7 +369,7 @@ function blaettern(seite) {
 
 // ------------------------------------------------------------------ Seitentypen
 
-const ARBEITSBLATT = /class="(?:[^"]*\s)?(?:notiz|quiz|sortieren|reihenfolge|position|skizze-figuren)(?:\s[^"]*)?"/;
+const ARBEITSBLATT = /class="(?:[^"]*\s)?(?:notiz|notiz-rueckblick|quiz|sortieren|reihenfolge|position|skizze|skizze-figuren)(?:\s[^"]*)?"/;
 
 function buchseite(seite) {
   const { knoten, fach, meta } = seite;

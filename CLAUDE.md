@@ -8,7 +8,7 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
 - Mit dem Nutzer auf Deutsch kommunizieren; Texte für Schüler:innen in Du-Anrede, einfache Sprache.
 - Seiten entstehen aus `content/` (Kapitelstruktur je Fach in `content/<fach>/kapitel.json`) durch
   `node scripts/build.mjs`. Keine Abhängigkeiten, kein Framework einführen.
-- Nach Änderungen: `npm test` (19+ Tests) und `npm run vorschau`; beides muss grün sein.
+- Nach Änderungen: `npm test` (23+ Tests) und `npm run vorschau`; beides muss grün sein.
 - Live-Build bricht absichtlich ab, solange `<mark class="todo">` in den Inhalten steht.
 - Commit-Nachrichten auf Deutsch.
 
@@ -28,3 +28,8 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
   verlinkt (neuer Tab). `scripts/deploy.sh` fasst `/informatik/kryptogame/` nie an.
 - `materialien/` ist unveröffentlichtes Unterrichtsmaterial und bleibt lokal (gitignored).
 - Externe Einbettungen (LearningApps) nur per Klick laden (Datenschutz).
+- Lektüren (`content/deutsch/lektueren/`): Vorgehen und verbindliche Grundsätze stehen im README unter
+  „Lektüren: Unterrichtsreihen anlegen“ – v. a. **kein Vorwissen voraussetzen** (Schüler:innen haben das Buch
+  zu Beginn nicht gelesen, Leseseiten spoilerfrei) und **Seitenangaben = gedruckte Buchseiten**, nie PDF-Seiten.
+- Lösungen/Lehrerhinweise in `<lehrkraft>`; Passwort in `.lehrkraft-passwort` (lokal, nie committen).
+  Live-Build bricht ohne Passwort ab.

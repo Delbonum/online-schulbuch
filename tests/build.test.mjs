@@ -1,7 +1,8 @@
 // Prüft den Seitengenerator: Build läuft, alle Seiten sind vollständig, alte Adressen werden umgeleitet.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { pbkdf2Sync, createDecipheriv } from 'node:crypto';
 import { readFileSync, readdirSync, statSync, existsSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -55,6 +56,53 @@ test('Jede Seite der alten Baukasten-Version hat eine neue Adresse', () => {
     .flatMap((d) => [...readFileSync(d, 'utf8').matchAll(/^alt: (.+)$/gm)].flatMap((m) => m[1].split(/\s*,\s*/))));
   for (const a of alt) assert.ok(eingetragen.has(`/${a}`), `keine Weiterleitung für /${a}`);
   assert.ok(eingetragen.has('/informatik/zahlensystemumstellung.html'));
+});
+
+test('Lektüren: Ordner-Einträge erzeugen verschachtelte Adressen', () => {
+  const basis = join(OUT, 'deutsch', 'lektueren', 'brecht', 'der-gute-mensch-von-sezuan');
+  assert.ok(existsSync(join(OUT, 'deutsch', 'lektueren', 'brecht', 'index.html')));
+  assert.ok(existsSync(join(basis, 'index.html')));
+  assert.ok(existsSync(join(basis, 'vorspiel', 'index.html')));
+  const html = readFileSync(join(basis, 'vorspiel', 'index.html'), 'utf8');
+  assert.match(html, /assets\/werkzeuge\/arbeitsblatt\/arbeitsblatt\.js/, 'Arbeitsblatt-Skript wird automatisch eingebunden');
+});
+
+test('Inhalte für Lehrkräfte stehen ohne Passwort nicht in der Vorschau und nicht im Suchindex', () => {
+  const html = readFileSync(join(OUT, 'deutsch', 'lektueren', 'brecht', 'der-gute-mensch-von-sezuan', 'lehrkraefte', 'index.html'), 'utf8');
+  assert.doesNotMatch(html, /Leitfrage der Reihe/);
+  assert.doesNotMatch(html, /<lehrkraft/);
+  assert.doesNotMatch(readFileSync(join(OUT, 'suche.json'), 'utf8'), /Erwartungshorizont/);
+});
+
+test('Mit Passwort werden Lehrkraft-Inhalte verschlüsselt und lassen sich entschlüsseln', () => {
+  const ziel = 'dist-test-lk';
+  execFileSync(process.execPath, ['scripts/build.mjs', '--basis=vorschau', `--ziel=${ziel}`], {
+    cwd: ROOT, stdio: 'pipe', env: { ...process.env, LEHRKRAFT_PASSWORT: 'geheim' },
+  });
+  try {
+    const html = readFileSync(join(ROOT, ziel, 'deutsch', 'lektueren', 'brecht', 'der-gute-mensch-von-sezuan', 'lehrkraefte', 'index.html'), 'utf8');
+    assert.doesNotMatch(html, /Leitfrage der Reihe/, 'Klartext darf nicht in der Seite stehen');
+    const [, salz, runden] = html.match(/data-lk-salz="([^"]+)" data-lk-runden="(\d+)"/);
+    const [, wert] = html.match(/data-lk="([^"]+)"/);
+    const schluessel = pbkdf2Sync('geheim', salz, Number(runden), 32, 'sha256');
+    const [iv, daten] = wert.split('.').map((t) => Buffer.from(t, 'base64'));
+    const d = createDecipheriv('aes-256-gcm', schluessel, iv);
+    d.setAuthTag(daten.subarray(-16));
+    const klar = Buffer.concat([d.update(daten.subarray(0, -16)), d.final()]).toString('utf8');
+    assert.match(klar, /Leitfrage der Reihe/);
+  } finally {
+    rmSync(join(ROOT, ziel), { recursive: true, force: true });
+  }
+});
+
+test('Live-Build bricht ohne Lehrkraft-Passwort ab', () => {
+  const env = { ...process.env };
+  delete env.LEHRKRAFT_PASSWORT;
+  const r = spawnSync(process.execPath, ['scripts/build.mjs', '--ziel=dist-test-live'], { cwd: ROOT, env, encoding: 'utf8' });
+  rmSync(join(ROOT, 'dist-test-live'), { recursive: true, force: true });
+  if (existsSync(join(ROOT, '.lehrkraft-passwort'))) return; // lokal mit Passwortdatei: nichts zu prüfen
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /kein Passwort/);
 });
 
 test.after(() => rmSync(OUT, { recursive: true, force: true }));
