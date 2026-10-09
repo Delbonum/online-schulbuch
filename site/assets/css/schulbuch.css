@@ -375,6 +375,25 @@ a.nav-link:hover { background: var(--surface-2); }
 .box.aufgabe { border-left-color: var(--fach); background: color-mix(in srgb, var(--band) 22%, #fff); }
 .box.aufgabe li::marker { color: var(--fach); }
 
+.box.material { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--fach); }
+.box.material .quelle, .box .quelle { font-size: .85rem; color: var(--muted); text-align: right; }
+.box.material blockquote { margin: 0 0 1em; padding: 0; font-style: normal; }
+.box.info { background: var(--fach-soft); }
+
+/* Inhalte für Lehrkräfte: gesperrt als schmaler Hinweis, nach der Anmeldung als eigener Kasten */
+.box.lehrkraft { border-left-color: #8a6d1f; background: #fbf6e4; }
+.box.lehrkraft .box-titel { color: #6b5414; }
+.box.lehrkraft.gesperrt { background: transparent; border: 2px dashed #d9cfae; border-left-width: 4px; border-left-style: solid; border-left-color: #c9b77d; padding-bottom: 2px; }
+.box.lehrkraft.gesperrt p:not(.box-titel) { color: var(--muted); font-size: .92rem; }
+.lk-dialog { width: min(440px, calc(100vw - 24px)); padding: 22px 24px 18px; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 20px 60px rgb(0 0 0 / 30%); }
+.lk-dialog::backdrop { background: rgb(0 0 0 / 35%); }
+.lk-dialog h2 { font-size: 1.3rem; margin: 0 0 .4em; }
+.lk-dialog p { margin: 0 0 .9em; font-size: .95rem; }
+.lk-dialog input { font: inherit; width: 100%; padding: 8px 12px; border: 2px solid var(--border); border-radius: 10px; }
+.lk-dialog .lk-fehler { color: var(--bad); min-height: 1.4em; margin: .4em 0 .6em; }
+.lk-dialog .lk-knoepfe { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.lk-link[aria-pressed="true"]::before { content: "✓ "; }
+
 details.aufklapp {
   margin: 0 0 12px;
   padding: 12px 18px;

@@ -7,10 +7,16 @@
 // Jede Seite ist ein HTML-Fragment unter content/<fach>/<kapitel>/<seite>.html
 // (Kapitelseite: content/<fach>/<kapitel>/index.html). Optional steht am Dateianfang ein
 // Kopfkommentar mit Angaben wie „alt: /alte-url“, „layout: breit“ oder „skripte: …“.
+// Ein Eintrag mit "ordner": true bekommt einen eigenen Unterordner – für URLs und Dateien
+// (z. B. Lektüren: content/deutsch/lektueren/brecht/der-gute-mensch-von-sezuan/vorspiel.html).
+//
+// Inhalte für Lehrkräfte stehen in <lehrkraft titel="…">…</lehrkraft>. Sie werden beim Bauen mit
+// dem Passwort aus .lehrkraft-passwort (oder der Umgebungsvariable LEHRKRAFT_PASSWORT) verschlüsselt
+// und erst im Browser nach der Anmeldung entschlüsselt.
 
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { createHash } from 'node:crypto';
+import { createHash, createHmac, createCipheriv, pbkdf2Sync } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { icon } from './icons.mjs';
 
@@ -74,6 +80,26 @@ function klartext(html) {
     .trim();
 }
 
+// ------------------------------------------------------------------ Lehrkraft-Inhalte
+
+// Diese Werte muss auch site/assets/js/schulbuch.js kennen; sie stehen deshalb im Fußbereich jeder Seite.
+const LK_SALZ = 'online-schulbuch.de/lehrkraft/v1';
+const LK_RUNDEN = 200000;
+const LK_PASSWORT = (process.env.LEHRKRAFT_PASSWORT
+  ?? (existsSync(join(ROOT, '.lehrkraft-passwort')) ? readFileSync(join(ROOT, '.lehrkraft-passwort'), 'utf8') : '')).trim();
+const LK_SCHLUESSEL = LK_PASSWORT ? pbkdf2Sync(LK_PASSWORT, LK_SALZ, LK_RUNDEN, 32, 'sha256') : null;
+const LK_MUSTER = /<lehrkraft(?:\s+titel="([^"]*)")?>([\s\S]*?)<\/lehrkraft>/g;
+
+// AES-256-GCM. Der Startwert (IV) wird aus dem Inhalt abgeleitet, damit gleiche Inhalte bei jedem
+// Build gleich verschlüsselt werden und unveränderte Seiten unverändert bleiben.
+function verschluessle(text) {
+  const iv = createHmac('sha256', LK_SCHLUESSEL).update(text).digest().subarray(0, 12);
+  const c = createCipheriv('aes-256-gcm', LK_SCHLUESSEL, iv);
+  const daten = Buffer.concat([c.update(text, 'utf8'), c.final(), c.getAuthTag()]);
+  return `${iv.toString('base64')}.${daten.toString('base64')}`;
+}
+const LK_PRUEF = LK_SCHLUESSEL ? verschluessle('lehrkraft-ok') : '';
+
 // ------------------------------------------------------------------ Struktur einlesen
 
 const faecher = site.faecher.map((slug) => {
@@ -90,7 +116,9 @@ for (const fach of faecher) {
     kap.fach = fach;
     if (kap.geplant) continue;
     const kette = [];
-    const besuche = (knoten, eltern) => {
+    // basisUrl/basisOrdner: wohin die Kinder eines Eintrags kommen. Normalerweise liegen alle Seiten
+    // eines Kapitels flach in seinem Ordner; ein Eintrag mit "ordner": true öffnet eine neue Ebene.
+    const besuche = (knoten, eltern, basisUrl, basisOrdner) => {
       knoten.fach = fach;
       knoten.kapitel = kap;
       knoten.eltern = eltern;
@@ -99,8 +127,18 @@ for (const fach of faecher) {
         return;
       }
       const istKapitel = knoten === kap;
-      knoten.url = istKapitel ? kap.url : `${kap.url}${knoten.slug}/`;
-      const datei = join(CONTENT, fach.slug, kap.slug, istKapitel ? 'index.html' : `${knoten.slug}.html`);
+      let datei;
+      if (istKapitel) {
+        knoten.url = kap.url;
+        datei = join(basisOrdner, 'index.html');
+      } else if (knoten.ordner) {
+        knoten.url = `${basisUrl}${knoten.slug}/`;
+        datei = join(basisOrdner, knoten.slug, 'index.html');
+      } else {
+        knoten.url = `${basisUrl}${knoten.slug}/`;
+        datei = join(basisOrdner, `${knoten.slug}.html`);
+      }
+      const [kindUrl, kindOrdner] = istKapitel || knoten.ordner ? [knoten.url, dirname(datei)] : [basisUrl, basisOrdner];
       if (!existsSync(datei)) {
         fehler.push(`Inhaltsdatei fehlt: ${datei.slice(ROOT.length + 1)}`);
       } else {
@@ -112,9 +150,9 @@ for (const fach of faecher) {
         seiten.push(seite);
         if (!knoten.entwurf) kette.push(seite);
       }
-      for (const kind of knoten.seiten ?? []) besuche(kind, [...eltern, knoten]);
+      for (const kind of knoten.seiten ?? []) besuche(kind, [...eltern, knoten], kindUrl, kindOrdner);
     };
-    besuche(kap, []);
+    besuche(kap, [], kap.url, join(CONTENT, fach.slug, kap.slug));
     kette.forEach((s, i) => { s.zurueck = kette[i - 1]; s.weiter = kette[i + 1]; });
   }
 }
@@ -143,14 +181,16 @@ const BOX = {
   aufgabe: ['aufgabe', 'Aufgabe'],
   tipp: ['hinweis', 'Tipp'],
   merke: ['hinweis', 'Merke'],
+  material: ['buch', 'Material'],
+  info: ['hinweis', 'Info'],
 };
 
 function wandle(html, quelle) {
   let s = html;
-  // Kästen bekommen eine Überschrift mit Symbol
-  s = s.replace(/<aside class="box (\w+)">/g, (m, art) => {
+  // Kästen bekommen eine Überschrift mit Symbol; data-titel ersetzt die Standardüberschrift
+  s = s.replace(/<aside class="box (\w+)"(?: data-titel="([^"]*)")?>/g, (m, art, eigen) => {
     const [ic, titel] = BOX[art] ?? ['hinweis', art];
-    return `<aside class="box ${art}"><p class="box-titel">${icon(ic)}${titel}</p>`;
+    return `<aside class="box ${art}"><p class="box-titel">${icon(ic)}${eigen ?? titel}</p>`;
   });
   // Externe Einbettungen erst nach Klick laden (Datenschutz)
   s = s.replace(/<div class="einbettung" data-src="([^"]+)" data-anbieter="([^"]+)"><\/div>/g, (m, src, anbieter) => {
@@ -172,6 +212,15 @@ function wandle(html, quelle) {
       fehler.push(`Toter Link ${ziel} in ${quelle}`);
     }
     return `${attr}="${u(pfad)}"`;
+  });
+  // Lehrkraft-Inhalte: verschlüsselt ausliefern (zuletzt, damit Kästen und Links darin schon umgewandelt sind)
+  s = s.replace(LK_MUSTER, (m, titel = 'Für Lehrkräfte', inhalt) => {
+    const kopf = `<p class="box-titel">${icon('schloss')}${esc(titel)}</p>`;
+    if (!LK_SCHLUESSEL) {
+      if (!VORSCHAU) fehler.push(`Kein Lehrkraft-Passwort (.lehrkraft-passwort) für die Inhalte in ${quelle}`);
+      return `<aside class="box lehrkraft gesperrt">${kopf}<p>In dieser Vorschau sind keine Inhalte für Lehrkräfte enthalten.</p></aside>`;
+    }
+    return `<aside class="box lehrkraft gesperrt" data-lk="${verschluessle(inhalt.trim())}">${kopf}<p>Nur für Lehrkräfte – nach der <a href="#lehrkraft" data-lk-anmelden>Anmeldung</a> sichtbar.</p></aside>`;
   });
   return s;
 }
@@ -230,7 +279,7 @@ function fuss(fach) {
   return `<footer class="fuss">
 <div class="fuss-innen">
 <p><img src="${logo(fach)}" alt="" width="22" height="22"> ${esc(site.titel)} von ${esc(site.autor)} · Inhalte unter <a href="${u('/lizenz/')}">${esc(site.lizenz.name)}</a></p>
-<nav aria-label="Rechtliches"><a href="${u('/impressum/')}">Impressum</a><a href="${u('/datenschutz/')}">Datenschutz</a><a href="${u('/lizenz/')}">Lizenz</a></nav>
+<nav aria-label="Rechtliches">${LK_PRUEF ? `<a href="#lehrkraft" class="lk-link" data-lk-anmelden data-lk-pruef="${LK_PRUEF}" data-lk-salz="${LK_SALZ}" data-lk-runden="${LK_RUNDEN}">Für Lehrkräfte</a>` : ''}<a href="${u('/impressum/')}">Impressum</a><a href="${u('/datenschutz/')}">Datenschutz</a><a href="${u('/lizenz/')}">Lizenz</a></nav>
 </div>
 </footer>
 <dialog class="suche" aria-label="Suche">
@@ -257,7 +306,7 @@ function menueEintrag(knoten, aktuell) {
   let link;
   if (knoten.geplant) link = `<span class="nav-link geplant">${label}<span class="abzeichen">bald</span></span>`;
   else if (knoten.extern) link = `<a class="nav-link" href="${u(knoten.url)}" target="_blank" rel="noopener">${label} ${icon('extern', 'icon klein')}<span class="sr">(öffnet in neuem Tab)</span></a>`;
-  else link = `<a class="nav-link" href="${u(knoten.url)}"${aktiv ? ' aria-current="page"' : ''}>${label}${zeit}</a>`;
+  else link = `<a class="nav-link" href="${u(knoten.url)}"${aktiv ? ' aria-current="page"' : ''}>${label}${knoten.lehrkraft ? ` ${icon('schloss', 'icon klein')}<span class="sr">(für Lehrkräfte)</span>` : ''}${zeit}</a>`;
   const sichtbar = kinder.filter((k) => !k.entwurf || k.seite === aktuell);
   if (!sichtbar.length) return `<li>${link}</li>`;
   return `<li class="gruppe${offen ? ' offen' : ''}"><div class="nav-zeile">${link}<button type="button" class="nav-auf" aria-expanded="${offen}" aria-label="${label} auf- oder zuklappen">${icon('chevron', 'icon klein')}</button></div>
@@ -288,6 +337,7 @@ function kachel(knoten, { thema } = {}) {
   if (anzahl) meta.push(`${anzahl} ${anzahl === 1 ? 'Seite' : 'Seiten'}`);
   if (thema) meta.push(esc(thema));
   if (knoten.beta) meta.push('Beta');
+  if (knoten.lehrkraft) meta.push('nur für Lehrkräfte');
   const ic = knoten.icon ? `<span class="kachel-icon">${icon(knoten.icon)}</span>` : '';
   const fuss = meta.length ? `<p class="kachel-meta">${meta.join(' · ')}</p>` : '';
   if (knoten.geplant) {
@@ -319,6 +369,8 @@ function blaettern(seite) {
 
 // ------------------------------------------------------------------ Seitentypen
 
+const ARBEITSBLATT = /class="(?:[^"]*\s)?(?:notiz|quiz|sortieren|reihenfolge|position|skizze-figuren)(?:\s[^"]*)?"/;
+
 function buchseite(seite) {
   const { knoten, fach, meta } = seite;
   const breit = meta.layout === 'breit';
@@ -329,6 +381,11 @@ function buchseite(seite) {
   if (knoten.zeitraum) dach.push(knoten.zeitraum);
   const stile = meta.stile ? meta.stile.split(/\s*,\s*/) : [];
   const skripte = meta.skripte ? meta.skripte.split(/\s*,\s*/) : [];
+  // Bausteine für digitale Arbeitsblätter (Notizfelder, Quiz, Sortieren …) bringen ihre Dateien selbst mit
+  if (ARBEITSBLATT.test(seite.inhalt)) {
+    for (const st of ['assets/werkzeuge/grammatik/grammatik.css', 'assets/werkzeuge/arbeitsblatt/arbeitsblatt.css']) if (!stile.includes(st)) stile.push(st);
+    skripte.push('assets/werkzeuge/arbeitsblatt/arbeitsblatt.js');
+  }
   const titel = knoten.lang ?? knoten.titel;
   return `${kopf({ titel: `${knoten.kurz ?? knoten.titel} – ${fach.titel}`, beschreibung: meta.beschreibung ?? knoten.beschreibung, url: seite.url, noindex: knoten.entwurf, stile, skripte })}
 <body class="fach-${fach.slug}">
@@ -473,7 +530,7 @@ const index = [
     u: u(s.url),
     f: s.fach.titel,
     k: [s.kap !== s.knoten ? (s.kap.kurz ?? s.kap.titel) : null, s.knoten.zeitraum].filter(Boolean).join(' · '),
-    x: klartext(s.inhalt).slice(0, 6000),
+    x: klartext(s.inhalt.replace(LK_MUSTER, ' ')).slice(0, 6000),
   })),
 ];
 writeFileSync(join(ZIEL, 'suche.json'), JSON.stringify(index));
@@ -518,7 +575,7 @@ ${urls.map((p) => `<url><loc>${site.domain}${p}</loc></url>`).join('\n')}
 
 for (const w of warnungen) console.warn(`Warnung: ${w}`);
 if (fehler.length) {
-  for (const f of fehler) console.error(`Fehler: ${f}`);
+  for (const f of new Set(fehler)) console.error(`Fehler: ${f}`);
   process.exit(1);
 }
 console.log(`Fertig: ${seiten.length} Buchseiten, ${faecher.length} Fächer → ${ZIEL.slice(ROOT.length + 1)} (Basis ${BASIS})`);

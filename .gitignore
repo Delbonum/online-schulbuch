@@ -14,5 +14,8 @@ Thumbs.db
 # Unterrichtsmaterial, das (noch) nicht veröffentlicht wird – bleibt nur lokal
 /materialien/
 
+# Passwort für die Inhalte für Lehrkräfte – nur lokal, nie veröffentlichen
+.lehrkraft-passwort
+
 # Lokale Hinweise für Claude (Serverzugang usw.) – nicht veröffentlichen
 CLAUDE.local.md

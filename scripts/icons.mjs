@@ -27,6 +27,18 @@ const P = {
   aufgabe: '<path d="M14.5 4.5l5 5L9 20H4v-5z"/><path d="M12.5 6.5l5 5"/>',
   spiel: '<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.3"/><circle cx="15.5" cy="15.5" r="1.3"/><circle cx="15.5" cy="8.5" r="1.3"/><circle cx="8.5" cy="15.5" r="1.3"/>',
   qr: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3M14 20h1M20 14v1"/>',
+  buecher: '<rect x="3" y="4" width="4" height="16" rx=".8"/><rect x="8.5" y="6" width="4" height="14" rx=".8"/><path d="M14.2 7.4l3.8-1 3.6 13.4-3.8 1z"/><path d="M3 8h4M8.5 9.5h4"/>',
+  person: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c.8-4 3.8-6.5 7.5-6.5s6.7 2.5 7.5 6.5"/>',
+  maske: '<path d="M3 4.5c3 1.3 7 1.3 10 0v6a5 5 0 0 1-10 0z"/><path d="M5.5 8.2h1.6M8.9 8.2h1.6M6 11.6c1.1.8 2.9.8 4 0"/><path d="M15.2 8.6c2 .5 3.9.3 5.8-.6v6a5 5 0 0 1-7.6 4.2"/><path d="M16.6 12.2h1.2M19.2 11.9h.8M17 16.3c.7-.5 1.8-.6 2.6-.1"/>',
+  waage: '<path d="M12 3v17M7 20h10M5 6h14M12 4.5l-.01 0"/><path d="M5 6l-3 7h6zM19 6l-3 7h6z"/>',
+  kolben: '<path d="M9.5 3h5M10 3v6l-5.2 9.2A1.9 1.9 0 0 0 6.5 21h11a1.9 1.9 0 0 0 1.7-2.8L14 9V3"/><path d="M7.2 15h9.6"/>',
+  wolke: '<path d="M7 18.5h10.5a4 4 0 0 0 .4-8A5.5 5.5 0 0 0 7.4 9 4.8 4.8 0 0 0 7 18.5z"/>',
+  parabel: '<path d="M4 4c1.5 9 4.5 14 8 14s6.5-5 8-14"/><path d="M12 3v17" stroke-dasharray="2 2.5"/>',
+  buehne: '<path d="M3 4h18M4 4v16M20 4v16"/><path d="M4 4c1 4 3 6 5.5 6.5M20 4c-1 4-3 6-5.5 6.5"/><path d="M2.5 20h19M8 16.5h8"/>',
+  note: '<path d="M9 18V5.5l11-2.5v12.5"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="15.5" r="2.5"/><path d="M9 9.5l11-2.5"/>',
+  frage: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.3a2.6 2.6 0 0 1 5 .9c0 1.8-2.5 2.2-2.5 3.8M12 17v.5"/>',
+  weltkugel: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3z"/>',
+  sprechblase: '<path d="M4 5.5h12a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H9l-4 3.5v-3.5H4A1.5 1.5 0 0 1 2.5 14V7A1.5 1.5 0 0 1 4 5.5z"/><path d="M20 9.5h.5A1.5 1.5 0 0 1 22 11v6a1.5 1.5 0 0 1-1.5 1.5H20V21l-3-2.5h-4"/>',
 }
 
 export function icon(name, cls = 'icon') {
