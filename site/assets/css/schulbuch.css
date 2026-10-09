@@ -46,7 +46,9 @@ body { --accent: var(--fach); }
 /* ------------------------------------------------------------ Grundlagen */
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--kopf-hoehe) + 16px); }
+/* scrollbar-gutter: Platz für den Scrollbalken immer freihalten. Sonst rutscht der zentrierte Kopf
+   (mit dem Logo) auf kurzen Seiten ohne Scrollbalken ein paar Pixel nach rechts. */
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--kopf-hoehe) + 16px); scrollbar-gutter: stable; }
 
 body {
   margin: 0;
