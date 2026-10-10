@@ -13,6 +13,8 @@
 //   <ol class="reihenfolge"> <li>…</li> … </ol>          (Einträge in der richtigen Reihenfolge)
 //   <div class="position" data-id="id" data-links="…" data-rechts="…" [data-vergleich="andere-id"]>
 //       <p>Aussage</p> </div>
+//   <ul class="abhaken" data-id="id"> <li>…</li> … </ul>
+//       Liste zum Abhaken (z. B. Leseplan). Gespeichert wird, welche Einträge erledigt sind.
 //
 // Ohne JavaScript bleiben alle Bausteine lesbar (Listen, Textfelder).
 
@@ -33,7 +35,8 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 // ---------------------------------------------------------------- Antwortfelder
 
 function hoehe(feld) {
-  if (feld.tagName !== 'TEXTAREA') return;
+  // Unsichtbare Felder (z. B. in zugeklappten Kästen) haben noch keine Höhe – dort gelten die rows.
+  if (feld.tagName !== 'TEXTAREA' || !feld.getClientRects().length) return;
   feld.style.height = 'auto';
   feld.style.height = `${feld.scrollHeight + 4}px`;
 }
@@ -51,6 +54,7 @@ for (const feld of notizen) {
   });
 }
 window.addEventListener('beforeprint', () => notizen.forEach(hoehe));
+document.addEventListener('toggle', (e) => e.target.querySelectorAll?.('.notiz').forEach(hoehe), true);
 
 for (const box of document.querySelectorAll('.notiz-rueckblick[data-notiz]')) {
   const wert = speicher.lies(box.dataset.notiz);
@@ -89,6 +93,7 @@ Sichere deine Antworten als Datei, wenn du sie abgeben oder auf einem anderen Ge
     if (art === 'drucken') window.print();
     if (art === 'loeschen' && confirm('Alle Antworten auf dieser Seite löschen? Das lässt sich nicht rückgängig machen.')) {
       for (const feld of notizen) { feld.value = ''; speicher.schreib(feld.dataset.notiz, ''); hoehe(feld); }
+      abhakenLeeren();
     }
     if (art === 'datei') {
       const titel = document.querySelector('.seitenkopf h1')?.textContent.trim() ?? document.title;
@@ -325,4 +330,36 @@ ${frueher ? `<span class="position-frueher" style="--wert:${frueher}" title="dei
   };
   zeige(Boolean(gespeichert));
   regler.addEventListener('input', () => { speicher.schreib(`position:${id}`, regler.value); zeige(true); });
+});
+
+// ---------------------------------------------------------------- Abhaken (Leseplan o. Ä.)
+
+function abhakenLeeren() {
+  document.querySelectorAll('ul.abhaken[data-id] input[type="checkbox"]').forEach((box) => {
+    if (box.checked) { box.checked = false; box.dispatchEvent(new Event('change')); }
+  });
+}
+
+document.querySelectorAll('ul.abhaken[data-id]').forEach((liste) => {
+  const id = `abhaken:${liste.dataset.id}`;
+  const erledigt = new Set(speicher.lies(id).split(',').filter(Boolean));
+  const eintraege = [...liste.children];
+  const stand = document.createElement('p');
+  stand.className = 'abhaken-stand';
+  liste.after(stand);
+  const zeige = () => {
+    const n = eintraege.filter((li) => li.classList.contains('erledigt')).length;
+    stand.textContent = `${n} von ${eintraege.length} erledigt`;
+  };
+  eintraege.forEach((li, i) => {
+    li.innerHTML = `<label><input type="checkbox"${erledigt.has(String(i)) ? ' checked' : ''}><span>${li.innerHTML}</span></label>`;
+    li.classList.toggle('erledigt', erledigt.has(String(i)));
+    li.querySelector('input').addEventListener('change', (e) => {
+      li.classList.toggle('erledigt', e.target.checked);
+      if (e.target.checked) erledigt.add(String(i)); else erledigt.delete(String(i));
+      speicher.schreib(id, [...erledigt].sort((a, b) => a - b).join(','));
+      zeige();
+    });
+  });
+  zeige();
 });

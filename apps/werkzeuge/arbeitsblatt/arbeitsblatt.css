@@ -20,6 +20,7 @@
 .notiz::placeholder { color: #9a9d9c; }
 .box .notiz { background: #fff; }
 input.notiz { max-width: 420px; }
+.verlauf .notiz { margin: 0; padding: 5px 8px; }
 
 .notiz-rueckblick {
   margin: .4em 0 1.2em;
@@ -112,6 +113,15 @@ input.notiz { max-width: 420px; }
 }
 .position-pole { display: flex; justify-content: space-between; gap: 16px; font-size: .85rem; color: var(--muted); }
 .position-stand { margin: .4em 0 0 !important; color: var(--muted); }
+
+/* ------------------------------------------------------------ Abhaken (Leseplan) */
+
+.abhaken { list-style: none; padding: 0 !important; margin: 1em 0 .4em; display: grid; gap: 6px; }
+.abhaken li { margin: 0; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+.abhaken label { display: flex; align-items: flex-start; gap: 10px; padding: 8px 12px; cursor: pointer; }
+.abhaken input { flex: none; width: 18px; height: 18px; margin-top: 3px; accent-color: var(--fach); }
+.abhaken li.erledigt { border-color: var(--good); background: var(--good-soft); }
+.abhaken-stand { margin: 0 0 1.2em; font-size: .88rem; color: var(--muted); }
 
 /* ------------------------------------------------------------ Skizzen (eigene SVG-Grafiken im Inhalt) */
 

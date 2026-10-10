@@ -415,6 +415,15 @@ details.aufklapp {
 details.aufklapp > summary { cursor: pointer; font-weight: 700; }
 details.aufklapp[open] > summary { margin-bottom: .6em; }
 details.aufklapp > :last-child { margin-bottom: .4em; }
+
+/* Fotos im Text: auf breiten Bildschirmen rechts neben dem Text, sonst darüber */
+figure.foto { margin: .3em 0 1.4em; }
+figure.foto img { display: block; width: 100%; max-width: 260px; height: auto; border-radius: 6px; border: 1px solid var(--border); }
+figure.foto figcaption { max-width: 260px; margin-top: .45em; font-size: .8rem; line-height: 1.4; color: var(--muted); }
+@media (min-width: 700px) {
+  figure.foto { float: right; width: 240px; margin: .3em 0 1em 1.6em; }
+  .text h2 { clear: both; }
+}
 .breit-inhalt > .text { margin: 0 0 1.5em; }
 .breit-inhalt > .text:last-child { margin: 2em 0 0; }
 

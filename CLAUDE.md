@@ -33,5 +33,7 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
 - Lektüren (`content/deutsch/lektueren/`): Vorgehen und verbindliche Grundsätze stehen im README unter
   „Lektüren: Unterrichtsreihen anlegen“ – v. a. **kein Vorwissen voraussetzen** (Schüler:innen haben das Buch
   zu Beginn nicht gelesen, Leseseiten spoilerfrei) und **Seitenangaben = gedruckte Buchseiten**, nie PDF-Seiten.
+  Reihen sind **flexibel planbar** (Kern- und Zusatzseiten, Kasten „Einsatz dieser Seite“, Kurzfassungen, Leseplan,
+  Planungsmodelle) und bekommen passende Bilder (eigene SVG-Skizzen, Fotos nur frei lizenziert mit Nachweis).
 - Lösungen/Lehrerhinweise in `<lehrkraft>`; Passwort in `.lehrkraft-passwort` (lokal, nie committen).
   Live-Build bricht ohne Passwort ab.

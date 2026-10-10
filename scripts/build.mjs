@@ -376,7 +376,7 @@ function blaettern(seite) {
 
 // ------------------------------------------------------------------ Seitentypen
 
-const ARBEITSBLATT = /class="(?:[^"]*\s)?(?:notiz|notiz-rueckblick|quiz|sortieren|reihenfolge|position|skizze|skizze-figuren)(?:\s[^"]*)?"/;
+const ARBEITSBLATT = /class="(?:[^"]*\s)?(?:notiz|notiz-rueckblick|quiz|sortieren|reihenfolge|position|abhaken|skizze|skizze-figuren)(?:\s[^"]*)?"/;
 
 function buchseite(seite) {
   const { knoten, fach, meta } = seite;

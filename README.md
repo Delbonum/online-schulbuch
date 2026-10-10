@@ -85,6 +85,7 @@ interaktiv und wird vom Build automatisch eingebunden, sobald einer davon auf ei
 <div class="sortieren" data-kategorien="A|B"><p>Anweisung</p><ul><li data-gehoert="A" data-erklaerung="…">…</li></ul></div>
 <ol class="reihenfolge"><li>erstes</li><li>zweites</li></ol>           <!-- in richtiger Reihenfolge notieren -->
 <div class="position" data-id="sezuan-pos-1" data-vergleich="…"><p>Aussage</p></div>   <!-- Meinungslinie -->
+<ul class="abhaken" data-id="sezuan-gelesen"><li>…</li></ul>   <!-- Liste zum Abhaken, z. B. Leseplan -->
 <figure class="skizze"><svg …>…</svg><figcaption>…</figcaption></figure>   <!-- eigene Grafik, Farben per CSS-Klassen -->
 ```
 
@@ -129,7 +130,18 @@ Jede Lektüre bekommt eine Reihe unter `content/deutsch/lektueren/<autor>/<werk>
 7. **Rechte beachten:** Texte von Autorinnen und Autoren, die vor weniger als 70 Jahren gestorben sind, sind
    geschützt – nur kurze Zitate mit Beleg (Brecht: bis 31.12.2026). Keine Bilder aus Schulbüchern, Verlagen oder
    von Inszenierungen ohne Nutzungsrecht; Skizzen lieber selbst als SVG (`figure.skizze`) zeichnen.
-8. **Das Buch selbst** (z. B. als PDF) gehört nach `materialien/` und wird nie committet. Text lässt sich mit
+8. **Flexibel planbar.** Jede Reihe besteht aus Kernseiten und fakultativen Zusatzseiten. Zusatzseiten stehen in
+   `kapitel.json` direkt hinter der Leseseite, ab der sie nichts mehr vorwegnehmen. Jede Seite beginnt mit einem
+   Kasten `<lehrkraft titel="Einsatz dieser Seite">` (Typ, frühestens nach, Dauer, verschiebbar/kürzbar; auf
+   Leseseiten auch: welcher Lesestand welche Aufgabe voraussetzt und welche Schlüsselszenen sich zum gemeinsamen
+   Lesen eignen). Jede Leseseite hat eine aufklappbare Kurzfassung je Bild/Kapitel
+   (`<details class="aufklapp">`). Dazu gehören eine Seite „Leseplan“ (Termine, Abhakliste, Lesetagebuch) und auf
+   der Lehrkräfte-Seite eine Bausteinübersicht mit mehreren Planungsmodellen (kompakt, gestreckte Lesezeit mit
+   Zwischenbausteinen, Schlüsselszenen, Lektüre vorab). Vorbild: *Der gute Mensch von Sezuan*.
+9. **Bilder:** einfache Grafiken selbst als SVG zeichnen (`figure.skizze`); Fotos nur gemeinfrei oder frei
+   lizenziert (z. B. Wikimedia Commons), verkleinert unter `site/assets/img/lektueren/`, als `figure.foto` mit
+   Urheber, Quelle und Lizenz in der Bildunterschrift.
+10. **Das Buch selbst** (z. B. als PDF) gehört nach `materialien/` und wird nie committet. Text lässt sich mit
    `pdftotext` herausziehen; dabei die PDF-Seiten den gedruckten Seitenzahlen zuordnen (die Zahl steht meist
    unten auf der Seite) und jede Seitenangabe danach prüfen.
 
