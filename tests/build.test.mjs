@@ -67,6 +67,15 @@ test('Lektüren: Ordner-Einträge erzeugen verschachtelte Adressen', () => {
   assert.match(html, /assets\/werkzeuge\/arbeitsblatt\/arbeitsblatt\.js/, 'Arbeitsblatt-Skript wird automatisch eingebunden');
 });
 
+test('Kacheln nur auf Start- und Fachseiten, innerhalb von Kapiteln nur Listen', () => {
+  const buchseiten = alleDateien(OUT, '.html').filter((d) => /<div class="buch[ "]/.test(readFileSync(d, 'utf8')));
+  assert.ok(buchseiten.length > 40);
+  for (const datei of buchseiten) assert.doesNotMatch(readFileSync(datei, 'utf8'), /class="kacheln/, `Kacheln innerhalb eines Kapitels: ${datei}`);
+  const lektueren = readFileSync(join(OUT, 'deutsch', 'lektueren', 'index.html'), 'utf8');
+  assert.match(lektueren, /<ol class="liste-seiten">/);
+  assert.match(readFileSync(join(OUT, 'deutsch', 'index.html'), 'utf8'), /class="kacheln/);
+});
+
 test('Inhalte für Lehrkräfte stehen ohne Passwort nicht in der Vorschau und nicht im Suchindex', () => {
   const html = readFileSync(join(OUT, 'deutsch', 'lektueren', 'brecht', 'der-gute-mensch-von-sezuan', 'lehrkraefte', 'index.html'), 'utf8');
   assert.doesNotMatch(html, /Leitfrage der Reihe/);

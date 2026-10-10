@@ -28,6 +28,8 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
   verlinkt (neuer Tab). `scripts/deploy.sh` fasst `/informatik/kryptogame/` nie an.
 - `materialien/` ist unveröffentlichtes Unterrichtsmaterial und bleibt lokal (gitignored).
 - Externe Einbettungen (LearningApps) nur per Klick laden (Datenschutz).
+- **Kacheln nur für Fächer (Startseite) und Kapitel ersten Grades (Fachseite)**, nie innerhalb eines Kapitels –
+  dort nur die automatische Liste „In diesem Kapitel“. Details: README „Kacheln und Listen“.
 - Lektüren (`content/deutsch/lektueren/`): Vorgehen und verbindliche Grundsätze stehen im README unter
   „Lektüren: Unterrichtsreihen anlegen“ – v. a. **kein Vorwissen voraussetzen** (Schüler:innen haben das Buch
   zu Beginn nicht gelesen, Leseseiten spoilerfrei) und **Seitenangaben = gedruckte Buchseiten**, nie PDF-Seiten.

@@ -328,14 +328,13 @@ function brotkrumen(seite) {
   return `<nav class="brotkrumen" aria-label="Du bist hier"><ol>${teile.map((t) => `<li><a href="${u(t.url)}">${esc(t.titel)}</a></li>`).join('')}<li aria-current="page">${esc(seite.knoten.kurz ?? seite.knoten.titel)}</li></ol></nav>`;
 }
 
-function kachel(knoten, { thema } = {}) {
+function kachel(knoten) {
   const titel = esc(knoten.lang ?? knoten.titel);
   const besch = knoten.beschreibung ? `<p>${esc(knoten.beschreibung)}</p>` : '';
   const anzahl = knoten.seiten?.length && !knoten.geplant ? zaehleSeiten(knoten) - (knoten.seite ? 1 : 0) : 0;
   const meta = [];
   if (knoten.zeitraum && !knoten.lang) meta.push(esc(knoten.zeitraum));
   if (anzahl) meta.push(`${anzahl} ${anzahl === 1 ? 'Seite' : 'Seiten'}`);
-  if (thema) meta.push(esc(thema));
   if (knoten.beta) meta.push('Beta');
   if (knoten.lehrkraft) meta.push('nur für Lehrkräfte');
   const ic = knoten.icon ? `<span class="kachel-icon">${icon(knoten.icon)}</span>` : '';
@@ -349,14 +348,22 @@ function kachel(knoten, { thema } = {}) {
   return `<a class="kachel" href="${u(knoten.url)}">${ic}<h3>${titel}</h3>${besch}${fuss}</a>`;
 }
 
+// Kacheln gibt es nur auf der Startseite (Fächer) und der Fachseite (Kapitel). Innerhalb eines Kapitels
+// stehen die Unterseiten immer als schlichte Liste – egal wie tief verschachtelt (siehe README).
 function unterseiten(knoten) {
   const kinder = (knoten.seiten ?? []).filter((k) => !k.entwurf);
   if (!kinder.length) return '';
-  const themen = new Map(faecher.flatMap((f) => f.kapitel.map((k) => [k.slug, k.kurz ?? k.titel])));
-  if (kinder.some((k) => k.beschreibung)) {
-    return `<section class="unterseiten" aria-label="In diesem Kapitel"><div class="kacheln">${kinder.map((k) => kachel(k, { thema: themen.get(k.thema) })).join('')}</div></section>`;
-  }
-  return `<section class="unterseiten" aria-label="In diesem Kapitel"><h2 class="unterseiten-titel">In diesem Kapitel</h2><ol class="liste-seiten">${kinder.map((k) => `<li><a href="${u(k.url)}"><span>${esc(k.lang ?? k.titel)}</span>${k.zeitraum && !k.lang ? `<span class="nav-zeit">${esc(k.zeitraum)}</span>` : ''}</a></li>`).join('')}</ol></section>`;
+  const eintrag = (k) => {
+    const titel = `<span>${esc(k.lang ?? k.titel)}</span>`;
+    const zusatz = [];
+    if (k.beta) zusatz.push('<span class="abzeichen">Beta</span>');
+    if (k.lehrkraft) zusatz.push(`${icon('schloss', 'icon klein')}<span class="sr">(für Lehrkräfte)</span>`);
+    if (k.zeitraum && !k.lang) zusatz.push(`<span class="nav-zeit">${esc(k.zeitraum)}</span>`);
+    if (k.geplant) return `<li><span class="geplant">${titel}<span class="abzeichen">in Vorbereitung</span></span></li>`;
+    if (k.extern) return `<li><a href="${u(k.url)}" target="_blank" rel="noopener">${titel}${zusatz.join('')}${icon('extern', 'icon klein')}<span class="sr">(öffnet in neuem Tab)</span></a></li>`;
+    return `<li><a href="${u(k.url)}">${titel}${zusatz.join('')}</a></li>`;
+  };
+  return `<section class="unterseiten" aria-label="In diesem Kapitel"><h2 class="unterseiten-titel">In diesem Kapitel</h2><ol class="liste-seiten">${kinder.map(eintrag).join('')}</ol></section>`;
 }
 
 function blaettern(seite) {

@@ -477,10 +477,9 @@ mark.todo::before { content: "✎ "; }
 /* ------------------------------------------------------------ Unterseiten und Blättern */
 
 .unterseiten { margin-top: 2.2em; max-width: 72ch; }
-.unterseiten:has(.kacheln) { max-width: none; }
 .unterseiten-titel { font-size: 1.1rem; color: var(--muted); }
 .liste-seiten { list-style: none; counter-reset: s; padding: 0; margin: 0; display: grid; gap: 8px; }
-.liste-seiten a {
+.liste-seiten li > * {
   counter-increment: s;
   display: flex;
   align-items: center;
@@ -493,7 +492,7 @@ mark.todo::before { content: "✎ "; }
   text-decoration: none;
   font-weight: 600;
 }
-.liste-seiten a::before {
+.liste-seiten li > *::before {
   content: counter(s);
   flex: none;
   width: 28px; height: 28px;
@@ -506,6 +505,8 @@ mark.todo::before { content: "✎ "; }
 }
 .liste-seiten a:hover { border-color: var(--fach); }
 .liste-seiten .nav-zeit { margin-left: auto; }
+.liste-seiten .geplant { color: var(--muted); }
+.liste-seiten .geplant .abzeichen { margin-left: auto; }
 
 .blaettern {
   display: grid;

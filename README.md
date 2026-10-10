@@ -32,7 +32,7 @@ materialien/              unveröffentlichtes Unterrichtsmaterial (nur lokal, ni
 1. In `content/<fach>/kapitel.json` an der gewünschten Stelle einen Eintrag ergänzen, z. B.
    `{ "titel": "Lyrik", "slug": "lyrik" }` in den `seiten` eines Kapitels.
 2. Die Datei `content/<fach>/<kapitel>/lyrik.html` anlegen – nur der Inhalt, ohne Kopf und Menü.
-3. `npm run vorschau` – Menü, Brotkrumen, Vor/Zurück, Suche und Kacheln entstehen automatisch.
+3. `npm run vorschau` – Menü, Brotkrumen, Vor/Zurück, Suche und die Liste „In diesem Kapitel“ entstehen automatisch.
 
 Ein Kapitel mit `"geplant": true` erscheint als „in Vorbereitung“, ohne dass es schon eine Seite braucht.
 
@@ -40,8 +40,21 @@ Normalerweise liegen alle Seiten eines Kapitels flach in seinem Ordner. Ein Eint
 öffnet eine eigene Ebene – für die Adresse und für die Dateien. Beispiel Lektüren:
 `content/deutsch/lektueren/brecht/index.html` (Autor), `…/brecht/der-gute-mensch-von-sezuan/index.html` (Werk),
 `…/der-gute-mensch-von-sezuan/vorspiel.html` → `/deutsch/lektueren/brecht/der-gute-mensch-von-sezuan/vorspiel/`.
-`"lehrkraft": true` markiert eine Seite für Lehrkräfte (Schloss im Menü). `"icon"` und `"beschreibung"`
-machen aus Unterseiten Kacheln; die Icons stehen in `scripts/icons.mjs`.
+`"lehrkraft": true` markiert eine Seite für Lehrkräfte (Schloss im Menü). `"beschreibung"` dient als
+Seitenbeschreibung (Suchmaschinen) und als Text auf der Kapitelkachel; `"icon"` (aus `scripts/icons.mjs`) nur
+für Kapitel ersten Grades.
+
+### Kacheln und Listen (verbindlich, gilt für alle Fächer)
+
+- **Kacheln gibt es nur auf zwei Ebenen:** auf der Startseite für die Fächer und auf der Fachseite für die
+  Kapitel ersten Grades (z. B. Deutsch → Textgattungen, Literaturepochen, Grammatik, Lektüren).
+- **Innerhalb eines Kapitels nie Kacheln** – auf keiner Ebene darunter (Unterkapitel, Autor, Werk, Reihe,
+  Werkzeugsammlung …). Dort erzeugt der Build unten automatisch die schlichte nummerierte Liste
+  „In diesem Kapitel“, wie bei den Literaturepochen. Navigiert wird über Menü, Liste und Zurück/Weiter.
+- Das gilt auch für handgeschriebene Inhalte: kein `<div class="kacheln">` in `content/`. Einen einzelnen
+  wichtigen Link (z. B. auf eine externe App) als Kasten (`box info` mit `data-titel`) setzen.
+- `"icon"` nur bei Kapiteln ersten Grades angeben. Bei tieferen Einträgen wird es nicht angezeigt.
+- Soll eine Seite gar keine Liste zeigen, im Kopfkommentar `unterseiten: nein` setzen.
 
 Bausteine für den Inhalt:
 
