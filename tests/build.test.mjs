@@ -39,6 +39,14 @@ test('Jede Seite hat Titel, Überschrift und gültige interne Verweise', () => {
   }
 });
 
+test('Eigenständige Apps werden auch aus dem Fließtext absolut verlinkt', () => {
+  for (const seite of ['informatik/kryptologie/index.html', 'datenschutz/index.html']) {
+    const html = readFileSync(join(OUT, seite), 'utf8');
+    assert.match(html, /href="\/informatik\/kryptogame\/"/, seite);
+    assert.doesNotMatch(html, /href="informatik\/kryptogame\//, seite);
+  }
+});
+
 test('Suchindex enthält alle Epochen', () => {
   const index = JSON.parse(readFileSync(join(OUT, 'suche.json'), 'utf8'));
   const titel = new Set(index.map((e) => e.t));

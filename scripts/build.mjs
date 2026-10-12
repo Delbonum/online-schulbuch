@@ -48,8 +48,10 @@ const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 // Eigenständige Apps (z. B. das KryptoGAME) liegen immer unter ihrer echten Adresse – auch in der Vorschau.
 const EIGENSTAENDIG = site.eigenstaendig ?? [];
 const u = (pfad) => {
-  if (/^[a-z]+:/i.test(pfad) || EIGENSTAENDIG.some((e) => `/${pfad.replace(/^\//, '')}`.startsWith(e))) return pfad;
-  return BASIS + pfad.replace(/^\//, '');
+  if (/^[a-z]+:/i.test(pfad)) return pfad;
+  const rel = pfad.replace(/^\//, '');
+  if (EIGENSTAENDIG.some((e) => `/${rel}`.startsWith(e))) return `/${rel}`;
+  return BASIS + rel;
 };
 // Skripte und Stylesheets mit Versionskennung, damit Browser und Server-Cache nach
 // einer Änderung nicht die alte Datei weiterverwenden.
