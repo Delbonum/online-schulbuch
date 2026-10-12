@@ -91,6 +91,7 @@ test('Mit Passwort werden Lehrkraft-Inhalte verschlüsselt und lassen sich entsc
   try {
     const html = readFileSync(join(ROOT, ziel, 'deutsch', 'lektueren', 'brecht', 'der-gute-mensch-von-sezuan', 'lehrkraefte', 'index.html'), 'utf8');
     assert.doesNotMatch(html, /Leitfrage der Reihe/, 'Klartext darf nicht in der Seite stehen');
+    assert.match(html, /class="kopf-knopf lk-schalter" role="switch"/, 'Schalter für die Lehrkraft-Ansicht im Kopf');
     const [, salz, runden] = html.match(/data-lk-salz="([^"]+)" data-lk-runden="(\d+)"/);
     const [, wert] = html.match(/data-lk="([^"]+)"/);
     const schluessel = pbkdf2Sync('geheim', salz, Number(runden), 32, 'sha256');

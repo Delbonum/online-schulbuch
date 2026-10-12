@@ -69,6 +69,20 @@
     const lies = () => { try { return sessionStorage.getItem(SPEICHER) || localStorage.getItem(SPEICHER); } catch { return null; } };
     const vergiss = () => { try { sessionStorage.removeItem(SPEICHER); localStorage.removeItem(SPEICHER); } catch { /* egal */ } };
 
+    // Lehrkraft-Ansicht ein-/ausschalten, ohne sich abzumelden (z. B. für den Beamer); gilt für alle Seiten
+    const ANSICHT = 'schulbuch-lehrkraft-ansicht';
+    const schalter = document.querySelector('.lk-schalter');
+    function ansicht(an) {
+      document.documentElement.classList.toggle('lehrkraft-aus', !an);
+      schalter?.setAttribute('aria-checked', String(an));
+    }
+    try { ansicht(localStorage.getItem(ANSICHT) !== 'aus'); } catch { ansicht(true); }
+    schalter?.addEventListener('click', () => {
+      const an = document.documentElement.classList.contains('lehrkraft-aus');
+      ansicht(an);
+      try { an ? localStorage.removeItem(ANSICHT) : localStorage.setItem(ANSICHT, 'aus'); } catch { /* gilt dann nur für diese Seite */ }
+    });
+
     async function entschluessle(schluessel, wert) {
       const [iv, daten] = wert.split('.');
       const klar = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(iv) }, schluessel, b64(daten));

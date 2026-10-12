@@ -197,6 +197,15 @@ h1 .abzeichen { font-size: .9rem; }
 }
 .menue-knopf { display: none; }
 
+/* Schalter für die Lehrkraft-Ansicht: nur nach der Anmeldung sichtbar */
+.lk-schalter { display: none; height: 44px; gap: 9px; font-size: .9rem; color: var(--muted); }
+.lehrkraft-modus .lk-schalter { display: inline-flex; }
+.lk-schalter-bahn { position: relative; width: 34px; height: 20px; border-radius: 10px; background: #c4c4c4; transition: background .15s; flex: none; }
+.lk-schalter-bahn::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 30%); transition: transform .15s; }
+.lk-schalter[aria-checked="true"] { color: #6b5414; }
+.lk-schalter[aria-checked="true"] .lk-schalter-bahn { background: #8a6d1f; }
+.lk-schalter[aria-checked="true"] .lk-schalter-bahn::after { transform: translateX(14px); }
+
 @media (max-width: 1023px) {
   .menue-knopf { display: inline-flex; }
 }
@@ -210,7 +219,15 @@ body:has(.buch.breit) .menue-knopf { display: inline-flex; }
   .faecher-nav a { padding: 6px 9px; }
   .suche-knopf { min-width: 0; padding: 0; }
   .marke { font-size: 1.1rem; }
-  .suche-knopf span, .suche-knopf kbd, .menue-knopf span { display: none; }
+  .suche-knopf span, .suche-knopf kbd, .menue-knopf span, .lk-schalter-text { display: none; }
+  .suche-knopf, .lk-schalter { flex: none; }
+  .lk-schalter { padding: 0 2px; border: 0; background: none; }
+  .lehrkraft-modus .kopf-innen { gap: 6px; }
+  .lehrkraft-modus .faecher-nav a { padding: 6px 7px; }
+}
+/* Mit Schalter wird es auf schmalen Handys eng: das Logo weicht (Startseite bleibt über das Menü erreichbar) */
+@media (max-width: 420px) {
+  .lehrkraft-modus .menue-knopf ~ .marke { display: none; }
 }
 
 /* ------------------------------------------------------------ Buchseiten: Raster */
@@ -383,8 +400,8 @@ a.nav-link:hover { background: var(--surface-2); }
 /* Inhalte für Lehrkräfte: gesperrt als schmaler Hinweis, nach der Anmeldung als eigener Kasten */
 .box.lehrkraft { border-left-color: #8a6d1f; background: #fbf6e4; }
 .box.lehrkraft .box-titel { color: #6b5414; }
-.box.lehrkraft.gesperrt { background: transparent; border: 2px dashed #d9cfae; border-left-width: 4px; border-left-style: solid; border-left-color: #c9b77d; padding-bottom: 2px; }
-.box.lehrkraft.gesperrt p:not(.box-titel) { color: var(--muted); font-size: .92rem; }
+/* Ohne Anmeldung (gesperrt) und bei ausgeschalteter Lehrkraft-Ansicht bleiben die Kästen unsichtbar. */
+.box.lehrkraft.gesperrt, .lehrkraft-aus .box.lehrkraft { display: none; }
 .lk-dialog { width: min(440px, calc(100vw - 24px)); padding: 22px 24px 18px; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 20px 60px rgb(0 0 0 / 30%); }
 .lk-dialog::backdrop { background: rgb(0 0 0 / 35%); }
 .lk-dialog h2 { font-size: 1.3rem; margin: 0 0 .4em; }
