@@ -270,8 +270,8 @@ ${VORSCHAU ? '<div class="vorschau-band">Vorschau – diese Seiten sind noch nic
 ${mitMenue ? `<button type="button" class="kopf-knopf menue-knopf" aria-controls="seitenleiste" aria-expanded="false">${icon('menue')}<span>Inhalt</span></button>` : ''}
 <a class="marke" href="${u('/')}"><img src="${logo(fach)}" alt="" width="44" height="44"><span>${esc(site.titel)}</span></a>
 <nav class="faecher-nav" aria-label="Fächer">${faecherNav}</nav>
+${LK_PRUEF ? `<button type="button" class="kopf-knopf lk-schalter" role="switch" aria-checked="true" aria-label="Lehrkraft-Ansicht" title="Hinweise für Lehrkräfte ein- oder ausblenden (z. B. für den Beamer)">${icon('lehrkraft')}<span class="lk-schalter-bahn" aria-hidden="true"></span></button>` : ''}
 <button type="button" class="kopf-knopf suche-knopf" data-suche-oeffnen aria-label="Suchen">${icon('suche')}<span>Suchen</span><kbd>/</kbd></button>
-${LK_PRUEF ? '<button type="button" class="kopf-knopf lk-schalter" role="switch" aria-checked="true" title="Hinweise für Lehrkräfte ein- oder ausblenden (z. B. für den Beamer)"><span class="lk-schalter-bahn" aria-hidden="true"></span><span class="lk-schalter-text">Lehrkraft</span></button>' : ''}
 </div>
 </header>`;
 }

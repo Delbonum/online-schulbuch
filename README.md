@@ -100,7 +100,7 @@ Passwort per PBKDF2) und erst im Browser nach der Anmeldung über „Für Lehrkr
 Das Passwort steht in der Datei `.lehrkraft-passwort` im Projektordner (gitignored, nie committen) oder in der
 Umgebungsvariable `LEHRKRAFT_PASSWORT`. Ohne Passwort fehlen diese Inhalte in der Vorschau; der
 Live-Build bricht ab. Lehrkraft-Inhalte erscheinen nicht im Suchindex. Ohne Anmeldung sind die Kästen ganz
-unsichtbar. Nach der Anmeldung erscheint im Kopf neben der Suche der Schalter „Lehrkraft“, der die Kästen aus- und
+unsichtbar. Nach der Anmeldung erscheint im Kopf links neben der Suche ein Schalter (Symbol: Lehrkraft an der Tafel), der die Kästen aus- und
 wieder einblendet, ohne abzumelden (z. B. für den Beamer; gemerkt in `localStorage`).
 
 Hinweis: Das Repository ist öffentlich – im Quelltext unter `content/` sind die Lösungen lesbar. Geschützt ist nur
