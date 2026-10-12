@@ -150,3 +150,26 @@ input.notiz { max-width: 420px; }
   .ab-leiste, .gr-leiste, .sort-hilfe { display: none !important; }
   .notiz { border: 1px solid #999; min-height: 5em; }
 }
+
+/* Antwortblatt („Drucken / als PDF“): nur beim Drucken über den Knopf sichtbar */
+.ab-druck { display: none; }
+@media print {
+  .ab-drucken body > :not(.ab-druck) { display: none !important; }
+  .ab-drucken .ab-druck { display: block; font-size: 11pt; line-height: 1.45; color: #000; }
+  .ab-druck h1 { font-size: 18pt; margin: 0 0 4pt; }
+  .ab-druck h2 { font-size: 13pt; margin: 16pt 0 6pt; padding-bottom: 2pt; border-bottom: 1px solid #999; break-after: avoid; }
+  .ab-druck-meta { margin: 0; color: #555; font-size: 9.5pt; }
+  .ab-druck-name { margin: 10pt 0 6pt; }
+  .ab-druck-name span { display: inline-block; width: 60%; border-bottom: 1px solid #000; }
+  .ab-druck-aufgabe { margin: 0 0 10pt; }
+  .ab-druck-titel { margin: 0 0 2pt; font-weight: 700; break-after: avoid; }
+  .ab-druck-text { color: #333; break-after: avoid; }
+  .ab-druck-text p, .ab-druck-text ul { margin: 0 0 3pt; }
+  .ab-nr { font-weight: 700; }
+  .ab-druck-antwort { margin-top: 3pt; padding: 5pt 8pt; border: 1px solid #999; border-radius: 4pt; white-space: pre-wrap; }
+  .ab-druck-antwort.leer { color: #777; font-style: italic; }
+  .ab-druck-liste { list-style: none; padding: 0; margin: 0 0 10pt; }
+  .ab-druck-kurz { margin: 0 0 5pt; }
+  .ab-druck-wert { font-weight: 700; }
+  .ab-druck-kurz .leer { color: #777; }
+}

@@ -90,7 +90,9 @@ interaktiv und wird vom Build automatisch eingebunden, sobald einer davon auf ei
 ```
 
 Antworten werden nur im Browser gespeichert (`localStorage`, Schlüssel `ab:<id>`); unter jeder Seite gibt es
-„Als Textdatei sichern“, „Drucken“ und „Löschen“. Die `data-notiz`-ids müssen im ganzen Schulbuch eindeutig
+„Als Textdatei sichern“, „Drucken / als PDF“ und „Löschen“. Der Druckknopf erzeugt ein kurzes
+Antwortblatt (Seitentitel, Namenszeile, je Abschnitt die Aufgabe und darunter die eigene Antwort, Meinungslinien
+und Abhakenlisten); Strg+P druckt weiterhin die ganze Seite. Die `data-notiz`-ids müssen im ganzen Schulbuch eindeutig
 sein – deshalb mit dem Kürzel der Reihe beginnen (`sezuan-…`). Gleiche id auf einer späteren Seite = Rückblick.
 
 ### Inhalte für Lehrkräfte

@@ -90,7 +90,7 @@ Sichere deine Antworten als Datei, wenn du sie abgeben oder auf einem anderen Ge
 
   leiste.addEventListener('click', (e) => {
     const art = e.target.closest('[data-ab]')?.dataset.ab;
-    if (art === 'drucken') window.print();
+    if (art === 'drucken') antwortenDrucken();
     if (art === 'loeschen' && confirm('Alle Antworten auf dieser Seite löschen? Das lässt sich nicht rückgängig machen.')) {
       for (const feld of notizen) { feld.value = ''; speicher.schreib(feld.dataset.notiz, ''); hoehe(feld); }
       abhakenLeeren();
@@ -108,6 +108,79 @@ Sichere deine Antworten als Datei, wenn du sie abgeben oder auf einem anderen Ge
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     }
   });
+}
+
+// ---------------------------------------------------------------- Antworten drucken
+// „Drucken / als PDF“ druckt nicht die ganze Seite, sondern ein kurzes Antwortblatt:
+// Aufgaben (mit Abschnittsüberschrift) und darunter die eigenen Antworten. Strg+P druckt weiter die Seite.
+
+const ohneFelder = (el) => {
+  const kopie = el.cloneNode(true);
+  kopie.querySelectorAll('.notiz, textarea, input, select, button, .abhaken-stand').forEach((x) => x.remove());
+  return kopie.innerHTML.trim();
+};
+
+// Aufgabentext zu einem Feld: der Listenpunkt der Aufgabe, die Tabellenzeile oder der Absatz davor
+function aufgabeZu(feld) {
+  const li = feld.closest('li');
+  if (li && li.parentElement?.tagName === 'OL') {
+    const nr = Number(li.parentElement.getAttribute('start') ?? 1) + [...li.parentElement.children].indexOf(li);
+    return { titel: '', text: `<span class="ab-nr">${nr}.</span> ${ohneFelder(li)}` };
+  }
+  const zeile = feld.closest('tr');
+  if (zeile) {
+    const zellen = [...zeile.cells].filter((z) => !z.contains(feld)).map((z) => z.textContent.trim()).filter(Boolean);
+    return { titel: beschriftung(feld), text: esc(zellen.join(' · ')) };
+  }
+  const davor = feld.previousElementSibling;
+  const text = davor?.tagName === 'P' && !davor.querySelector('label') ? ohneFelder(davor) : '';
+  return { titel: beschriftung(feld), text };
+}
+
+function antwortblatt() {
+  const inhalt = document.querySelector('.haupt .text, .haupt .breit-inhalt') ?? document.querySelector('main');
+  const ueberschriften = [...inhalt.querySelectorAll('h2')];
+  const abschnitt = (el) => ueberschriften.filter((h) => h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING).pop();
+  const titel = document.querySelector('.seitenkopf h1')?.textContent.trim() ?? document.title;
+  const ort = [...document.querySelectorAll('.brotkrumen li')].map((li) => li.textContent.trim()).slice(1, -1).join(' › ');
+  const teile = [`<h1>${esc(titel)}</h1>`,
+    `<p class="ab-druck-meta">${ort ? `${esc(ort)} · ` : ''}Online-Schulbuch · ${new Date().toLocaleDateString('de-DE')}</p>`,
+    '<p class="ab-druck-name">Name: <span></span></p>'];
+  let letzter = null;
+  for (const el of inhalt.querySelectorAll('.notiz[data-notiz], .position[data-id], ul.abhaken[data-id]')) {
+    const h2 = abschnitt(el);
+    if (h2 && h2 !== letzter) { teile.push(`<h2>${esc(h2.textContent.trim())}</h2>`); letzter = h2; }
+    if (el.matches('.notiz')) {
+      const { titel: t, text } = aufgabeZu(el);
+      const wert = el.value.trim();
+      // Kurze Eingabefelder (Termine, Rollen …) passen in eine Zeile
+      if (el.tagName === 'INPUT') {
+        teile.push(`<p class="ab-druck-kurz">${text || `<b>${esc(t.replace(/:\s*$/, ''))}</b>`}: ${wert ? `<span class="ab-druck-wert">${esc(wert)}</span>` : '<span class="leer">—</span>'}</p>`);
+        continue;
+      }
+      const zeigeTitel = t && !text.includes(esc(t)) && t !== h2?.textContent.trim();
+      teile.push(`<div class="ab-druck-aufgabe">${zeigeTitel ? `<p class="ab-druck-titel">${esc(t)}</p>` : ''}${text ? `<div class="ab-druck-text">${text}</div>` : ''}
+<div class="ab-druck-antwort${wert ? '' : ' leer'}">${wert ? esc(wert) : '(noch nichts eingetragen)'}</div></div>`);
+    } else if (el.matches('.position')) {
+      const wert = speicher.lies(`position:${el.dataset.id}`);
+      teile.push(`<div class="ab-druck-aufgabe"><p class="ab-druck-titel">Meinungslinie</p><div class="ab-druck-text">${ohneFelder(el.querySelector('.position-aussage') ?? el)}</div>
+<div class="ab-druck-antwort${wert ? '' : ' leer'}">${wert ? `Meine Position: ${esc(wert)} von 10 (0 = ${esc(el.dataset.links ?? 'stimme gar nicht zu')}, 10 = ${esc(el.dataset.rechts ?? 'stimme voll zu')})` : '(noch keine Position gewählt)'}</div></div>`);
+    } else {
+      teile.push(`<ul class="ab-druck-liste">${[...el.children].map((li) => `<li>${li.classList.contains('erledigt') ? '☑' : '☐'} ${ohneFelder(li.querySelector('span') ?? li)}</li>`).join('')}</ul>`);
+    }
+  }
+  return teile.join('\n');
+}
+
+function antwortenDrucken() {
+  const blatt = document.createElement('div');
+  blatt.className = 'ab-druck';
+  blatt.innerHTML = antwortblatt();
+  document.body.append(blatt);
+  document.documentElement.classList.add('ab-drucken');
+  const weg = () => { blatt.remove(); document.documentElement.classList.remove('ab-drucken'); };
+  window.addEventListener('afterprint', weg, { once: true });
+  window.print();
 }
 
 // ---------------------------------------------------------------- Quiz (mit der Übungsmaschine der Grammatik)
