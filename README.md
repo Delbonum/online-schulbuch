@@ -92,7 +92,11 @@ interaktiv und wird vom Build automatisch eingebunden, sobald einer davon auf ei
 Antworten werden nur im Browser gespeichert (`localStorage`, Schlüssel `ab:<id>`); unter jeder Seite gibt es
 „Als Textdatei sichern“, „Drucken / als PDF“ und „Löschen“. Der Druckknopf erzeugt ein kurzes
 Antwortblatt (Seitentitel, Namenszeile, je Abschnitt die Aufgabe und darunter die eigene Antwort, Meinungslinien
-und Abhakenlisten); Strg+P druckt weiterhin die ganze Seite. Die `data-notiz`-ids müssen im ganzen Schulbuch eindeutig
+und Abhakenlisten); Strg+P druckt weiterhin die ganze Seite. Angemeldete Lehrkräfte sehen in der Leiste zusätzlich
+„Arbeitsblatt drucken / als PDF“ (auch „mit Lösungen“): eine Papierfassung der Seite mit Schreiblinien statt Feldern,
+Quiz zum Ankreuzen, Sortieren mit Buchstaben und Tabelle, Reihenfolge mit Kästchen, Meinungslinie als Skala;
+aufklappbare Kästen ohne Antwortfelder entfallen (mit Lösungen: alles offen, plus die Kästen für Lehrkräfte).
+Die Mischung ist fest, damit Blatt und Lösungsfassung zusammenpassen. Die `data-notiz`-ids müssen im ganzen Schulbuch eindeutig
 sein – deshalb mit dem Kürzel der Reihe beginnen (`sezuan-…`). Gleiche id auf einer späteren Seite = Rückblick.
 
 ### Inhalte für Lehrkräfte

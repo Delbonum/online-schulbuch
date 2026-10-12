@@ -32,6 +32,11 @@ const speicher = {
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+// Unveränderte Fassung des Inhalts, bevor die Bausteine interaktiv werden – Grundlage für das
+// Arbeitsblatt zum Ausdrucken (siehe unten „Arbeitsblatt für Lehrkräfte“).
+const inhaltsBereich = document.querySelector('.haupt .text, .haupt .breit-inhalt');
+const urfassung = inhaltsBereich?.cloneNode(true);
+
 // ---------------------------------------------------------------- Antwortfelder
 
 function hoehe(feld) {
@@ -74,23 +79,31 @@ function beschriftung(feld) {
   return feld.dataset.notiz;
 }
 
-if (notizen.length) {
+// Leiste unter dem Inhalt: Antworten sichern (nur mit Antwortfeldern) und – nach der Anmeldung als
+// Lehrkraft – das Arbeitsblatt zum Ausdrucken. Ohne Antwortfelder sehen Schüler:innen die Leiste nicht.
+{
   const leiste = document.querySelector('.ab-leiste') ?? (() => {
     const neu = document.createElement('div');
     neu.className = 'ab-leiste';
-    (document.querySelector('.haupt .text, .haupt .breit-inhalt') ?? document.querySelector('main')).append(neu);
+    (inhaltsBereich ?? document.querySelector('main')).append(neu);
     return neu;
   })();
-  leiste.innerHTML = `<p class="ab-leiste-titel">Deine Antworten auf dieser Seite</p>
+  leiste.classList.toggle('nur-lehrkraft', !notizen.length);
+  leiste.innerHTML = `${notizen.length ? `<div class="ab-schueler"><p class="ab-leiste-titel">Deine Antworten auf dieser Seite</p>
 <p>Alles, was du in die Felder schreibst, bleibt nur in diesem Browser auf diesem Gerät gespeichert – niemand sonst kann es sehen.
 Sichere deine Antworten als Datei, wenn du sie abgeben oder auf einem anderen Gerät weiterarbeiten willst.</p>
 <p class="ab-knoepfe"><button type="button" class="knopf primaer" data-ab="datei">Als Textdatei sichern</button>
 <button type="button" class="knopf" data-ab="drucken">Drucken / als PDF</button>
-<button type="button" class="knopf" data-ab="loeschen">Antworten dieser Seite löschen</button></p>`;
+<button type="button" class="knopf" data-ab="loeschen">Antworten dieser Seite löschen</button></p></div>` : ''}
+<div class="ab-lehrkraft"><p class="ab-leiste-titel">Für Lehrkräfte: Arbeitsblatt zum Ausdrucken</p>
+<p>Die Seite als Arbeitsblatt für die analoge Bearbeitung: Antwortfelder als Schreiblinien, Übungen als Papierfassung, ohne eingetragene Antworten.</p>
+<p class="ab-knoepfe"><button type="button" class="knopf primaer" data-ab="blatt">Arbeitsblatt drucken / als PDF</button>
+<button type="button" class="knopf" data-ab="blatt-loesung">mit Lösungen</button></p></div>`;
 
   leiste.addEventListener('click', (e) => {
     const art = e.target.closest('[data-ab]')?.dataset.ab;
-    if (art === 'drucken') antwortenDrucken();
+    if (art === 'drucken') drucke('ab-druck', antwortblatt());
+    if (art === 'blatt' || art === 'blatt-loesung') drucke('ab-blatt', analogesBlatt(art === 'blatt-loesung'));
     if (art === 'loeschen' && confirm('Alle Antworten auf dieser Seite löschen? Das lässt sich nicht rückgängig machen.')) {
       for (const feld of notizen) { feld.value = ''; speicher.schreib(feld.dataset.notiz, ''); hoehe(feld); }
       abhakenLeeren();
@@ -172,15 +185,128 @@ function antwortblatt() {
   return teile.join('\n');
 }
 
-function antwortenDrucken() {
+// Druckt nur das übergebene Blatt; der Rest der Seite ist beim Drucken ausgeblendet.
+function drucke(klasse, html) {
   const blatt = document.createElement('div');
-  blatt.className = 'ab-druck';
-  blatt.innerHTML = antwortblatt();
+  blatt.className = `${klasse} ab-druckziel`;
+  blatt.innerHTML = html;
   document.body.append(blatt);
   document.documentElement.classList.add('ab-drucken');
   const weg = () => { blatt.remove(); document.documentElement.classList.remove('ab-drucken'); };
   window.addEventListener('afterprint', weg, { once: true });
   window.print();
+}
+
+// ---------------------------------------------------------------- Arbeitsblatt für Lehrkräfte
+// Papierfassung der Seite aus der unveränderten Urfassung: Antwortfelder werden Schreiblinien,
+// Quiz/Sortieren/Reihenfolge/Meinungslinie werden zu Aufgaben auf Papier. „Mit Lösungen“ setzt die
+// Lösungen ein und übernimmt die (bereits entschlüsselten) Kästen für Lehrkräfte.
+
+const el = (tag, klasse, html = '') => {
+  const e = document.createElement(tag);
+  if (klasse) e.className = klasse;
+  e.innerHTML = html;
+  return e;
+};
+const linien = (n) => el('div', 'ab-linien', '<span></span>'.repeat(n));
+const buchstabe = (i) => String.fromCharCode(97 + i);
+
+// Immer gleich gemischt (Startwert aus dem Text), damit Blatt und Lösungsfassung zusammenpassen
+function festGemischt(liste, text) {
+  let z = [...text].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const a = [...liste];
+  for (let i = a.length - 1; i > 0; i--) {
+    z = (z * 1664525 + 1013904223) >>> 0;
+    const j = z % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function analogesBlatt(mitLoesung) {
+  const k = urfassung.cloneNode(true);
+  k.querySelectorAll('.ab-leiste, .einbettung, script').forEach((x) => x.remove());
+
+  const live = [...inhaltsBereich.querySelectorAll('.box.lehrkraft')];
+  k.querySelectorAll('.box.lehrkraft').forEach((box, i) => {
+    if (mitLoesung && live[i] && !live[i].classList.contains('gesperrt')) box.replaceWith(live[i].cloneNode(true));
+    else box.remove();
+  });
+
+  // Aufklappbare Kästen: mit Antwortfeldern (z. B. Tagebucheinträge) oder mit Lösungen offen, sonst weg
+  k.querySelectorAll('details').forEach((d) => {
+    if (!mitLoesung && !d.querySelector('.notiz')) { d.remove(); return; }
+    const div = el('div', 'ab-blatt-aufklapp');
+    const s = d.querySelector(':scope > summary');
+    if (s) { div.append(el('p', 'ab-blatt-summary', s.innerHTML)); s.remove(); }
+    div.append(...d.childNodes);
+    d.replaceWith(div);
+  });
+
+  k.querySelectorAll('textarea.notiz').forEach((f) => f.replaceWith(linien(Math.max(Number(f.getAttribute('rows')) || 3, 3))));
+  k.querySelectorAll('input.notiz').forEach((f) => f.replaceWith(el('span', 'ab-linie-kurz')));
+  k.querySelectorAll('.notiz-rueckblick').forEach((f) => f.replaceWith(linien(2)));
+
+  k.querySelectorAll('.quiz').forEach((q) => {
+    const fragen = [...q.querySelectorAll('.frage')].map((f) => {
+      const optionen = festGemischt([...f.querySelectorAll('li')], f.textContent).map((o) => {
+        const richtig = mitLoesung && o.hasAttribute('data-richtig');
+        return `<li${richtig ? ' class="richtig"' : ''}><span class="ab-kreuz">${richtig ? '✕' : ''}</span>${o.innerHTML}</li>`;
+      }).join('');
+      const erkl = mitLoesung && f.dataset.erklaerung ? `<p class="ab-blatt-erklaerung">${esc(f.dataset.erklaerung)}</p>` : '';
+      return `<li><p>${(f.querySelector('p') ?? f).innerHTML}</p><ul class="ab-optionen">${optionen}</ul>${erkl}</li>`;
+    });
+    const anw = q.dataset.anweisung ? `<p><strong>${esc(q.dataset.anweisung)}</strong></p>` : '<p><strong>Kreuze die richtige Antwort an.</strong></p>';
+    q.replaceWith(el('div', 'ab-blatt-quiz', `${anw}<ol>${fragen.join('')}</ol>`));
+  });
+
+  k.querySelectorAll('.sortieren[data-kategorien]').forEach((box) => {
+    const kategorien = box.dataset.kategorien.split('|').map((x) => x.trim());
+    const karten = festGemischt([...box.querySelectorAll('ul > li')], box.textContent);
+    const kopf = `<tr>${kategorien.map((x) => `<th>${esc(x)}</th>`).join('')}</tr>`;
+    let html;
+    if (mitLoesung) {
+      html = `<table class="ab-blatt-tabelle">${kopf}<tr>${kategorien.map((x) => `<td><ul>${karten.map((c, i) => (c.dataset.gehoert === x ? `<li><b>${buchstabe(i)})</b> ${c.innerHTML}</li>` : '')).join('')}</ul></td>`).join('')}</tr></table>`;
+    } else {
+      html = `<p><strong>Ordne zu:</strong> Schreibe die Buchstaben in die passende Spalte.</p>
+<ol class="ab-karten">${karten.map((c, i) => `<li><b>${buchstabe(i)})</b> ${c.innerHTML}</li>`).join('')}</ol>
+<table class="ab-blatt-tabelle">${kopf}<tr>${kategorien.map(() => '<td class="leer"></td>').join('')}</tr></table>`;
+    }
+    box.querySelector('ul')?.replaceWith(el('div', 'ab-blatt-sortieren', html));
+    if (!mitLoesung) box.querySelector('.sortieren-erklaerung')?.remove();
+  });
+
+  k.querySelectorAll('ol.reihenfolge').forEach((ol) => {
+    const eintraege = [...ol.children].map((li, i) => ({ i, html: li.innerHTML }));
+    const liste = festGemischt(eintraege, ol.textContent);
+    ol.replaceWith(el('div', 'ab-blatt-reihe', `<p><strong>Bringe in die richtige Reihenfolge:</strong> Nummeriere die Kästchen.</p>
+<ul>${liste.map((x) => `<li><span class="ab-kasten">${mitLoesung ? x.i + 1 : ''}</span>${x.html}</li>`).join('')}</ul>`));
+  });
+
+  k.querySelectorAll('.position').forEach((p) => {
+    const skala = Array.from({ length: 11 }, (_, i) => `<li><span class="ab-kreis"></span>${i}</li>`).join('');
+    p.replaceWith(el('div', 'ab-blatt-position', `<div class="ab-blatt-aussage">${p.innerHTML}</div>
+<p class="klein">Kreuze an, wie sehr du zustimmst.</p><ol class="ab-skala">${skala}</ol>
+<div class="ab-pole"><span>${esc(p.dataset.links ?? 'stimme gar nicht zu')}</span><span>${esc(p.dataset.rechts ?? 'stimme voll zu')}</span></div>`));
+  });
+
+  k.querySelectorAll('ul.abhaken').forEach((ul) => {
+    ul.className = 'ab-blatt-abhaken';
+    ul.querySelectorAll(':scope > li').forEach((li) => li.prepend(el('span', 'ab-kasten')));
+  });
+
+  // ids eindeutig machen (die Originale stehen ja noch auf der Seite), sonst finden SVG-Pfeilspitzen
+  // ihre Marker nicht
+  const inhalt = k.innerHTML
+    .replace(/\bid="([^"]+)"/g, 'id="blatt-$1"')
+    .replace(/url\(#([^)]+)\)/g, 'url(#blatt-$1)')
+    .replace(/(aria-labelledby|aria-describedby|for)="([^"]+)"/g, (m, a, v) => `${a}="${v.split(/\s+/).map((x) => `blatt-${x}`).join(' ')}"`);
+  const kopf = document.querySelector('.seitenkopf')?.outerHTML ?? '';
+  const titel = mitLoesung ? '<p class="ab-blatt-loesung">Lösungsfassung für Lehrkräfte</p>' : '';
+  return `${titel}${kopf}
+<p class="ab-blatt-name"><span>Name:</span><span>Klasse:</span><span>Datum:</span></p>
+<div class="text">${inhalt}</div>
+<p class="ab-blatt-fuss">Online-Schulbuch · online-schulbuch.de · CC BY-NC-SA 4.0</p>`;
 }
 
 // ---------------------------------------------------------------- Quiz (mit der Übungsmaschine der Grammatik)

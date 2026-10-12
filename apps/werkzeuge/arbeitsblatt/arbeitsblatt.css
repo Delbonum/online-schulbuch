@@ -44,6 +44,11 @@ input.notiz { max-width: 420px; }
 .ab-leiste p { margin: 0 0 .8em; }
 .ab-leiste-titel { font: 700 .82rem var(--schrift-titel); letter-spacing: .06em; text-transform: uppercase; color: var(--fach); }
 .ab-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Teil für Lehrkräfte: nur angemeldet und bei eingeschalteter Lehrkraft-Ansicht */
+.ab-lehrkraft, .ab-leiste.nur-lehrkraft { display: none; }
+.lehrkraft-modus:not(.lehrkraft-aus) .ab-lehrkraft, .lehrkraft-modus:not(.lehrkraft-aus) .ab-leiste.nur-lehrkraft { display: block; }
+.ab-schueler + .ab-lehrkraft { margin-top: 6px; padding-top: 14px; border-top: 1px solid var(--border); }
+.ab-lehrkraft .ab-leiste-titel { color: #6b5414; }
 
 /* ------------------------------------------------------------ Quiz, Sortieren, Reihenfolge */
 
@@ -152,9 +157,9 @@ input.notiz { max-width: 420px; }
 }
 
 /* Antwortblatt („Drucken / als PDF“): nur beim Drucken über den Knopf sichtbar */
-.ab-druck { display: none; }
+.ab-druck, .ab-blatt { display: none; }
 @media print {
-  .ab-drucken body > :not(.ab-druck) { display: none !important; }
+  .ab-drucken body > :not(.ab-druckziel) { display: none !important; }
   .ab-drucken .ab-druck { display: block; font-size: 11pt; line-height: 1.45; color: #000; }
   .ab-druck h1 { font-size: 18pt; margin: 0 0 4pt; }
   .ab-druck h2 { font-size: 13pt; margin: 16pt 0 6pt; padding-bottom: 2pt; border-bottom: 1px solid #999; break-after: avoid; }
@@ -172,4 +177,45 @@ input.notiz { max-width: 420px; }
   .ab-druck-kurz { margin: 0 0 5pt; }
   .ab-druck-wert { font-weight: 700; }
   .ab-druck-kurz .leer { color: #777; }
+}
+
+/* Arbeitsblatt für Lehrkräfte (Papierfassung der Seite): nur beim Drucken über den Knopf sichtbar */
+@media print {
+  .ab-drucken .ab-blatt { display: block; color: #000; font-size: 11pt; }
+  .ab-blatt .seitenkopf { margin-bottom: 4pt; }
+  .ab-blatt .seitenkopf h1 { font-size: 20pt; margin: 0; }
+  .ab-blatt-loesung { margin: 0 0 4pt; font-weight: 700; color: #6b5414; text-transform: uppercase; letter-spacing: .06em; font-size: 9pt; }
+  .ab-blatt-name { display: flex; gap: 14pt; margin: 6pt 0 14pt; }
+  .ab-blatt-name span { flex: 1; border-bottom: 1px solid #000; padding-bottom: 2pt; }
+  .ab-blatt-name span:first-child { flex: 2; }
+  .ab-blatt-fuss { margin-top: 16pt; font-size: 8pt; color: #666; }
+  .ab-blatt figure, .ab-blatt li, .ab-blatt tr, .ab-blatt-position, .ab-blatt .box-titel { break-inside: avoid; }
+  .ab-blatt .box-titel { break-after: avoid; }
+  .ab-blatt h2 { break-after: avoid; }
+  .ab-linien { margin: 2pt 0 12pt; }
+  .ab-linien span { display: block; height: 8mm; border-bottom: 1px solid #888; }
+  .ab-linie-kurz { display: inline-block; min-width: 50mm; height: 1.3em; border-bottom: 1px solid #000; vertical-align: bottom; }
+  .ab-blatt-aufklapp { margin: 0 0 10pt; }
+  .ab-blatt-summary { font-weight: 700; margin: 0 0 4pt; }
+  .ab-kasten { display: inline-block; flex: none; width: 6mm; height: 6mm; margin-right: 8pt; border: 1px solid #000; text-align: center; line-height: 6mm; font-weight: 700; vertical-align: middle; }
+  .ab-blatt-quiz > ol > li { margin-bottom: 8pt; }
+  .ab-blatt-quiz p { margin: 0 0 3pt; }
+  .ab-optionen { list-style: none; padding: 0; margin: 0; }
+  .ab-optionen li { display: flex; align-items: baseline; gap: 6pt; margin: 2pt 0; }
+  .ab-kreuz { display: inline-block; flex: none; width: 4mm; height: 4mm; border: 1px solid #000; text-align: center; line-height: 4mm; font-size: 9pt; font-weight: 700; }
+  .ab-optionen li.richtig, .ab-blatt-erklaerung { font-weight: 700; }
+  .ab-blatt-erklaerung { font-weight: 400; font-style: italic; color: #333; margin: 2pt 0 0; }
+  .ab-karten { list-style: none; padding: 0; margin: 0 0 8pt; columns: 2; column-gap: 14pt; }
+  .ab-karten li { margin: 0 0 3pt; }
+  .ab-blatt-tabelle { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 4pt 0 12pt; }
+  .ab-blatt-tabelle th, .ab-blatt-tabelle td { border: 1px solid #000; padding: 4pt 6pt; vertical-align: top; text-align: left; }
+  .ab-blatt-tabelle td.leer { height: 45mm; }
+  .ab-blatt-tabelle ul { margin: 0; padding-left: 12pt; }
+  .ab-blatt-reihe ul, .ab-blatt-abhaken { list-style: none; padding: 0; margin: 0 0 12pt; }
+  .ab-blatt-reihe li, .ab-blatt-abhaken li { display: flex; align-items: baseline; margin: 0 0 5pt; }
+  .ab-blatt-position { margin: 6pt 0 14pt; }
+  .ab-skala { display: flex; justify-content: space-between; list-style: none; padding: 0; margin: 4pt 0 2pt; }
+  .ab-skala li { display: flex; flex-direction: column; align-items: center; gap: 2pt; font-size: 9pt; }
+  .ab-kreis { width: 5mm; height: 5mm; border: 1px solid #000; border-radius: 50%; }
+  .ab-pole { display: flex; justify-content: space-between; font-size: 9pt; font-style: italic; }
 }

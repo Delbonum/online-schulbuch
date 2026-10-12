@@ -205,8 +205,9 @@ h1 .abzeichen { font-size: .9rem; }
 .lehrkraft-modus .lk-schalter + .suche-knopf { margin-left: 0; }
 .lk-schalter-bahn { position: relative; width: 34px; height: 20px; border-radius: 10px; background: #c4c4c4; transition: background .15s; flex: none; }
 .lk-schalter-bahn::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 30%); transition: transform .15s; }
-.lk-schalter[aria-checked="true"] { color: #6b5414; }
-.lk-schalter[aria-checked="true"] .lk-schalter-bahn { background: #8a6d1f; }
+/* eingeschaltet in der Zweitfarbe des Fachs (Startseite: neutral) */
+.lk-schalter[aria-checked="true"] { color: var(--fach); }
+.lk-schalter[aria-checked="true"] .lk-schalter-bahn { background: var(--fach); }
 .lk-schalter[aria-checked="true"] .lk-schalter-bahn::after { transform: translateX(14px); }
 
 @media (max-width: 1023px) {
