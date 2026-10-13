@@ -87,6 +87,7 @@ interaktiv und wird vom Build automatisch eingebunden, sobald einer davon auf ei
 <div class="position" data-id="sezuan-pos-1" data-vergleich="…"><p>Aussage</p></div>   <!-- Meinungslinie -->
 <ul class="abhaken" data-id="sezuan-gelesen"><li>…</li></ul>   <!-- Liste zum Abhaken, z. B. Leseplan -->
 <figure class="skizze"><svg …>…</svg><figcaption>…</figcaption></figure>   <!-- eigene Grafik, Farben per CSS-Klassen -->
+<einbinden datei="teile/zuschauer-theater.html">   <!-- Baustein aus content/teile/, z. B. eine Skizze auf mehreren Seiten -->
 ```
 
 Antworten werden nur im Browser gespeichert (`localStorage`, Schlüssel `ab:<id>`); unter jeder Seite gibt es

@@ -70,6 +70,12 @@ function leseFragment(datei) {
     }
     inhalt = roh.slice(m[0].length);
   }
+  // Gemeinsame Bausteine (z. B. eine Skizze auf mehreren Seiten) liegen einmal unter content/teile/
+  inhalt = inhalt.replace(/<einbinden datei="([^"]+)">/g, (_, pfad) => {
+    const teil = join(CONTENT, pfad);
+    if (!existsSync(teil)) throw new Error(`Baustein fehlt: ${pfad} (eingebunden in ${datei})`);
+    return readFileSync(teil, 'utf8').replace(/^<!--[\s\S]*?-->\n?/, '').trim();
+  });
   return { meta, inhalt: inhalt.trim() };
 }
 
