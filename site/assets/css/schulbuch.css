@@ -444,7 +444,8 @@ figure.foto figcaption { max-width: 260px; margin-top: .45em; font-size: .8rem; 
 @media (min-width: 700px) {
   figure.foto { float: right; width: 240px; margin: .3em 0 1em 1.6em; }
   .text h2 { clear: both; }
-  .box:has(> figure.foto) { display: flow-root; }
+  /* Kästen umschließen eigene Fotos und weichen schwebenden Fotos daneben aus, statt darunter zu laufen */
+  .text .box { display: flow-root; }
 }
 .breit-inhalt > .text { margin: 0 0 1.5em; }
 .breit-inhalt > .text:last-child { margin: 2em 0 0; }

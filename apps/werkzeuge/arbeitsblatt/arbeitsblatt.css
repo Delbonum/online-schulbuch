@@ -134,6 +134,7 @@ input.notiz { max-width: 420px; }
 .skizze { margin: 1.6em 0; overflow-x: auto; }
 .skizze svg { display: block; width: 100%; height: auto; min-width: 520px; max-width: 760px; margin: 0 auto; }
 .skizze figcaption { font-size: .88rem; color: var(--muted); text-align: center; margin-top: .5em; }
+.skizze .skizze-erklaerung { display: block; max-width: 680px; margin: .5em auto 0; font-size: .82rem; font-style: italic; line-height: 1.45; text-align: left; }
 .skizze text { font-family: var(--schrift-text); font-size: 14px; fill: var(--text); }
 .skizze .titel { font-family: var(--schrift-titel); font-weight: 700; font-size: 15px; }
 .skizze .klein { font-size: 12px; fill: var(--muted); }
