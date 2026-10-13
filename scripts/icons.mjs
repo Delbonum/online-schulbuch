@@ -12,7 +12,7 @@ const P = {
   rechner: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/>',
   netzwerk: '<circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M10.7 7.2L6.3 16.8M13.3 7.2l4.4 9.6M7.5 19h9"/>',
   schloss: '<rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><path d="M12 14.5v2.5"/>',
-  automat: '<g stroke-width="1.4"><path d="M1 12h2.6M2.2 10.6 3.6 12l-1.4 1.4"/><circle cx="7" cy="12" r="3.2"/><path d="M10.4 12h3.6M12.6 10.6 14 12l-1.4 1.4"/><circle cx="17.6" cy="12" r="3.3"/><circle cx="17.6" cy="12" r="2"/></g>',
+  automat: '<g stroke-width="1" transform="translate(0 1.3)"><path d="M.8 13H3.5M2.3 11.9 3.5 13l-1.2 1.1"/><circle cx="6.5" cy="13" r="3"/><circle cx="17.5" cy="13" r="3.5"/><circle cx="17.5" cy="13" r="1.7"/><path d="M8 10.4C9.5 6.5 14 6.3 15.75 9.97M16.03 8.3 15.75 9.97 14.27 9.14"/></g>',
   ki: '<path d="M9 3.5a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1.5V5a2 2 0 0 0-3-1.5z"/><path d="M15 3.5a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1.5"/><path d="M12 9h2.5M12 14h3"/>',
   datenbank: '<ellipse cx="12" cy="5.5" rx="7.5" ry="2.5"/><path d="M4.5 5.5v13c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5v-13M4.5 12c0 1.4 3.4 2.5 7.5 2.5s7.5-1.1 7.5-2.5"/>',
   gesellschaft: '<circle cx="8" cy="8" r="3"/><circle cx="16.5" cy="9" r="2.5"/><path d="M2.5 19c.5-3.5 2.8-5.5 5.5-5.5s5 2 5.5 5.5M14 14.2c.8-.5 1.6-.7 2.5-.7 2.3 0 4.2 1.8 4.5 5"/>',
