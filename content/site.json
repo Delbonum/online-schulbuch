@@ -7,6 +7,19 @@
     "deutsch",
     "informatik"
   ],
+  "fachnummern": {
+    "_hinweis": "Feste Nummern für Kurzlinks und Gliederung – nie ändern. Weitere Nummern (Sprachen, Kunst …) unter Vorbehalt.",
+    "deutsch": 1,
+    "mathematik": 2,
+    "geschichte": 3,
+    "physik": 4,
+    "chemie": 5,
+    "biologie": 6,
+    "erdkunde": 7,
+    "politik": 8,
+    "informatik": 9,
+    "musik": 10
+  },
   "lizenz": {
     "name": "CC BY-NC-SA 4.0",
     "url": "https://creativecommons.org/licenses/by-nc-sa/4.0/deed.de"

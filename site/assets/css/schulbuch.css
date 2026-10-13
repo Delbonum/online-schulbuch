@@ -350,7 +350,8 @@ a.nav-link:hover { background: var(--surface-2); }
 
 /* ------------------------------------------------------------ Seitenkopf und Text */
 
-.brotkrumen { font-size: .85rem; color: var(--muted); margin-bottom: 14px; }
+.brotkrumen { font-size: .85rem; color: var(--muted); margin-bottom: 14px; display: flex; gap: 6px; align-items: baseline; }
+.brotkrumen-nr { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .brotkrumen ol { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; }
 .brotkrumen li:not(:last-child)::after { content: "›"; margin-left: 6px; color: var(--border); font-weight: 700; }
 .brotkrumen a { color: var(--muted); text-decoration: none; }

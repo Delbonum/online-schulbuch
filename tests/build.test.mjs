@@ -90,7 +90,7 @@ test('Kurzlinks: jede Seite hat eine feste, eindeutige Nummer', () => {
   assert.equal(new Set(nummern).size, nummern.length, 'Nummer doppelt vergeben');
   for (const n of nummern) assert.match(n, /^\d+(\.\d+)*$/);
   assert.equal(kurz['/deutsch/'], '1');
-  assert.equal(kurz['/informatik/'], '2');
+  assert.equal(kurz['/informatik/'], '9', 'feste Fachnummer aus site.json');
   const html = readFileSync(join(OUT, 'deutsch', 'sprachgeschichte', 'index.html'), 'utf8');
   assert.match(html, new RegExp(`class="kurzlink">[^<]*<a href="https://online-schulbuch\\.de/${kurz['/deutsch/sprachgeschichte/'].replace(/\./g, '\\.')}"`));
 });

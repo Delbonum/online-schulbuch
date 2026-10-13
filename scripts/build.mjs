@@ -208,7 +208,12 @@ const kurzNachUrl = new Map(Object.entries(kurzlinks));
     for (const kind of knoten.seiten ?? []) besuche(kind, n);
   };
   for (const fach of faecher) {
-    const n = nummer(fach.url, '');
+    // Fächer haben feste Nummern (site.json), unabhängig davon, welche Fächer es schon gibt
+    const n = String(site.fachnummern?.[fach.slug] ?? '');
+    if (!n) fehler.push(`Fach ${fach.slug} hat keine Nummer in content/site.json (fachnummern)`);
+    else if (kurzNachUrl.has(fach.url) && kurzNachUrl.get(fach.url) !== n) fehler.push(`Fach ${fach.slug}: Nummer ${n} in site.json, aber ${kurzNachUrl.get(fach.url)} in content/kurzlinks.json`);
+    kurzNachUrl.set(fach.url, n);
+    vergeben.add(n);
     for (const kap of fach.kapitel) besuche(kap, n); // auch geplante Kapitel, damit ihre Nummer reserviert ist
   }
   const zahlen = (n) => n.split('.').map(Number);
@@ -379,7 +384,8 @@ function seitenleiste(fach, aktuell) {
 function brotkrumen(seite) {
   const teile = [{ titel: seite.fach.titel, url: seite.fach.url }];
   for (const e of seite.knoten.eltern) teile.push({ titel: e.kurz ?? e.titel, url: e.url });
-  return `<nav class="brotkrumen" aria-label="Du bist hier"><ol>${teile.map((t) => `<li><a href="${u(t.url)}">${esc(t.titel)}</a></li>`).join('')}<li aria-current="page">${esc(seite.knoten.kurz ?? seite.knoten.titel)}</li></ol></nav>`;
+  const nr = kurzNachUrl.get(seite.url);
+  return `<nav class="brotkrumen" aria-label="Du bist hier">${nr && !seite.knoten.entwurf ? `<span class="brotkrumen-nr">${nr}:</span>` : ''}<ol>${teile.map((t) => `<li><a href="${u(t.url)}">${esc(t.titel)}</a></li>`).join('')}<li aria-current="page">${esc(seite.knoten.kurz ?? seite.knoten.titel)}</li></ol></nav>`;
 }
 
 function kachel(knoten) {

@@ -36,7 +36,7 @@ materialien/              unveröffentlichtes Unterrichtsmaterial (nur lokal, ni
 
 Ein Kapitel mit `"geplant": true` erscheint als „in Vorbereitung“, ohne dass es schon eine Seite braucht.
 
-**Kurzlinks** (`online-schulbuch.de/1.4.5`): Der Build vergibt jeder neuen Seite die nächste freie Nummer unter
+**Kurzlinks** (`online-schulbuch.de/1.4.5`): Die erste Zahl ist die feste Fachnummer aus `content/site.json` (`fachnummern`: 1 Deutsch, 2 Mathematik … 9 Informatik, 10 Musik – auch für noch nicht vorhandene Fächer reserviert). Der Build vergibt jeder neuen Seite die nächste freie Nummer unter
 ihrem Elternteil und schreibt sie in `content/kurzlinks.json` (mit committen!). Vergebene Nummern bleiben fest,
 auch wenn Seiten eingefügt oder verschoben werden – gedruckte Kurzlinks bleiben so gültig. Die `.htaccess` leitet
 sie per 302 weiter, jede Seite zeigt ihren Kurzlink unten an. Wird ein Slug umbenannt, in der Datei den alten
