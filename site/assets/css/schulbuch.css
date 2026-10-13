@@ -443,8 +443,6 @@ figure.foto img { display: block; width: 100%; max-width: 260px; height: auto; b
 figure.foto figcaption { max-width: 260px; margin-top: .45em; font-size: .8rem; line-height: 1.4; color: var(--muted); }
 @media (min-width: 700px) {
   figure.foto { float: right; width: 240px; margin: .3em 0 1em 1.6em; }
-  /* schmale Variante, z. B. neben einem Materialkasten, dessen Zeilen nicht umbrechen sollen */
-  figure.foto.schmal { width: 130px; margin-bottom: .3em; }
   .text h2 { clear: both; }
   /* Kästen umschließen eigene Fotos und weichen schwebenden Fotos daneben aus, statt darunter zu laufen */
   .text .box { display: flow-root; }
