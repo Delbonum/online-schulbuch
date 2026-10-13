@@ -44,6 +44,7 @@ input.notiz { max-width: 420px; }
 .ab-leiste p { margin: 0 0 .8em; }
 .ab-leiste-titel { font: 700 .82rem var(--schrift-titel); letter-spacing: .06em; text-transform: uppercase; color: var(--fach); }
 .ab-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
+.ab-leiste .ab-tipp { font-size: .85rem; color: var(--muted); }
 /* Teil für Lehrkräfte: nur angemeldet und bei eingeschalteter Lehrkraft-Ansicht */
 .ab-lehrkraft, .ab-leiste.nur-lehrkraft { display: none; }
 .lehrkraft-modus:not(.lehrkraft-aus) .ab-lehrkraft, .lehrkraft-modus:not(.lehrkraft-aus) .ab-leiste.nur-lehrkraft { display: block; }

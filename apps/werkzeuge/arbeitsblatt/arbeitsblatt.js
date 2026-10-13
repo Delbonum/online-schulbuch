@@ -94,7 +94,8 @@ function beschriftung(feld) {
 Sichere deine Antworten als Datei, wenn du sie abgeben oder auf einem anderen Gerät weiterarbeiten willst.</p>
 <p class="ab-knoepfe"><button type="button" class="knopf primaer" data-ab="datei">Als Textdatei sichern</button>
 <button type="button" class="knopf" data-ab="drucken">Drucken / als PDF</button>
-<button type="button" class="knopf" data-ab="loeschen">Antworten dieser Seite löschen</button></p></div>` : ''}
+<button type="button" class="knopf" data-ab="loeschen">Antworten dieser Seite löschen</button></p>
+<p class="ab-tipp">Tipp: Wähle im Druckfenster als Ziel <strong>„Als PDF speichern“</strong>. Bei anderen PDF-Druckern (z. B. „Adobe PDF“) lässt sich der Text im PDF oft nicht mehr markieren und kopieren.</p></div>` : ''}
 <div class="ab-lehrkraft"><p class="ab-leiste-titel">Für Lehrkräfte: Arbeitsblatt zum Ausdrucken</p>
 <p>Die Seite als Arbeitsblatt für die analoge Bearbeitung: Antwortfelder als Schreiblinien, Übungen als Papierfassung, ohne eingetragene Antworten.</p>
 <p class="ab-knoepfe"><button type="button" class="knopf primaer" data-ab="blatt">Arbeitsblatt drucken / als PDF</button>
