@@ -180,6 +180,51 @@ for (const fach of faecher) {
   suche(join(CONTENT, fach.slug));
 }
 
+// Kurzlinks wie online-schulbuch.de/1.4.5: Nummern ergeben sich beim ersten Auftauchen aus der Reihenfolge
+// (Fach.Kapitel.Seite …) und werden danach in content/kurzlinks.json festgeschrieben, damit gedruckte
+// Kurzlinks gültig bleiben, auch wenn später Seiten eingefügt werden. Neue Seiten bekommen die nächste
+// freie Nummer unter ihrem Elternteil; vergebene Nummern werden nie neu belegt.
+const KURZ_DATEI = join(CONTENT, 'kurzlinks.json');
+const kurzlinks = existsSync(KURZ_DATEI) ? JSON.parse(readFileSync(KURZ_DATEI, 'utf8')) : {};
+const kurzNachUrl = new Map(Object.entries(kurzlinks));
+{
+  const vergeben = new Set(kurzNachUrl.values());
+  const naechste = (eltern) => {
+    let i = 1;
+    while (vergeben.has(eltern ? `${eltern}.${i}` : `${i}`)) i++;
+    return eltern ? `${eltern}.${i}` : `${i}`;
+  };
+  const nummer = (url, eltern) => {
+    if (!kurzNachUrl.has(url)) {
+      const n = naechste(eltern);
+      kurzNachUrl.set(url, n);
+      vergeben.add(n);
+    }
+    return kurzNachUrl.get(url);
+  };
+  const besuche = (knoten, eltern) => {
+    if (knoten.extern || knoten.entwurf) return;
+    const n = nummer(knoten.url, eltern);
+    for (const kind of knoten.seiten ?? []) besuche(kind, n);
+  };
+  for (const fach of faecher) {
+    const n = nummer(fach.url, '');
+    for (const kap of fach.kapitel) besuche(kap, n); // auch geplante Kapitel, damit ihre Nummer reserviert ist
+  }
+  const zahlen = (n) => n.split('.').map(Number);
+  const sortiert = [...kurzNachUrl].sort(([, a], [, b]) => {
+    const [x, y] = [zahlen(a), zahlen(b)];
+    for (let i = 0; i < Math.max(x.length, y.length); i++) if ((x[i] ?? -1) !== (y[i] ?? -1)) return (x[i] ?? -1) - (y[i] ?? -1);
+    return 0;
+  });
+  const neu = `${JSON.stringify(Object.fromEntries(sortiert), null, 2)}\n`;
+  if (!existsSync(KURZ_DATEI) || readFileSync(KURZ_DATEI, 'utf8') !== neu) writeFileSync(KURZ_DATEI, neu);
+  const vorhanden = new Set([...nachUrl.keys(), ...faecher.map((f) => f.url)]);
+  for (const [url, n] of kurzNachUrl) if (!vorhanden.has(url) && !faecher.some((f) => f.kapitel.some((k) => k.geplant && k.url === url))) {
+    warnungen.push(`Kurzlink ${n} zeigt auf eine Seite, die es nicht mehr gibt: ${url} (in content/kurzlinks.json umbiegen)`);
+  }
+}
+
 const zaehleSeiten = (knoten) => (knoten.seite && !knoten.entwurf ? 1 : 0) + (knoten.seiten ?? []).reduce((a, k) => a + zaehleSeiten(k), 0);
 
 // ------------------------------------------------------------------ Inhalte umwandeln
@@ -383,6 +428,13 @@ function blaettern(seite) {
   return `<nav class="blaettern" aria-label="Blättern">${z ? karte(z, 'zurueck') : '<span></span>'}${w ? karte(w, 'weiter') : ''}</nav>`;
 }
 
+// Kurzlink zum Weitergeben und Abtippen (auch im Ausdruck sichtbar)
+function kurzlink(seite) {
+  if (seite.knoten.entwurf || !kurzNachUrl.has(seite.url)) return '';
+  const voll = `${site.domain}/${kurzNachUrl.get(seite.url)}`;
+  return `<p class="kurzlink">Kurzlink zu dieser Seite: <a href="${voll}">${voll.replace(/^https?:\/\//, '')}</a> <button type="button" class="kurzlink-kopieren" data-kopieren="${voll}">kopieren</button></p>`;
+}
+
 // ------------------------------------------------------------------ Seitentypen
 
 const ARBEITSBLATT = /class="(?:[^"]*\s)?(?:notiz|notiz-rueckblick|quiz|sortieren|reihenfolge|position|abhaken|skizze|skizze-figuren)(?:\s[^"]*)?"/;
@@ -418,6 +470,7 @@ ${dach.length ? `<p class="dachzeile">${dach.map(esc).join(' · ')}</p>` : ''}
 ${wandle(seite.inhalt, seite.datei)}
 </div>
 ${meta.unterseiten === 'nein' ? '' : unterseiten(knoten)}
+${kurzlink(seite)}
 ${blaettern(seite)}
 </main>
 </div>
@@ -575,6 +628,10 @@ ${urls.map((p) => `<url><loc>${site.domain}${p}</loc></url>`).join('\n')}
     ...weiter.map(([alt, neu]) => `RedirectMatch 301 ^${alt.replace(/[.+?^${}()|[\]\\]/g, '\\$&')}/?$ ${neu}`),
     ...(extra.umleiten ?? []).map(([alt, neu]) => `RedirectMatch 301 ^${alt.replace(/[.+?^${}()|[\]\\]/g, '\\$&')}$ ${neu}`),
     ...(extra.entfernt ?? []).map((alt) => `Redirect gone ${alt}`),
+    '',
+    '# Kurzlinks (Nummern aus content/kurzlinks.json), vorläufige Umleitung wie bei inf-schule.de',
+    ...[...kurzNachUrl].filter(([url]) => nachUrl.has(url) || faecher.some((f) => f.url === url))
+      .map(([url, n]) => `RedirectMatch 302 ^/${n.replace(/\./g, '\\.')}/?$ ${url}`),
     '',
     '# Kurze Zwischenspeicherung für Stile und Skripte (Dateinamen enthalten keine Versionsnummer)',
     '<IfModule mod_expires.c>',

@@ -84,11 +84,23 @@ test('Kacheln nur auf Start- und Fachseiten, innerhalb von Kapiteln nur Listen',
   assert.match(readFileSync(join(OUT, 'deutsch', 'index.html'), 'utf8'), /class="kacheln/);
 });
 
+test('Kurzlinks: jede Seite hat eine feste, eindeutige Nummer', () => {
+  const kurz = JSON.parse(readFileSync(join(ROOT, 'content', 'kurzlinks.json'), 'utf8'));
+  const nummern = Object.values(kurz);
+  assert.equal(new Set(nummern).size, nummern.length, 'Nummer doppelt vergeben');
+  for (const n of nummern) assert.match(n, /^\d+(\.\d+)*$/);
+  assert.equal(kurz['/deutsch/'], '1');
+  assert.equal(kurz['/informatik/'], '2');
+  const html = readFileSync(join(OUT, 'deutsch', 'sprachgeschichte', 'index.html'), 'utf8');
+  assert.match(html, new RegExp(`class="kurzlink">[^<]*<a href="https://online-schulbuch\\.de/${kurz['/deutsch/sprachgeschichte/'].replace(/\./g, '\\.')}"`));
+});
+
 test('Inhalte für Lehrkräfte stehen ohne Passwort nicht in der Vorschau und nicht im Suchindex', () => {
   const html = readFileSync(join(OUT, 'deutsch', 'lektueren', 'brecht', 'der-gute-mensch-von-sezuan', 'lehrkraefte', 'index.html'), 'utf8');
   assert.doesNotMatch(html, /Leitfrage der Reihe/);
   assert.doesNotMatch(html, /<lehrkraft/);
-  assert.doesNotMatch(readFileSync(join(OUT, 'suche.json'), 'utf8'), /Erwartungshorizont/);
+  // Titel eines Lehrkraft-Kastens im Sezuan-Klausurtraining (das Wort allein steht auch in öffentlichen Seiten)
+  assert.doesNotMatch(readFileSync(join(OUT, 'suche.json'), 'utf8'), /Erwartungshorizonte \(Auszüge\)/);
 });
 
 test('Mit Passwort werden Lehrkraft-Inhalte verschlüsselt und lassen sich entschlüsseln', () => {

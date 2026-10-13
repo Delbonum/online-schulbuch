@@ -550,6 +550,22 @@ mark.todo::before { content: "✎ "; }
   max-width: 72ch;
 }
 .buch.breit .blaettern { max-width: none; }
+.kurzlink { margin: 2.5em 0 0; font-size: .85rem; color: var(--muted); }
+.kurzlink + .blaettern { margin-top: .8em; }
+.kurzlink a { color: inherit; font-variant-numeric: tabular-nums; }
+.kurzlink-kopieren {
+  display: none;
+  margin-left: 6px;
+  padding: 1px 8px;
+  font: inherit;
+  color: var(--fach);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.js .kurzlink-kopieren { display: inline-block; }
+.kurzlink-kopieren:hover { border-color: var(--fach); }
 .blatt {
   display: flex;
   flex-direction: column;
@@ -681,7 +697,7 @@ a.kachel:hover { background: color-mix(in srgb, var(--fach) 9%, var(--surface-2)
 /* ------------------------------------------------------------ Druck */
 
 @media print {
-  .kopf, .seitenleiste, .fuss, .blaettern, .brotkrumen, .vorschau-band, .einbettung { display: none !important; }
+  .kopf, .seitenleiste, .fuss, .blaettern, .brotkrumen, .vorschau-band, .einbettung, .kurzlink-kopieren { display: none !important; }
   .buch { display: block; padding: 0; }
   body { background: #fff; color: #000; }
   .box { border: 1px solid #999; background: none; }

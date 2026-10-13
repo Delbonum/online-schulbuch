@@ -2,6 +2,19 @@
 (() => {
   const BASIS = window.SCHULBUCH_BASIS || '/';
 
+  // ---------------------------------------------------------- Kurzlink kopieren
+  document.querySelectorAll('[data-kopieren]').forEach((knopf) => {
+    knopf.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(knopf.dataset.kopieren);
+        knopf.textContent = 'kopiert ✓';
+      } catch {
+        knopf.textContent = 'bitte markieren';
+      }
+      setTimeout(() => { knopf.textContent = 'kopieren'; }, 2000);
+    });
+  });
+
   // ---------------------------------------------------------- Kapitel auf- und zuklappen
   document.querySelectorAll('.nav-auf').forEach((knopf) => {
     knopf.addEventListener('click', () => {

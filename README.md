@@ -36,6 +36,12 @@ materialien/              unveröffentlichtes Unterrichtsmaterial (nur lokal, ni
 
 Ein Kapitel mit `"geplant": true` erscheint als „in Vorbereitung“, ohne dass es schon eine Seite braucht.
 
+**Kurzlinks** (`online-schulbuch.de/1.4.5`): Der Build vergibt jeder neuen Seite die nächste freie Nummer unter
+ihrem Elternteil und schreibt sie in `content/kurzlinks.json` (mit committen!). Vergebene Nummern bleiben fest,
+auch wenn Seiten eingefügt oder verschoben werden – gedruckte Kurzlinks bleiben so gültig. Die `.htaccess` leitet
+sie per 302 weiter, jede Seite zeigt ihren Kurzlink unten an. Wird ein Slug umbenannt, in der Datei den alten
+Schlüssel auf die neue Adresse ändern (der Build warnt bei Nummern ohne Seite).
+
 Normalerweise liegen alle Seiten eines Kapitels flach in seinem Ordner. Ein Eintrag mit `"ordner": true`
 öffnet eine eigene Ebene – für die Adresse und für die Dateien. Beispiel Lektüren:
 `content/deutsch/lektueren/brecht/index.html` (Autor), `…/brecht/der-gute-mensch-von-sezuan/index.html` (Werk),
