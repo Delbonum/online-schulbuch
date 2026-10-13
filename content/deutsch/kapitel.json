@@ -1,6 +1,6 @@
 {
   "titel": "Deutsch",
-  "beschreibung": "Textgattungen, Literaturepochen, Grammatik und Lektüren – mit Texten, Aufgaben und interaktiven Übungen.",
+  "beschreibung": "Textgattungen, Literaturepochen, Grammatik, Sprachgeschichte und Lektüren – mit Texten, Aufgaben und interaktiven Übungen.",
   "icon": "buch",
   "kapitel": [
     {
@@ -118,6 +118,28 @@
         { "titel": "Präfix- und Partikelverben", "kurz": "Präfix- und Partikelverben", "slug": "praefix-partikelverben" },
         { "titel": "Die Kommaregeln", "kurz": "Kommaregeln", "slug": "kommaregeln" },
         { "titel": "Prüfungstraining", "slug": "training" }
+      ]
+    },
+    {
+      "titel": "Sprachgeschichte",
+      "slug": "sprachgeschichte",
+      "icon": "stammbaum",
+      "beschreibung": "Vom Ursprung der Sprache bis zur Zukunft des Deutschen: Sprachfamilien, Lautverschiebungen, alt- und mittelhochdeutsche Texte – zum selbstständigen Vertiefen.",
+      "seiten": [
+        { "titel": "Werkzeugkasten: Laute, Lautgesetze, Rekonstruktion", "kurz": "Werkzeugkasten", "slug": "werkzeugkasten", "beschreibung": "Lautschrift, Lautklassen, Sternchenformen und die vergleichende Methode – das Handwerkszeug für alle weiteren Seiten." },
+        { "titel": "Wie ist Sprache entstanden?", "kurz": "Sprachentstehung", "slug": "sprachentstehung", "beschreibung": "Theorien, Belege und Grenzen des Wissens: von Herder bis zur Gebärdensprache in Nicaragua." },
+        { "titel": "Sprachfamilien und das Indogermanische", "kurz": "Sprachfamilien", "slug": "sprachfamilien", "beschreibung": "Warum Vater, father, pater und pitar verwandt sind – und Ungarisch nicht dazugehört." },
+        { "titel": "Die erste (germanische) Lautverschiebung", "kurz": "Erste Lautverschiebung", "slug": "erste-lautverschiebung", "beschreibung": "Grimms Gesetz, Verners Gesetz und der grammatische Wechsel in ziehen – gezogen." },
+        { "titel": "Die zweite (hochdeutsche) Lautverschiebung", "kurz": "Zweite Lautverschiebung", "slug": "zweite-lautverschiebung", "beschreibung": "Warum es Apfel heißt und nicht Appel: Lautverschiebung, Benrather Linie und Rheinischer Fächer." },
+        { "titel": "Althochdeutsch (ca. 750–1050)", "kurz": "Althochdeutsch", "slug": "althochdeutsch", "beschreibung": "Merseburger Zaubersprüche, Hildebrandslied, Vaterunser: die ältesten deutschen Texte lesen und analysieren." },
+        { "titel": "Mittelhochdeutsch (ca. 1050–1350)", "kurz": "Mittelhochdeutsch", "slug": "mittelhochdeutsch", "beschreibung": "Nibelungenlied und Walther von der Vogelweide im Original: Aussprache, Formen, falsche Freunde." },
+        { "titel": "Frühneuhochdeutsch und der Weg zur Standardsprache", "kurz": "Zur Standardsprache", "slug": "standardsprache", "beschreibung": "Buchdruck, Luther, Kanzleien, Grammatiker und Duden: Wie aus vielen Schreibweisen eine wurde." },
+        { "titel": "Wörter wandern: Lehnwörter und Bedeutungswandel", "kurz": "Wortschatz im Wandel", "slug": "wortschatz", "beschreibung": "Von Ziegel bis Smartphone, von hôchgezît bis Hochzeit: wie der Wortschatz wächst und sich verschiebt." },
+        { "titel": "Wie Sprache sich wandelt: Mechanismen", "kurz": "Mechanismen", "slug": "mechanismen", "beschreibung": "Analogie, Grammatikalisierung, Sprachökonomie und die unsichtbare Hand." },
+        { "titel": "Deutsch heute: Ist der Dativ dem Genitiv sein Tod?", "kurz": "Deutsch heute", "slug": "deutsch-heute", "beschreibung": "Genitiv, Konjunktiv, weil mit Verbzweitstellung, Kiezdeutsch: Verfall oder Wandel?" },
+        { "titel": "Deutsch morgen: Prognosen der Forschung", "kurz": "Deutsch morgen", "slug": "deutsch-morgen", "beschreibung": "Was die Forschung über die Zukunft von Verben, Kasus und Sprachen voraussagt – und wie sicher das ist." },
+        { "titel": "Abschlusstest Sprachgeschichte", "kurz": "Abschlusstest", "slug": "abschlusstest", "beschreibung": "Prüfe dein Wissen und wende es auf unbekannte Texte an – mit Lösungen zum Aufklappen." },
+        { "titel": "Hinweise für Lehrkräfte", "kurz": "Für Lehrkräfte", "slug": "lehrkraefte", "lehrkraft": true, "beschreibung": "Das Kapitel als Unterrichtsreihe: Verlaufsplan, Differenzierung, Leistungsüberprüfung, Literatur." }
       ]
     },
     {

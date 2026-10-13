@@ -2,6 +2,7 @@
 const P = {
   buch: '<path d="M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/>',
   feder: '<path d="M20 4c-7 0-12 5-13 12l-2 4"/><path d="M20 4c0 7-5 12-12 12"/><path d="M9 15l4-4"/>',
+  stammbaum: '<circle cx="12" cy="4.5" r="2"/><path d="M12 6.5V9M5 11V9h14v2M12 9v2"/><circle cx="5" cy="13" r="2"/><circle cx="12" cy="13" r="2"/><circle cx="19" cy="13" r="2"/><path d="M12 15v2M8.5 19v-2h7v2"/><circle cx="8.5" cy="20.3" r="1.6"/><circle cx="15.5" cy="20.3" r="1.6"/>',
   zeitstrahl: '<path d="M3 12h18"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><path d="M6 6v4M12 14v4M18 6v4"/>',
   grammatik: '<path d="M4 18l4.5-12L13 18M5.7 14h5.6"/><path d="M15 12.5c.6-1 1.6-1.5 2.7-1.5 1.7 0 2.8 1 2.8 2.7V18M20.5 15c-3.5 0-5.5.5-5.5 1.8 0 .8.7 1.4 1.9 1.4 2 0 3.6-1.2 3.6-3.2"/>',
   chip: '<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
