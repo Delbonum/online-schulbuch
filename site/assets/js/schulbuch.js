@@ -15,6 +15,33 @@
     });
   });
 
+  // ---------------------------------------------------------- Fotos groß anzeigen (data-gross = größere Datei)
+  document.querySelectorAll('figure.foto img').forEach((bild) => {
+    bild.tabIndex = 0;
+    bild.title = 'Zum Vergrößern klicken';
+    const zeige = () => {
+      const dialog = document.createElement('dialog');
+      dialog.className = 'bild-gross';
+      const gross = document.createElement('img');
+      gross.src = bild.dataset.gross || bild.src;
+      gross.alt = bild.alt;
+      dialog.append(gross);
+      const unterschrift = bild.closest('figure').querySelector('figcaption');
+      if (unterschrift) {
+        const p = document.createElement('p');
+        p.innerHTML = unterschrift.innerHTML;
+        dialog.append(p);
+        dialog.style.setProperty('--bild-unterschrift', '6em');
+      }
+      dialog.addEventListener('click', (e) => { if (!e.target.closest('a')) dialog.close(); });
+      dialog.addEventListener('close', () => { dialog.remove(); bild.focus(); });
+      document.body.append(dialog);
+      dialog.showModal();
+    };
+    bild.addEventListener('click', zeige);
+    bild.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); zeige(); } });
+  });
+
   // ---------------------------------------------------------- Kapitel auf- und zuklappen
   document.querySelectorAll('.nav-auf').forEach((knopf) => {
     knopf.addEventListener('click', () => {
