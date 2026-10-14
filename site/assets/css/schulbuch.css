@@ -450,9 +450,8 @@ figure.foto figcaption { max-width: 260px; margin-top: .45em; font-size: .8rem; 
   /* Kästen umschließen eigene Fotos und weichen schwebenden Fotos daneben aus, statt darunter zu laufen */
   .text .box { display: flow-root; }
 }
-/* Klick auf ein Foto zeigt es groß (schulbuch.js) */
-.js figure.foto img { cursor: zoom-in; }
-.bild-gross { width: min-content; max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); padding: 0; border: 0; border-radius: 8px; background: #111; box-shadow: 0 20px 60px rgb(0 0 0 / 45%); cursor: zoom-out; overflow: hidden; }
+/* Klick auf ein Foto zeigt es groß (schulbuch.js); Mauszeiger bleibt bewusst unverändert */
+.bild-gross { width: min-content; max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); padding: 0; border: 0; border-radius: 8px; background: #111; box-shadow: 0 20px 60px rgb(0 0 0 / 45%); overflow: hidden; }
 .bild-gross::backdrop { background: rgb(0 0 0 / 70%); }
 .bild-gross img { display: block; max-width: calc(100vw - 32px); max-height: calc(100vh - 32px - var(--bild-unterschrift, 0px)); width: auto; height: auto; margin: 0 auto; }
 .bild-gross p { margin: 0; padding: 8px 14px 10px; min-width: 260px; font-size: .8rem; line-height: 1.4; color: #ddd; }
