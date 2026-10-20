@@ -35,5 +35,6 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
   zu Beginn nicht gelesen, Leseseiten spoilerfrei) und **Seitenangaben = gedruckte Buchseiten**, nie PDF-Seiten.
   Reihen sind **flexibel planbar** (Kern- und Zusatzseiten, Kasten „Einsatz dieser Seite“, Kurzfassungen, Leseplan,
   Planungsmodelle) und bekommen passende Bilder (eigene SVG-Skizzen, Fotos nur frei lizenziert mit Nachweis).
-- Lösungen/Lehrerhinweise in `<lehrkraft>`; Passwort in `.lehrkraft-passwort` (lokal, nie committen).
+- Lösungen/Lehrerhinweise in `<lehrkraft>`, **abschnittsweise**: hinter jedem `<h2>`-Abschnitt ein Kasten mit den
+  Lösungen zu dessen Aufgaben, nie alle gesammelt am Seitenende (README „Inhalte für Lehrkräfte“); Passwort in `.lehrkraft-passwort` (lokal, nie committen).
   Live-Build bricht ohne Passwort ab.

@@ -79,6 +79,13 @@ function beschriftung(feld) {
   return feld.dataset.notiz;
 }
 
+// Name für gesicherte Dateien und PDFs: Nummer der Seite in ihrem Kapitel (letzte Stelle des Kurzlinks)
+// vor dem Fenstertitel, z. B. „06 - Szenenwerkstatt – Deutsch – Online-Schulbuch“.
+function dateiname() {
+  const nr = document.querySelector('.kurzlink a')?.textContent.match(/(\d+)\s*$/)?.[1];
+  return nr ? `${nr.padStart(2, '0')} - ${document.title}` : document.title;
+}
+
 // Leiste unter dem Inhalt: Antworten sichern (nur mit Antwortfeldern) und – nach der Anmeldung als
 // Lehrkraft – das Arbeitsblatt zum Ausdrucken. Ohne Antwortfelder sehen Schüler:innen die Leiste nicht.
 {
@@ -117,7 +124,7 @@ Sichere deine Antworten als Datei, wenn du sie abgeben oder auf einem anderen Ge
       const blob = new Blob([teile.join('\n')], { type: 'text/plain;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `${titel.replace(/[^\wäöüÄÖÜß -]+/g, '').trim().replace(/\s+/g, '-')}.txt`;
+      a.download = `${dateiname().replace(/[\\/:*?"<>|]+/g, '').trim()}.txt`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     }
@@ -193,7 +200,10 @@ function drucke(klasse, html) {
   blatt.innerHTML = html;
   document.body.append(blatt);
   document.documentElement.classList.add('ab-drucken');
-  const weg = () => { blatt.remove(); document.documentElement.classList.remove('ab-drucken'); };
+  // Der Fenstertitel ist im Druckfenster der vorgeschlagene Dateiname für das PDF.
+  const fenstertitel = document.title;
+  document.title = dateiname();
+  const weg = () => { blatt.remove(); document.documentElement.classList.remove('ab-drucken'); document.title = fenstertitel; };
   window.addEventListener('afterprint', weg, { once: true });
   window.print();
 }
@@ -460,7 +470,7 @@ document.querySelectorAll('ol.reihenfolge').forEach((ol) => {
   const soll = [...ol.children].map((li, i) => ({ i, html: li.innerHTML }));
   const box = document.createElement('div');
   box.className = 'reihe-box werkzeug';
-  box.innerHTML = `<p class="sort-hilfe">Bring die Karten mit den Pfeilen in die richtige Reihenfolge.</p><ol class="reihe-liste"></ol>
+  box.innerHTML = `<p class="sort-hilfe">Bring die Karten in die richtige Reihenfolge: mit den Pfeilen oder durch Ziehen mit der Maus.</p><ol class="reihe-liste"></ol>
 <div class="gr-rueckmeldung" aria-live="polite"></div>
 <div class="gr-leiste"><button type="button" class="knopf primaer" data-aktion="pruefen">Prüfen</button><button type="button" class="knopf" data-aktion="loesung">Lösung zeigen</button><button type="button" class="knopf" data-aktion="neu">Neu mischen</button></div>`;
   ol.replaceWith(box);
@@ -468,7 +478,7 @@ document.querySelectorAll('ol.reihenfolge').forEach((ol) => {
   const rueck = box.querySelector('.gr-rueckmeldung');
 
   function zeichne(reihe) {
-    liste.innerHTML = reihe.map((k) => `<li data-nr="${k.i}"><span class="reihe-text">${k.html}</span>
+    liste.innerHTML = reihe.map((k) => `<li data-nr="${k.i}" draggable="true"><span class="reihe-text">${k.html}</span>
 <span class="reihe-pfeile"><button type="button" class="knopf" data-schiebe="-1" aria-label="nach oben">↑</button><button type="button" class="knopf" data-schiebe="1" aria-label="nach unten">↓</button></span></li>`).join('');
     rueck.className = 'gr-rueckmeldung';
     rueck.innerHTML = '';
@@ -503,6 +513,27 @@ document.querySelectorAll('ol.reihenfolge').forEach((ol) => {
       rueck.innerHTML = `<p class="gr-urteil">${alle ? '✓ Die Reihenfolge stimmt.' : `${richtig} von ${soll.length} Karten stehen schon an der richtigen Stelle.`}</p>`;
     }
   });
+
+  // Ziehen und Ablegen für Maus und Touchpad: Die Karte wandert schon beim Ziehen an ihren neuen Platz.
+  let gezogen = null;
+  liste.addEventListener('dragstart', (e) => {
+    gezogen = e.target.closest('li');
+    if (!gezogen) return;
+    e.dataTransfer.setData('text/plain', gezogen.dataset.nr);
+    e.dataTransfer.effectAllowed = 'move';
+    gezogen.classList.add('zieht');
+    liste.querySelectorAll('li').forEach((x) => x.classList.remove('richtig', 'falsch'));
+  });
+  liste.addEventListener('dragover', (e) => {
+    if (!gezogen) return;
+    e.preventDefault();
+    const ziel = e.target.closest('li');
+    if (!ziel || ziel === gezogen) return;
+    const mitte = ziel.getBoundingClientRect();
+    if (e.clientY < mitte.top + mitte.height / 2) ziel.before(gezogen); else ziel.after(gezogen);
+  });
+  liste.addEventListener('drop', (e) => { if (gezogen) e.preventDefault(); });
+  liste.addEventListener('dragend', () => { gezogen?.classList.remove('zieht'); gezogen = null; });
 
   zeichne(mische(soll));
 });

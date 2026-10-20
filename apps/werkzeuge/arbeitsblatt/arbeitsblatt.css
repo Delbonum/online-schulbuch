@@ -95,6 +95,8 @@ input.notiz { max-width: 420px; }
 .reihe-liste { list-style: none; counter-reset: r; padding: 0 !important; margin: 0; display: grid; gap: 6px; }
 .reihe-liste li { counter-increment: r; display: flex; align-items: center; gap: 10px; padding: 6px 8px 6px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; margin: 0; }
 .reihe-liste li::before { content: counter(r); flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: var(--fach-soft); color: var(--fach); font-size: .82rem; font-weight: 700; }
+.reihe-liste li[draggable="true"] { cursor: grab; }
+.reihe-liste li.zieht { opacity: .45; border-style: dashed; }
 .reihe-liste li.richtig { border-color: var(--good); background: var(--good-soft); }
 .reihe-liste li.falsch { border-color: var(--bad); background: var(--bad-soft); }
 .reihe-text { flex: 1; font-size: .95rem; line-height: 1.4; }

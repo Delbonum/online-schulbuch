@@ -116,6 +116,12 @@ Live-Build bricht ab. Lehrkraft-Inhalte erscheinen nicht im Suchindex. Ohne Anme
 unsichtbar. Nach der Anmeldung erscheint im Kopf links neben der Suche ein Schalter (Symbol: Lehrkraft an der Tafel), der die Kästen aus- und
 wieder einblendet, ohne abzumelden (z. B. für den Beamer; gemerkt in `localStorage`).
 
+**Lösungen abschnittsweise (verbindlich, alle Fächer):** Lösungshinweise stehen nie gesammelt am Seitenende, sondern
+jeweils am Ende des Abschnitts (`<h2>`), zu dem die Aufgaben gehören – ein Kasten pro Abschnitt mit den Lösungen
+zu allen Aufgaben dieses Abschnitts, z. B. `<lehrkraft titel="Lösungsvorschlag zu Aufgabe 3 und 4">` direkt vor der
+nächsten Überschrift. Hat ein Abschnitt keine Aufgaben mit Lösung, entfällt der Kasten. Der Kasten „Einsatz dieser
+Seite“ steht am Seitenanfang.
+
 Hinweis: Das Repository ist öffentlich – im Quelltext unter `content/` sind die Lösungen lesbar. Geschützt ist nur
 die Website.
 
@@ -139,7 +145,8 @@ Jede Lektüre bekommt eine Reihe unter `content/deutsch/lektueren/<autor>/<werk>
 4. **Seitenangaben beziehen sich immer auf die gedruckten Seitenzahlen der Buchausgabe**, nie auf die
    Seitennummer einer PDF-Datei. Die Ausgabe steht auf der Werkseite; zusätzlich die Szene/das Kapitel nennen,
    damit man die Stelle auch in anderen Ausgaben findet. Zitate wörtlich aus dem Buch übernehmen.
-5. **Lösungen und Lehrerhinweise** stehen in `<lehrkraft>` direkt unter den Aufgaben, auf die sie sich beziehen.
+5. **Lösungen und Lehrerhinweise** stehen in `<lehrkraft>` am Ende des Abschnitts, zu dem die Aufgaben gehören
+   (ein Kasten je Abschnitt, siehe „Inhalte für Lehrkräfte“) – nie alle gesammelt am Seitenende.
 6. **Modern und mehrperspektivisch:** handlungs- und produktionsorientierte Aufgaben, kooperative Formen,
    interaktive Bausteine, Gegenwartsbezug; Deutungen als Angebote nebeneinanderstellen statt eine vorzugeben.
 7. **Rechte beachten:** Texte von Autorinnen und Autoren, die vor weniger als 70 Jahren gestorben sind, sind
