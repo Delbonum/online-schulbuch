@@ -470,7 +470,7 @@ document.querySelectorAll('ol.reihenfolge').forEach((ol) => {
   const soll = [...ol.children].map((li, i) => ({ i, html: li.innerHTML }));
   const box = document.createElement('div');
   box.className = 'reihe-box werkzeug';
-  box.innerHTML = `<p class="sort-hilfe">Bring die Karten in die richtige Reihenfolge: mit den Pfeilen oder durch Ziehen mit der Maus.</p><ol class="reihe-liste"></ol>
+  box.innerHTML = `<p class="sort-hilfe">Bring die Karten in die richtige Reihenfolge: mit den Pfeilen oder durch Ziehen (auf dem Handy: Karte kurz gedrückt halten, dann schieben).</p><ol class="reihe-liste"></ol>
 <div class="gr-rueckmeldung" aria-live="polite"></div>
 <div class="gr-leiste"><button type="button" class="knopf primaer" data-aktion="pruefen">Prüfen</button><button type="button" class="knopf" data-aktion="loesung">Lösung zeigen</button><button type="button" class="knopf" data-aktion="neu">Neu mischen</button></div>`;
   ol.replaceWith(box);
@@ -478,7 +478,7 @@ document.querySelectorAll('ol.reihenfolge').forEach((ol) => {
   const rueck = box.querySelector('.gr-rueckmeldung');
 
   function zeichne(reihe) {
-    liste.innerHTML = reihe.map((k) => `<li data-nr="${k.i}" draggable="true"><span class="reihe-text">${k.html}</span>
+    liste.innerHTML = reihe.map((k) => `<li data-nr="${k.i}"><span class="reihe-text">${k.html}</span>
 <span class="reihe-pfeile"><button type="button" class="knopf" data-schiebe="-1" aria-label="nach oben">↑</button><button type="button" class="knopf" data-schiebe="1" aria-label="nach unten">↓</button></span></li>`).join('');
     rueck.className = 'gr-rueckmeldung';
     rueck.innerHTML = '';
@@ -514,26 +514,50 @@ document.querySelectorAll('ol.reihenfolge').forEach((ol) => {
     }
   });
 
-  // Ziehen und Ablegen für Maus und Touchpad: Die Karte wandert schon beim Ziehen an ihren neuen Platz.
+  // Ziehen und Ablegen mit Zeigerereignissen, damit es auch auf Touch-Geräten geht: Die Maus zieht sofort,
+  // der Finger erst nach kurzem Gedrückthalten (sonst würde man beim Wischen die Seite nicht mehr scrollen
+  // können). Die Karte wandert schon beim Ziehen an ihren neuen Platz und rastet beim Loslassen ein.
   let gezogen = null;
-  liste.addEventListener('dragstart', (e) => {
-    gezogen = e.target.closest('li');
-    if (!gezogen) return;
-    e.dataTransfer.setData('text/plain', gezogen.dataset.nr);
-    e.dataTransfer.effectAllowed = 'move';
+  let start = null;
+  let warte = null;
+  const beende = () => {
+    clearTimeout(warte);
+    gezogen?.classList.remove('zieht');
+    liste.classList.remove('beim-ziehen');
+    gezogen = null;
+    start = null;
+  };
+  const greife = () => {
+    gezogen = start.li;
     gezogen.classList.add('zieht');
+    liste.classList.add('beim-ziehen');
     liste.querySelectorAll('li').forEach((x) => x.classList.remove('richtig', 'falsch'));
+    navigator.vibrate?.(15);
+  };
+  liste.addEventListener('pointerdown', (e) => {
+    const li = e.target.closest('li');
+    if (!li || e.button !== 0 || e.target.closest('button')) return;
+    start = { li, x: e.clientX, y: e.clientY, maus: e.pointerType === 'mouse' };
+    if (!start.maus) warte = setTimeout(greife, 350);
   });
-  liste.addEventListener('dragover', (e) => {
-    if (!gezogen) return;
+  liste.addEventListener('pointermove', (e) => {
+    if (!start) return;
+    if (!gezogen) {
+      const weit = Math.hypot(e.clientX - start.x, e.clientY - start.y) > 6;
+      if (weit && start.maus) { greife(); liste.setPointerCapture(e.pointerId); }
+      else if (weit) { beende(); return; } // Finger hat sich vor dem Gedrückthalten bewegt: Scrollen
+      else return;
+    }
     e.preventDefault();
-    const ziel = e.target.closest('li');
-    if (!ziel || ziel === gezogen) return;
-    const mitte = ziel.getBoundingClientRect();
-    if (e.clientY < mitte.top + mitte.height / 2) ziel.before(gezogen); else ziel.after(gezogen);
+    const ziel = [...liste.children].find((x) => x !== gezogen && e.clientY < x.getBoundingClientRect().top + x.offsetHeight / 2);
+    if (ziel) { if (ziel.previousElementSibling !== gezogen) ziel.before(gezogen); }
+    else if (liste.lastElementChild !== gezogen) liste.append(gezogen);
   });
-  liste.addEventListener('drop', (e) => { if (gezogen) e.preventDefault(); });
-  liste.addEventListener('dragend', () => { gezogen?.classList.remove('zieht'); gezogen = null; });
+  liste.addEventListener('pointerup', beende);
+  liste.addEventListener('pointercancel', beende);
+  // Während des Ziehens darf der Finger die Seite nicht scrollen; das Kontextmenü beim Gedrückthalten bleibt aus.
+  liste.addEventListener('touchmove', (e) => { if (gezogen) e.preventDefault(); }, { passive: false });
+  liste.addEventListener('contextmenu', (e) => { if (start) e.preventDefault(); });
 
   zeichne(mische(soll));
 });
