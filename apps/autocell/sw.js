@@ -1,8 +1,8 @@
 // Erzeugt beim Bauen von AutoCell (build/offline.ts) – nicht von Hand ändern.
-const CACHE = "autocell-2.4.0-24b32a76f0";
+const CACHE = "autocell-2.4.1-3445ea95d1";
 const FILES = [
   "./",
-  "assets/desktopFiles-scO3fYVN.js",
+  "assets/desktopFiles-BdhvWxyr.js",
   "assets/event-xJNu2Rtk.js",
   "assets/ibm-plex-mono-latin-400-normal-DMJ8VG8y.woff2",
   "assets/ibm-plex-mono-latin-500-normal-DSY6xOcd.woff2",
@@ -17,7 +17,7 @@ const FILES = [
   "assets/ibm-plex-sans-latin-ext-600-normal-DOrvGEcy.woff2",
   "assets/ibm-plex-sans-latin-ext-700-normal-aMgXseD4.woff2",
   "assets/index-B9lTS2Zk.css",
-  "assets/index-BmMitMor.js",
+  "assets/index-ChBJT3N1.js",
   "assets/window-CM4fikXz.js",
   "icon.png",
   "manifest.webmanifest"
