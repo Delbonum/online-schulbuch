@@ -425,6 +425,9 @@ a.nav-link:hover { background: var(--surface-2); }
 .zitat p { margin: 0 0 .3em; }
 .zitat .beleg, .beleg { font-style: normal; font-size: .85rem; color: var(--muted); }
 .vers { white-space: pre-line; }
+code { font-family: Consolas, "Cascadia Mono", Menlo, monospace; font-size: .9em; background: var(--surface-2); padding: .05em .3em; border-radius: 3px; }
+pre.code { margin: 1em 0 1.4em; padding: 12px 16px; background: var(--surface-2); border: 1px solid var(--border); border-left: 3px solid var(--fach); border-radius: var(--radius); overflow-x: auto; font-size: .86rem; line-height: 1.5; }
+pre.code code { background: none; padding: 0; font-size: inherit; }
 .box h2 { font-size: 1.2rem; margin: 1.4em 0 .5em; }
 
 details.aufklapp {

@@ -1,0 +1,177 @@
+<!--
+beschreibung: Das Grundgerüst eines PyGame-Spiels: Spielschleife, Ereignisse, Zustände (Start, Spiel, Ende) – mit Code zum Ausprobieren und Übungen.
+-->
+<p>Fast jedes Spiel – vom Handyspiel bis zum großen Konsolentitel – ist innen gleich aufgebaut: Eine <strong>Schleife</strong> läuft viele Male pro Sekunde und das Spiel befindet sich immer in einem bestimmten <strong>Zustand</strong> (Startbildschirm, Spiel, Endbildschirm …). Wenn du diese beiden Ideen verstehst, findest du dich in jedem Spielcode zurecht – auch in Code, den eine KI geschrieben hat.</p>
+
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite der Vorbereitung, 2–3 Lektionen mit Übungen. Wer an der Schule einen eigenen PyGame-Kurs nutzt (z. B. einen Kurs in PyCharm), kann die Seite als Zusammenfassung danach einsetzen: Die Begriffe Spielschleife, Ereignis und Zustand sollten am Ende allen geläufig sein, denn die Änderungsaufträge bauen darauf auf. Die Aufwärmaufgaben in Abschnitt 4 sind zugleich eine erste Übung für das Format des Änderungsauftrags.</p>
+</lehrkraft>
+
+<h2>1. Die Spielschleife</h2>
+
+<p>Ein Spiel wartet nicht, bis du etwas tust. Es läuft ständig weiter – meist 60-mal pro Sekunde. Bei jedem Durchlauf passieren drei Dinge, immer in derselben Reihenfolge:</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 720 200" role="img" aria-labelledby="schleife-titel">
+<title id="schleife-titel">Die Spielschleife: 1. Ereignisse verarbeiten, 2. Spielzustand aktualisieren, 3. Zeichnen – dann warten und wieder von vorn, 60-mal pro Sekunde.</title>
+<defs><marker id="pfeil-schleife" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="flaeche" x="20" y="30" width="190" height="80" rx="8"/>
+<rect class="flaeche" x="265" y="30" width="190" height="80" rx="8"/>
+<rect class="flaeche" x="510" y="30" width="190" height="80" rx="8"/>
+<line class="linie" x1="212" y1="70" x2="261" y2="70" marker-end="url(#pfeil-schleife)"/>
+<line class="linie" x1="457" y1="70" x2="506" y2="70" marker-end="url(#pfeil-schleife)"/>
+<path class="linie" d="M605 112 V160 H115 V115" marker-end="url(#pfeil-schleife)"/>
+<text class="titel" x="115" y="62" text-anchor="middle">1. Ereignisse</text><text class="klein" x="115" y="86" text-anchor="middle">Tasten, Maus, Fenster-×</text>
+<text class="titel" x="360" y="62" text-anchor="middle">2. Aktualisieren</text><text class="klein" x="360" y="86" text-anchor="middle">bewegen, Kollision, Punkte</text>
+<text class="titel" x="605" y="62" text-anchor="middle">3. Zeichnen</text><text class="klein" x="605" y="86" text-anchor="middle">Bild löschen, alles neu malen</text>
+<text x="360" y="182" text-anchor="middle">kurz warten – und von vorn (60-mal pro Sekunde)</text>
+</svg>
+<figcaption>Bei jedem Durchlauf der Spielschleife entsteht ein neues Bild.</figcaption>
+</figure>
+
+<ul>
+<li><strong>Ereignisse verarbeiten:</strong> PyGame sammelt alles, was seit dem letzten Durchlauf passiert ist – eine Taste wurde gedrückt, die Maus geklickt, das Fenster geschlossen. Dein Programm geht diese Liste durch und reagiert.</li>
+<li><strong>Aktualisieren:</strong> Figuren bewegen sich ein kleines Stück, das Programm prüft Zusammenstöße (Kollisionen), zählt Punkte, prüft, ob das Spiel vorbei ist.</li>
+<li><strong>Zeichnen:</strong> Das Fenster wird gelöscht und alles an der neuen Position neu gemalt. Weil das so schnell geht, sieht es aus wie eine flüssige Bewegung – wie beim Daumenkino.</li>
+</ul>
+
+<h2>2. Zustände</h2>
+
+<p>Dein Spiel zeigt nicht immer dasselbe: Zuerst kommt ein Startbildschirm, dann das eigentliche Spiel, am Ende ein Endbildschirm mit den Punkten. Jeden dieser Abschnitte nennt man einen <strong>Zustand</strong>. Das Programm merkt sich in einer Variablen, in welchem Zustand es gerade ist, und macht in der Spielschleife je nach Zustand etwas anderes. Ein <strong>Übergang</strong> wechselt von einem Zustand in einen anderen – zum Beispiel, wenn du auf „Start“ klickst.</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 720 220" role="img" aria-labelledby="zustaende-titel">
+<title id="zustaende-titel">Zustandsdiagramm des Grundgerüsts: Start geht mit Enter zu Spiel, Spiel geht nach Ablauf der Zeit zu Ende, Ende geht mit Enter zurück zu Start. Aus jedem Zustand beenden Esc oder das Fenster-Kreuz das Programm.</title>
+<defs><marker id="pfeil-zustand" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<line class="linie" x1="30" y1="80" x2="76" y2="80" marker-end="url(#pfeil-zustand)"/>
+<rect class="flaeche" x="80" y="50" width="140" height="60" rx="30"/>
+<rect class="flaeche" x="290" y="50" width="140" height="60" rx="30"/>
+<rect class="flaeche" x="500" y="50" width="140" height="60" rx="30"/>
+<text class="titel" x="150" y="85" text-anchor="middle">"start"</text>
+<text class="titel" x="360" y="85" text-anchor="middle">"spiel"</text>
+<text class="titel" x="570" y="85" text-anchor="middle">"ende"</text>
+<line class="linie" x1="222" y1="80" x2="286" y2="80" marker-end="url(#pfeil-zustand)"/>
+<line class="linie" x1="432" y1="80" x2="496" y2="80" marker-end="url(#pfeil-zustand)"/>
+<text class="klein" x="254" y="70" text-anchor="middle">Enter</text>
+<text class="klein" x="464" y="70" text-anchor="middle">Zeit um</text>
+<path class="linie" d="M570 112 C570 175 150 175 150 116" marker-end="url(#pfeil-zustand)"/>
+<text class="klein" x="360" y="172" text-anchor="middle">Enter</text>
+<text x="360" y="208" text-anchor="middle">aus jedem Zustand: Esc oder Fenster-× → Programm beenden</text>
+</svg>
+<figcaption>Das Zustandsdiagramm des Grundgerüsts. Der Pfeil links zeigt, in welchem Zustand das Spiel beginnt.</figcaption>
+</figure>
+
+<p>Solche Diagramme heißen <strong>Zustandsdiagramme</strong>. Sie sind ein wichtiges Werkzeug der Informatik (mehr dazu im Kapitel „Formale Sprachen &amp; Automaten“). Für dein eigenes Spiel zeichnest du in der <a href="/informatik/projekte/spieleprojekt-pygame/projektskizze/">Projektskizze</a> ein solches Diagramm – mit allen Bildschirmen, die dein Spiel haben soll.</p>
+
+<h2>3. Das Grundgerüst im Code</h2>
+
+<p>Hier ist ein vollständiges, lauffähiges Grundgerüst mit drei Zuständen. Das „Spiel“ ist noch ein Platzhalter: Du schiebst ein Quadrat mit den Pfeiltasten hin und her, nach zehn Sekunden ist es vorbei. Kopiere den Code in eine Datei <code>main.py</code> und starte ihn.</p>
+
+<pre class="code"><code>import pygame
+
+BREITE, HOEHE = 800, 600
+
+pygame.init()
+fenster = pygame.display.set_mode((BREITE, HOEHE))
+pygame.display.set_caption("Mein Spiel")
+uhr = pygame.time.Clock()
+schrift = pygame.font.Font(None, 48)
+
+zustand = "start"   # "start", "spiel" oder "ende"
+punkte = 0
+spieler = pygame.Rect(380, 500, 40, 40)
+
+
+def zeichne_text(text, y):
+    bild = schrift.render(text, True, (255, 255, 255))
+    fenster.blit(bild, bild.get_rect(center=(BREITE // 2, y)))
+
+
+laeuft = True
+while laeuft:
+    # 1. Ereignisse verarbeiten
+    for ereignis in pygame.event.get():
+        if ereignis.type == pygame.QUIT:
+            laeuft = False
+        elif ereignis.type == pygame.KEYDOWN:
+            if ereignis.key == pygame.K_ESCAPE:
+                laeuft = False
+            elif zustand == "start" and ereignis.key == pygame.K_RETURN:
+                zustand = "spiel"
+                punkte = 0
+            elif zustand == "ende" and ereignis.key == pygame.K_RETURN:
+                zustand = "start"
+
+    # 2. Aktualisieren
+    if zustand == "spiel":
+        tasten = pygame.key.get_pressed()
+        if tasten[pygame.K_LEFT]:
+            spieler.x -= 5
+        if tasten[pygame.K_RIGHT]:
+            spieler.x += 5
+        punkte += 1
+        if punkte &gt;= 600:   # Platzhalter: nach 10 Sekunden ist Schluss
+            zustand = "ende"
+
+    # 3. Zeichnen
+    fenster.fill((20, 30, 50))
+    if zustand == "start":
+        zeichne_text("Mein Spiel", 250)
+        zeichne_text("Enter: Start   Esc: Beenden", 350)
+    elif zustand == "spiel":
+        pygame.draw.rect(fenster, (240, 200, 60), spieler)
+        zeichne_text(f"Punkte: {punkte}", 40)
+    elif zustand == "ende":
+        zeichne_text(f"Ende! Punkte: {punkte}", 250)
+        zeichne_text("Enter: zurück zum Start", 350)
+    pygame.display.flip()
+    uhr.tick(60)
+
+pygame.quit()</code></pre>
+
+<aside class="box hinweis">
+<p>In eurem Projekt wird der Code viel länger. Dann lohnt es sich, ihn auf mehrere Dateien aufzuteilen – zum Beispiel eine Datei pro Bildschirm (<code>startscreen.py</code>, <code>gamescreen.py</code> …) und eine für Buttons. Vielleicht kennst du so eine Aufteilung schon aus einem PyGame-Kurs. Das Prinzip bleibt dasselbe: eine Spielschleife, ein Zustand, Ereignisse – Aktualisieren – Zeichnen.</p>
+</aside>
+
+<h2>4. Teste dein Verständnis</h2>
+
+<div class="quiz" data-anweisung="Beantworte die Fragen zum Grundgerüst. Probiere im Zweifel aus, was passiert.">
+<div class="frage" data-erklaerung="uhr.tick(60) bremst die Schleife auf höchstens 60 Durchläufe pro Sekunde. Ohne diese Zeile läuft sie so schnell, wie der Computer kann – auf jedem Gerät verschieden schnell.">
+<p>Was passiert, wenn du die Zeile <code>uhr.tick(60)</code> löschst?</p>
+<ul><li>Das Spiel friert ein.</li><li data-richtig>Das Spiel läuft so schnell, wie der Computer kann – das Quadrat rast, und die zehn Sekunden sind viel schneller vorbei.</li><li>Nichts, die Zeile ist nur ein Kommentar.</li></ul>
+</div>
+<div class="frage" data-erklaerung="Ein KEYDOWN-Ereignis kommt genau einmal pro Tastendruck. key.get_pressed() dagegen meldet bei jedem Durchlauf, ob die Taste gerade gedrückt ist – gut für gleichmäßiges Bewegen, schlecht für einmalige Aktionen.">
+<p>Mit der Leertaste soll die Figur <em>einmal</em> springen, auch wenn man die Taste gedrückt hält. Wo gehört die Abfrage hin?</p>
+<ul><li data-richtig>In die Ereignisschleife, als <code>KEYDOWN</code>-Ereignis.</li><li>Zu <code>pygame.key.get_pressed()</code> unter „Aktualisieren“.</li><li>Unter „Zeichnen“.</li></ul>
+</div>
+<div class="frage" data-erklaerung="Ohne diese Zeile beginnt die zweite Runde mit den Punkten der ersten – sie ist dann sofort wieder vorbei, weil punkte schon 600 ist.">
+<p>Warum steht beim Wechsel von <code>"start"</code> zu <code>"spiel"</code> die Zeile <code>punkte = 0</code>?</p>
+<ul><li>Damit Python die Variable kennt.</li><li data-richtig>Damit jede neue Runde wieder bei null beginnt.</li><li>Damit der Highscore gespeichert wird.</li></ul>
+</div>
+<div class="frage" data-erklaerung="fill übermalt das ganze Fenster. Fehlt es, bleiben alle alten Bilder stehen und das Quadrat zieht einen Streifen hinter sich her.">
+<p>Was siehst du, wenn du <code>fenster.fill((20, 30, 50))</code> löschst?</p>
+<ul><li>Ein schwarzes Fenster.</li><li data-richtig>Das Quadrat hinterlässt beim Bewegen eine Spur, und die Texte überlagern sich.</li><li>Eine Fehlermeldung.</li></ul>
+</div>
+</div>
+
+<h2>5. Aufwärmen: kleine Änderungen</h2>
+
+<p>Diese Aufgaben sind genau von der Art, wie sie später im <a href="/informatik/projekte/spieleprojekt-pygame/aenderungsauftrag/">Änderungsauftrag</a> vorkommen. Löse sie <strong>ohne KI</strong> und notiere zu jeder Aufgabe in einem Satz, <em>wo</em> du etwas geändert hast und <em>warum dort</em>.</p>
+
+<aside class="box aufgabe">
+<p><strong>Aufgabe 1:</strong> Das Quadrat soll sich auch nach oben und unten bewegen lassen.</p>
+<p><strong>Aufgabe 2:</strong> Das Quadrat darf das Fenster nicht verlassen. Tipp: Ein <code>Rect</code> kennt <code>left</code>, <code>right</code>, <code>top</code> und <code>bottom</code>.</p>
+<p><strong>Aufgabe 3:</strong> Auf dem Endbildschirm soll zusätzlich stehen: „Q: Beenden“. Die Taste Q beendet dort das Programm.</p>
+<p><strong>Aufgabe 4:</strong> Das Spiel soll nicht nach zehn, sondern nach zwanzig Sekunden enden. Wo genau musst du etwas ändern – und was passiert mit den Punkten?</p>
+</aside>
+
+<textarea class="notiz" data-notiz="pygame-grundgeruest-aufwaermen" rows="6" aria-label="Aufwärmaufgaben 1 bis 4: Wo hast du was geändert und warum?"></textarea>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 bis 4">
+<ul>
+<li><strong>Aufgabe 1:</strong> Unter „Aktualisieren“ zwei weitere Abfragen ergänzen: <code>if tasten[pygame.K_UP]: spieler.y -= 5</code> und <code>if tasten[pygame.K_DOWN]: spieler.y += 5</code>. Dort, weil die Bewegung bei gedrückter Taste gleichmäßig in jedem Durchlauf geschehen soll.</li>
+<li><strong>Aufgabe 2:</strong> Nach den Bewegungen, noch im Zustand „spiel“: <code>spieler.clamp_ip(fenster.get_rect())</code> oder einzeln, z. B. <code>if spieler.left &lt; 0: spieler.left = 0</code> und <code>if spieler.right &gt; BREITE: spieler.right = BREITE</code> (entsprechend oben/unten). Wichtig ist die Stelle <em>nach</em> der Bewegung, sonst ist das Quadrat für ein Bild außerhalb.</li>
+<li><strong>Aufgabe 3:</strong> Unter „Zeichnen“ im Zustand „ende“ eine dritte Zeile <code>zeichne_text("Q: Beenden", 420)</code>; in der Ereignisschleife <code>elif zustand == "ende" and ereignis.key == pygame.K_q: laeuft = False</code>. Einmaliges Ereignis, darum bei <code>KEYDOWN</code>.</li>
+<li><strong>Aufgabe 4:</strong> <code>600</code> durch <code>1200</code> ersetzen. Die Punkte zählen die Bilder (60 pro Sekunde), sie werden also doppelt so hoch. Gute Antworten erkennen, dass Punkte und Zeit hier dieselbe Variable sind – und schlagen evtl. eine eigene Variable für die Zeit vor (Übergang zur Frage, was ein sinnvoller Punktestand ist).</li>
+</ul>
+</lehrkraft>

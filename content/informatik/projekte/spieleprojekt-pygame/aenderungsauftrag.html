@@ -1,0 +1,78 @@
+<!--
+beschreibung: Der Änderungsauftrag im PyGame-Projekt: allein und ohne KI eine kleine Änderung am eigenen Spiel umsetzen – Ablauf, Bewertung, Vorbereitung und ein Übungsauftrag mit Lösung.
+-->
+<p>Zweimal im Projekt – nach dem Prototyp und nach dem fertigen Spiel – zeigst du, dass du euren Code beherrschst: Du bekommst einen kleinen <strong>Änderungsauftrag</strong> und setzt ihn <strong>allein und ohne KI</strong> in eurem eigenen Spiel um. Das ist wie im echten Leben als Programmiererin oder Programmierer: Jemand wünscht sich eine neue Funktion, und du musst wissen, wo und wie du sie in den bestehenden Code einbaust.</p>
+
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite, eine Lektion vor dem ersten Änderungsauftrag (Ablauf besprechen, Übungsauftrag in Abschnitt 4 lösen). Wie der Auftrag ohne Computerraum durchgeführt werden kann, welche Aufträge sich eignen und wie bewertet wird, steht auf der Seite <a href="/informatik/projekte/spieleprojekt-pygame/lehrkraefte/">Hinweise für Lehrkräfte</a>. Abschnitt 1 ist bewusst so formuliert, dass er für alle Durchführungsvarianten passt – die gewählte Variante bitte in der Klasse ansagen.</p>
+</lehrkraft>
+
+<h2>1. So läuft der Änderungsauftrag ab</h2>
+
+<ol>
+<li><strong>Vorher:</strong> Ihr gebt den Code eures Spiels ab (zu M2 bzw. M3). An genau diesem Stand arbeitest du im Änderungsauftrag.</li>
+<li><strong>Zu Beginn</strong> bekommst du einen Auftrag – meist gelost aus einer Sammlung, passend zu eurem Spiel. Deine Partnerin oder dein Partner bekommt einen anderen.</li>
+<li><strong>Du arbeitest allein,</strong> ohne KI, ohne Internet und ohne Hilfe von anderen. Erlaubt sind dein eigener Code und die PyGame-Dokumentation, wenn deine Lehrkraft sie bereitstellt.</li>
+<li><strong>Du setzt die Änderung um</strong> – je nach Schule am Computer oder auf einem Ausdruck eures Codes, in den du die Änderung von Hand hineinschreibst.</li>
+<li><strong>Du erklärst in drei bis fünf Sätzen:</strong> Wo hast du etwas geändert? Warum genau dort? Was passiert jetzt im Programm?</li>
+</ol>
+
+<p>Dauer: etwa 30 bis 45 Minuten. Die Aufträge sind klein – wer seinen Code kennt, braucht oft nur ein paar Zeilen.</p>
+
+<aside class="box merke">
+<p>Es geht nicht darum, ob du die Lösung perfekt hinbekommst, sondern ob du dich in eurem Code zurechtfindest und sinnvoll vorgehst. Auch eine Lösung, die noch nicht ganz funktioniert, bringt Punkte, wenn du an der richtigen Stelle ansetzt und gut erklärst.</p>
+</aside>
+
+<h2>2. Worauf es ankommt</h2>
+
+<table class="verlauf">
+<thead><tr><th>Kriterium</th><th>Die Frage dahinter</th></tr></thead>
+<tbody>
+<tr><td><strong>Richtige Stelle</strong></td><td>Hast du die Stellen im Code gefunden, an denen die Änderung hingehört (Ereignisse, Aktualisieren, Zeichnen, richtige Datei)?</td></tr>
+<tr><td><strong>Umsetzung</strong></td><td>Tut das Spiel jetzt, was der Auftrag verlangt – vollständig?</td></tr>
+<tr><td><strong>Keine Nebenwirkungen</strong></td><td>Funktioniert der Rest des Spiels noch wie vorher?</td></tr>
+<tr><td><strong>Erklärung</strong></td><td>Kannst du in eigenen Worten richtig erklären, was du geändert hast und warum?</td></tr>
+</tbody>
+</table>
+
+<h2>3. So bereitest du dich vor</h2>
+
+<p>Die beste Vorbereitung ist, während des Projekts ehrlich zu arbeiten: Code verstehen, bevor du ihn übernimmst, und euch gegenseitig erklären, was ihr gebaut habt. Prüfe vor dem Änderungsauftrag:</p>
+
+<ul class="abhaken" data-id="pygame-aenderung-vorbereitung">
+<li>Ich finde in unserem Code die Spielschleife und weiß, wo Ereignisse verarbeitet, der Spielstand aktualisiert und gezeichnet wird.</li>
+<li>Ich weiß, wie in unserem Spiel die Zustände gespeichert werden und wo ein Übergang passiert.</li>
+<li>Ich kann erklären, wie Bewegung, Kollision und Punkte in unserem Spiel funktionieren.</li>
+<li>Ich weiß, wie unser Highscore gespeichert und geladen wird und wie Musik und Ton gesteuert werden.</li>
+<li>Ich kenne auch die Teile, die meine Partnerin oder mein Partner gebaut hat, und kann sie in Grundzügen erklären.</li>
+<li>Ich verstehe jeden Codeabschnitt, den wir von einer KI oder aus einem Tutorial übernommen haben.</li>
+<li>Ich kann Fehler eingrenzen, zum Beispiel mit <code>print</code>-Ausgaben, und Fehlermeldungen lesen.</li>
+</ul>
+
+<aside class="box tipp">
+<p>Übt zu zweit: Eine Person denkt sich eine kleine Änderung aus („Mach den Gegner langsamer, wenn …“), die andere baut sie ein und erklärt. Dann tauschen.</p>
+</aside>
+
+<h2>4. Übungsauftrag</h2>
+
+<aside class="box aufgabe">
+<p><strong>Auftrag:</strong> Im <a href="/informatik/projekte/spieleprojekt-pygame/grundgeruest/">Grundgerüst</a> soll man das Spiel mit der Taste P pausieren können. Während der Pause bleibt das Quadrat stehen, die Punkte zählen nicht weiter, und in der Mitte steht „Pause – P: weiter“. Ein erneuter Druck auf P setzt das Spiel fort.</p>
+<p>Setze den Auftrag ohne KI um und erkläre in drei bis fünf Sätzen, wo du was geändert hast und warum.</p>
+</aside>
+
+<textarea class="notiz" data-notiz="pygame-aenderung-uebung" rows="6" aria-label="Übungsauftrag: deine Erklärung"></textarea>
+
+<details class="aufklapp">
+<summary>Lösungsvorschlag aufklappen (erst nach dem eigenen Versuch!)</summary>
+<p>Ein neuer Zustand <code>"pause"</code>. In der Ereignisschleife, bei den anderen Tasten:</p>
+<pre class="code"><code>            elif zustand == "spiel" and ereignis.key == pygame.K_p:
+                zustand = "pause"
+            elif zustand == "pause" and ereignis.key == pygame.K_p:
+                zustand = "spiel"</code></pre>
+<p>Unter „Zeichnen“ ein weiterer Fall:</p>
+<pre class="code"><code>    elif zustand == "pause":
+        pygame.draw.rect(fenster, (240, 200, 60), spieler)
+        zeichne_text("Pause – P: weiter", 300)</code></pre>
+<p><strong>Beispiel für eine gute Erklärung:</strong> „Ich habe einen neuen Zustand ‚pause‘ eingeführt. Den Wechsel habe ich in die Ereignisschleife geschrieben, weil P einmal pro Tastendruck umschalten soll. Unter ‚Aktualisieren‘ musste ich nichts ändern: Bewegung und Punkte laufen nur im Zustand ‚spiel‘, also stehen sie in der Pause automatisch still. Beim Zeichnen zeige ich in der Pause das Quadrat und den Hinweis, damit man sieht, wo man stehen geblieben ist.“</p>
+<p>Wichtig ist der Gedanke im dritten Satz: Wer verstanden hat, wie die Zustände funktionieren, sieht, dass die Pause fast „von selbst“ entsteht.</p>
+</details>

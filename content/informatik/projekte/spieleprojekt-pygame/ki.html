@@ -1,0 +1,62 @@
+<!--
+beschreibung: Die KI-Ampel im Spieleprojekt: wofür du KI nutzen darfst, wie du KI-Einsatz angibst und wie du KI so fragst, dass du dabei lernst.
+-->
+<p>KI-Werkzeuge wie ChatGPT, Copilot oder die KI in deiner Entwicklungsumgebung können Fehler finden, Code erklären und ganze Programme schreiben. Im Projekt darfst du sie nutzen – nach den Regeln der <strong>KI-Ampel</strong>. Dahinter steht ein einfacher Gedanke: Die KI soll dir helfen, besser zu programmieren, und nicht für dich programmieren.</p>
+
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite zum Projektstart (eine Lektion mit Abschnitt 2 und Diskussion). Die Ampel ist bewusst großzügig: Verbote lassen sich bei BYOD-Geräten ohnehin nicht durchsetzen. Die Steuerung geschieht über den Änderungsauftrag – wer viel übernimmt, ohne zu verstehen, merkt dort, dass sich das nicht lohnt. Es empfiehlt sich, die Ampel in der Klasse zu besprechen und bei Bedarf anzupassen (z. B. in der Prototyp-Phase strenger als im Ausbau).</p>
+</lehrkraft>
+
+<h2>1. Die KI-Ampel</h2>
+
+<table class="verlauf">
+<thead><tr><th>Ampel</th><th>Was gemeint ist</th><th>Beispiele</th></tr></thead>
+<tbody>
+<tr><td><strong>Grün</strong><br>immer erlaubt</td><td>Die KI erklärt dir etwas. Den Code schreibst du selbst.</td><td>„Was bedeutet diese Fehlermeldung?“ – „Wie funktioniert <code>colliderect</code>?“ – „Erkläre mir Zeile 12 bis 20.“ – „Welche Möglichkeiten gibt es, einen Highscore zu speichern?“</td></tr>
+<tr><td><strong>Gelb</strong><br>erlaubt, aber angeben</td><td>Die KI schreibt oder verändert Code, den du übernimmst. Du gibst das an – und du musst diesen Code danach selbst ändern können.</td><td>„Schreib mir eine Funktion für einen Button.“ – „Verbessere meine Kollisionsabfrage.“ – automatische Vervollständigung ganzer Zeilen in der Entwicklungsumgebung.</td></tr>
+<tr><td><strong>Rot</strong><br>nicht erlaubt</td><td>Situationen, in denen du zeigst, was <em>du</em> kannst.</td><td>Der <a href="/informatik/projekte/spieleprojekt-pygame/aenderungsauftrag/">Änderungsauftrag</a> und die Reflexion am Schluss. Außerdem: Texte im Journal von der KI schreiben lassen.</td></tr>
+</tbody>
+</table>
+
+<aside class="box merke">
+<p><strong>Faustregel:</strong> Übernimm nur Code, den du einer Mitschülerin oder einem Mitschüler Zeile für Zeile erklären könntest. Wenn nicht: Lass ihn dir erklären, bis du es kannst – oder schreib ihn selbst.</p>
+</aside>
+
+<h2>2. Grün, gelb oder rot?</h2>
+
+<div class="sortieren" data-kategorien="grün|gelb|rot">
+<p>Ordne die Situationen der passenden Ampelfarbe zu.</p>
+<ul>
+<li data-gehoert="grün" data-erklaerung="Die KI erklärt nur – den Fehler behebst du selbst.">Lea kopiert eine Fehlermeldung in den Chat und fragt, was sie bedeutet.</li>
+<li data-gehoert="gelb" data-erklaerung="Der Code stammt von der KI. Das ist erlaubt, muss aber im Journal und im Code angegeben werden.">Jonas lässt sich von der KI eine fertige Klasse für Buttons schreiben und baut sie ein.</li>
+<li data-gehoert="rot" data-erklaerung="Im Änderungsauftrag zeigst du, was du allein kannst. Auch die Vervollständigung in der Entwicklungsumgebung ist KI.">Mia lässt im Änderungsauftrag die automatische Zeilenvervollständigung eingeschaltet.</li>
+<li data-gehoert="grün" data-erklaerung="Ideen sammeln und Möglichkeiten vergleichen ist Lernen. Umsetzen musst du selbst.">Can fragt, welche Möglichkeiten es gibt, ein Spiel mit der Zeit schwieriger zu machen.</li>
+<li data-gehoert="gelb" data-erklaerung="Die KI hat den Code verändert – also angeben. Und vorher prüfen, ob du die Änderung verstehst.">Sara lässt die KI ihre Kollisionsabfrage „aufräumen“ und übernimmt das Ergebnis.</li>
+<li data-gehoert="rot" data-erklaerung="Das Journal zeigt deinen Arbeitsprozess in deinen Worten. Ein KI-Text sagt darüber nichts aus.">Tim lässt die KI aus Stichworten seine Journaleinträge formulieren.</li>
+</ul>
+</div>
+
+<h2>3. KI-Einsatz angeben</h2>
+
+<p>Jeden gelben KI-Einsatz gibst du an zwei Stellen an:</p>
+
+<ol>
+<li><strong>Im Code</strong> als Kommentar direkt über dem übernommenen Abschnitt, zum Beispiel: <code># KI (ChatGPT, K3): Grundgerüst der Klasse Button, angepasst: Farben, Hover-Effekt</code></li>
+<li><strong>Im <a href="/informatik/projekte/spieleprojekt-pygame/projektjournal/">Projektjournal</a></strong> in deinem KI-Protokoll, mit derselben Nummer (K1, K2, K3 …): welches Werkzeug, wofür, welche Dateien, was du selbst daran geändert hast.</li>
+</ol>
+
+<p>Fehlende Angaben gelten wie ein Plagiat. Angaben über KI-Einsatz führen dagegen nie zu Abzügen – sie zeigen, dass du ehrlich und überlegt arbeitest.</p>
+
+<h2>4. So fragst du die KI, dass du dabei lernst</h2>
+
+<ul>
+<li><strong>Erst selbst versuchen.</strong> Überlege fünf Minuten, bevor du fragst. Dann verstehst du die Antwort viel besser.</li>
+<li><strong>Nach Erklärungen fragen statt nach Lösungen:</strong> „Gib mir einen Tipp, aber noch keinen Code.“ – „Erkläre mir Schritt für Schritt, warum mein Code nicht funktioniert.“</li>
+<li><strong>Deinen Code mitgeben.</strong> Eine KI kennt dein Spiel nicht. Ohne deinen Code schlägt sie Lösungen vor, die nicht zu eurer Struktur passen.</li>
+<li><strong>Prüfen, nicht glauben.</strong> KI macht Fehler und kennt manchmal veraltete PyGame-Befehle. Teste jede Änderung sofort.</li>
+<li><strong>Selbst abtippen statt kopieren.</strong> Wenn du KI-Code übernimmst, tippe ihn ab und benenne die Variablen nach euren Namen. Dabei merkst du, ob du ihn verstehst.</li>
+<li><strong>Zum Schluss die Gegenprobe:</strong> Bitte die KI: „Stell mir drei Fragen zu diesem Code, mit denen ich prüfen kann, ob ich ihn verstanden habe.“</li>
+</ul>
+
+<textarea class="notiz" data-notiz="pygame-ki-regeln" rows="4" aria-label="Eure Abmachungen in der Klasse zur KI-Nutzung"></textarea>
+<p class="quelle">Platz für eure Abmachungen in der Klasse, falls ihr die Ampel anpasst.</p>

@@ -1,0 +1,60 @@
+<!--
+beschreibung: Vorlage Projektjournal für das PyGame-Spieleprojekt: Arbeitsschritte, Probleme und Lösungen sowie KI-Einsatz festhalten – jede Person führt ihr eigenes Journal.
+-->
+<p>Im Projektjournal hältst du fest, was du gemacht hast, auf welche Probleme du gestoßen bist und wie du sie gelöst hast. <strong>Jede Person führt ihr eigenes Journal</strong> – auch wenn ihr vieles gemeinsam macht. Schreib nach jeder Projektlektion einen kurzen Eintrag. Das dauert fünf Minuten und hilft dir später enorm: im Änderungsauftrag, in der Reflexion und wenn ihr nicht mehr wisst, warum ihr etwas so gelöst habt.</p>
+
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Vorlage, begleitend über das ganze Projekt (5 Minuten am Ende jeder Projektlektion; es lohnt sich, diese Zeit fest einzuplanen). Das Journal ist individuell, damit es zeigt, was die einzelne Person getan hat, und ersetzt die frühere Selbsteinschätzung der Arbeitsanteile in Prozent. Abgabe bei jedem Meilenstein als PDF (Drucken-Knopf unten auf der Seite). Bewertet werden Nachvollziehbarkeit und Ehrlichkeit, nicht die Sprache; eine sehr glatte, unpersönliche Sprache ist eher ein Warnsignal (KI) als ein Pluspunkt.</p>
+</lehrkraft>
+
+<h2>1. So schreibst du einen Eintrag</h2>
+
+<p>Ein Eintrag hat immer dieselben Teile. Kurze, ehrliche Sätze genügen – in deinen eigenen Worten.</p>
+
+<aside class="box material" data-titel="Beispiel für einen Eintrag">
+<p><strong>14.11. · 90 min · Kollision mit den Asteroiden</strong><br>
+<strong>Gemacht:</strong> Ich habe die Asteroiden als Sprites in eine Gruppe gepackt und die Kollision mit dem Raumschiff eingebaut.<br>
+<strong>Problem:</strong> Das Spiel war sofort vorbei, weil das Raumschiff schon beim Start einen Asteroiden berührt hat.<br>
+<strong>Lösung:</strong> Asteroiden entstehen jetzt nur oberhalb des Fensters. Den Fehler habe ich gefunden, indem ich die Positionen mit <code>print</code> ausgegeben habe.<br>
+<strong>KI:</strong> K2 (Erklärung von <code>spritecollide</code>)<br>
+<strong>Offen:</strong> Ich verstehe noch nicht genau, was der Parameter <code>dokill</code> macht.</p>
+</aside>
+
+<ul>
+<li><strong>Kopfzeile:</strong> Datum, Dauer, kurzer Titel</li>
+<li><strong>Gemacht:</strong> Was hast du getan? Bei Gruppenarbeit: Was war dein Anteil?</li>
+<li><strong>Problem und Lösung:</strong> Worauf bist du gestoßen, wie hast du es gelöst (oder warum noch nicht)?</li>
+<li><strong>Quellen und KI:</strong> Tutorials, Hilfe von anderen, KI-Einsatz mit Nummer aus dem KI-Protokoll</li>
+<li><strong>Offen:</strong> Was verstehst du noch nicht? Das ist keine Schwäche – es zeigt, dass du genau hinschaust.</li>
+</ul>
+
+<h2>2. Planung (bis M1)</h2>
+
+<textarea class="notiz" data-notiz="pygame-journal-m1" rows="8" aria-label="Journaleinträge bis Meilenstein 1"></textarea>
+
+<h2>3. Prototyp (bis M2)</h2>
+
+<textarea class="notiz" data-notiz="pygame-journal-m2" rows="14" aria-label="Journaleinträge bis Meilenstein 2"></textarea>
+
+<aside class="box aufgabe">
+<p><strong>Zu M2:</strong> Plant zusammen die Arbeit bis zum fertigen Spiel: Welche Anforderungen fehlen noch? Welche eigenen Erweiterungen baut ihr, wer ist wofür verantwortlich, bis wann? Übertragt den Plan in euer beider Journal.</p>
+</aside>
+<textarea class="notiz" data-notiz="pygame-journal-plan-m3" rows="8" aria-label="Arbeitsplan bis Meilenstein 3"></textarea>
+
+<h2>4. Ausbau (bis M3)</h2>
+
+<textarea class="notiz" data-notiz="pygame-journal-m3" rows="14" aria-label="Journaleinträge bis Meilenstein 3"></textarea>
+
+<h2>5. KI-Protokoll</h2>
+
+<p>Nummeriere jeden gelben KI-Einsatz (siehe <a href="/informatik/projekte/spieleprojekt-pygame/ki/">KI-Ampel</a>) fortlaufend: K1, K2, K3 … Dieselbe Nummer steht im Code als Kommentar und im Journaleintrag.</p>
+
+<aside class="box material" data-titel="Beispiel">
+<p><strong>K3 · ChatGPT · 14.11.</strong> – Gerüst für die Klasse <code>Button</code> erzeugen lassen (Datei <code>button.py</code>). Selbst geändert: Farben, Hover-Effekt, Schrift. Verstanden: ja, bis auf <code>collidepoint</code> – habe ich mir dann erklären lassen (grün).</p>
+</aside>
+
+<textarea class="notiz" data-notiz="pygame-journal-ki" rows="8" aria-label="KI-Protokoll"></textarea>
+
+<aside class="box tipp">
+<p>Abgabe bei jedem Meilenstein: unten auf „Drucken / als PDF“ klicken und das PDF benennen, z. B. <code>m2_journal_weltraumjagd_meier.pdf</code>. Sichere deine Einträge außerdem regelmäßig mit „Als Textdatei sichern“ – sie liegen nur in diesem Browser.</p>
+</aside>

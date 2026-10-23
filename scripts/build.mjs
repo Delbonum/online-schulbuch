@@ -112,6 +112,10 @@ const LK_PRUEF = LK_SCHLUESSEL ? verschluessle('lehrkraft-ok') : '';
 
 const faecher = site.faecher.map((slug) => {
   const cfg = JSON.parse(readFileSync(join(CONTENT, slug, 'kapitel.json'), 'utf8'));
+  // Kapitel mit fester "nummer" (z. B. Projekte, Toolsammlung) sind keine Themen: Sie stehen immer am Ende,
+  // nach ihrer Nummer geordnet – auch wenn später weitere Themen dazukommen.
+  const fest = (k) => k.nummer ?? -1;
+  cfg.kapitel = [...cfg.kapitel].sort((a, b) => fest(a) - fest(b));
   return { slug, ...cfg, url: `/${slug}/` };
 });
 
@@ -204,6 +208,12 @@ const kurzNachUrl = new Map(Object.entries(kurzlinks));
   };
   const besuche = (knoten, eltern) => {
     if (knoten.extern || knoten.entwurf) return;
+    if (knoten.nummer !== undefined) {
+      // feste Kapitelnummer aus kapitel.json
+      const n = `${eltern}.${knoten.nummer}`;
+      if (kurzNachUrl.has(knoten.url) && kurzNachUrl.get(knoten.url) !== n) fehler.push(`${knoten.url}: feste Nummer ${n} in kapitel.json, aber ${kurzNachUrl.get(knoten.url)} in content/kurzlinks.json`);
+      kurzNachUrl.set(knoten.url, n);
+    }
     const n = nummer(knoten.url, eltern);
     for (const kind of knoten.seiten ?? []) besuche(kind, n);
   };
@@ -214,6 +224,7 @@ const kurzNachUrl = new Map(Object.entries(kurzlinks));
     else if (kurzNachUrl.has(fach.url) && kurzNachUrl.get(fach.url) !== n) fehler.push(`Fach ${fach.slug}: Nummer ${n} in site.json, aber ${kurzNachUrl.get(fach.url)} in content/kurzlinks.json`);
     kurzNachUrl.set(fach.url, n);
     vergeben.add(n);
+    for (const kap of fach.kapitel) if (kap.nummer !== undefined) vergeben.add(`${n}.${kap.nummer}`); // feste Nummern freihalten
     for (const kap of fach.kapitel) besuche(kap, n); // auch geplante Kapitel, damit ihre Nummer reserviert ist
   }
   const zahlen = (n) => n.split('.').map(Number);

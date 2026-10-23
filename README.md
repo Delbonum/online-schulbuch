@@ -41,6 +41,9 @@ ihrem Elternteil und schreibt sie in `content/kurzlinks.json` (mit committen!). 
 auch wenn Seiten eingefügt oder verschoben werden – gedruckte Kurzlinks bleiben so gültig. Die `.htaccess` leitet
 sie per 302 weiter, jede Seite zeigt ihren Kurzlink unten an. Wird ein Slug umbenannt, in der Datei den alten
 Schlüssel auf die neue Adresse ändern (der Build warnt bei Nummern ohne Seite).
+Kapitel, die keine Themen sind, bekommen in `kapitel.json` eine feste `"nummer"` (Informatik: Projekte 45,
+Toolsammlung 50). Sie stehen automatisch hinter allen Themen, nach Nummer geordnet; neue Themen nummerieren
+sich davor weiter (9.11, 9.12 …).
 
 Normalerweise liegen alle Seiten eines Kapitels flach in seinem Ordner. Ein Eintrag mit `"ordner": true`
 öffnet eine eigene Ebene – für die Adresse und für die Dateien. Beispiel Lektüren:

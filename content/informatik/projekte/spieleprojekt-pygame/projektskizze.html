@@ -1,0 +1,72 @@
+<!--
+beschreibung: Vorlage Projektskizze für das PyGame-Spieleprojekt (Meilenstein 1): Spielidee, Spielanalyse, eigene Ideen, Zustandsdiagramm und Arbeitsplan – direkt auf der Seite ausfüllen.
+-->
+<p>Bevor ihr programmiert, plant ihr euer Spiel. Die Projektskizze ist euer Bauplan – und die Abgabe zu <strong>Meilenstein 1</strong>. Füllt die Felder direkt auf dieser Seite aus (eine Person für die Gruppe) und gebt das Ergebnis über „Drucken / als PDF“ unten auf der Seite ab. Das Zustandsdiagramm und die Skizze der Bildschirme zeichnet ihr von Hand und gebt sie als Foto dazu.</p>
+
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Vorlage für M1, 2–4 Lektionen Gruppenarbeit. Empfehlung: Abschnitt 4 (Zustandsdiagramm und Skizze) im Unterricht auf Papier erstellen lassen. Das ist kaum an eine KI auszulagern und zeigt früh, ob die Gruppe die Struktur ihres Spiels durchschaut. Die Projektskizze ist Teil von Note 1 (siehe <a href="/informatik/projekte/spieleprojekt-pygame/bewertung/">Bewertung</a>). Wichtigste Rückmeldung bei M1: Ist das Vorhaben in der verfügbaren Zeit machbar? Zu große Vorhaben lieber jetzt verkleinern.</p>
+</lehrkraft>
+
+<h2>1. Gruppe und Spielidee</h2>
+
+<aside class="box aufgabe">
+<p>Nennt eure Namen und den Arbeitstitel eures Spiels. Beschreibt in zwei bis drei Sätzen, um was für ein Spiel es sich handelt: Was ist das Ziel? Was tut man als Spielerin oder Spieler?</p>
+</aside>
+<textarea class="notiz" data-notiz="pygame-skizze-idee" rows="5" aria-label="Gruppe, Arbeitstitel und Spielidee"></textarea>
+
+<aside class="box aufgabe">
+<p>Orientiert ihr euch an einem bestehenden Spiel oder einem Tutorial? Gebt den Namen und den Link an.</p>
+</aside>
+<textarea class="notiz" data-notiz="pygame-skizze-vorbild" rows="2" aria-label="Vorbild oder Tutorial mit Link"></textarea>
+
+<h2>2. Spielanalyse: Grundfunktionen</h2>
+
+<p>Zerlegt euer Spiel in seine Grundfunktionen. Beschreibt sie möglichst einfach und unabhängig voneinander.</p>
+
+<aside class="box material" data-titel="Beispiel: Schere, Stein, Papier">
+<p>Es gibt zwei Spieler. Jeder wählt eine von drei Aktionen; die Wahl wird gespeichert. Eine Spiellogik legt fest, welche Aktion welche schlägt (Stein schlägt Schere, Schere schlägt Papier, Papier schlägt Stein) und wer die Runde gewinnt. Gespielt wird auf drei Siege. Der Punktestand wird angezeigt, der beste Spieler im Highscore gespeichert.</p>
+</aside>
+
+<aside class="box aufgabe">
+<p>Beschreibt die Grundfunktionen eures Spiels: Welche Objekte gibt es (Spielfigur, Gegner, Hindernisse …)? Wie werden sie gesteuert oder bewegen sie sich? Was passiert bei einer Kollision? Wie bekommt man Punkte, wann ist das Spiel vorbei?</p>
+</aside>
+<textarea class="notiz" data-notiz="pygame-skizze-analyse" rows="8" aria-label="Spielanalyse: Grundfunktionen"></textarea>
+
+<h2>3. Eure eigenen Ideen</h2>
+
+<aside class="box aufgabe">
+<p>Was übernehmt ihr aus dem Vorbild oder Tutorial, und was macht ihr anders oder zusätzlich? Nennt zwei bis vier Erweiterungen und schreibt dazu, wer von euch dafür hauptverantwortlich ist.</p>
+</aside>
+<textarea class="notiz" data-notiz="pygame-skizze-eigenes" rows="6" aria-label="Übernommenes und eigene Erweiterungen mit Verantwortlichen"></textarea>
+
+<h2>4. Zustandsdiagramm und Skizze</h2>
+
+<p>Ihr kennt das Zustandsdiagramm des <a href="/informatik/projekte/spieleprojekt-pygame/grundgeruest/">Grundgerüsts</a>. Euer Spiel hat mehr Zustände: Anleitung, Musik, vielleicht Pause oder mehrere Level.</p>
+
+<aside class="box aufgabe">
+<p><strong>a)</strong> Zeichnet von Hand das Zustandsdiagramm eures Spiels: alle Bildschirme als Kästen, alle Übergänge als Pfeile, an jedem Pfeil steht, was den Übergang auslöst (Button, Taste, Ereignis im Spiel).</p>
+<p><strong>b)</strong> Skizziert Start-, Spiel- und Endbildschirm so, wie sie aussehen sollen, mit allen Buttons und Anzeigen.</p>
+<p><strong>c)</strong> Listet hier die Zustände und Übergänge zusätzlich als Text auf (z. B. „start → anleitung: Button ‚Anleitung‘“).</p>
+</aside>
+<textarea class="notiz" data-notiz="pygame-skizze-zustaende" rows="7" aria-label="Zustände und Übergänge als Liste"></textarea>
+
+<h2>5. Arbeitsplan bis zum Prototyp</h2>
+
+<p>Teilt die Arbeit bis Meilenstein 2 ein. Die Arbeit am Code soll gleichmäßig verteilt sein, beide programmieren. Plant Puffer ein – Fehler suchen dauert fast immer länger als gedacht.</p>
+
+<aside class="box material" data-titel="Beispiel für die ersten Zeilen">
+<p>1. Gemeinsamen Projektordner anlegen, Grundgerüst übernehmen – beide – bis Woche 1<br>
+2. Startbildschirm mit Buttons – Lea – bis Woche 2 – Buttons aus dem Kurs anpassen<br>
+3. Spielfigur bewegen, Kollision mit Hindernissen – Jonas – bis Woche 3 – Tutorial ansehen<br>
+4. Endbildschirm, Übergänge zwischen allen Zuständen – Lea – bis Woche 3<br>
+5. Puffer und gegenseitig den Code erklären – beide – Woche 4</p>
+</aside>
+
+<aside class="box aufgabe">
+<p>Schreibt euren Arbeitsplan: Was wird gemacht? Wer? Bis wann? Wo erwartet ihr Schwierigkeiten, und wo holt ihr euch Hilfe? Kennzeichnet, welche Schritte erst möglich sind, wenn andere fertig sind.</p>
+</aside>
+<textarea class="notiz" data-notiz="pygame-skizze-plan" rows="10" aria-label="Arbeitsplan bis zum Prototyp"></textarea>
+
+<aside class="box tipp">
+<p>Habt ihr alles ausgefüllt? Dann unten auf „Drucken / als PDF“ klicken, das PDF benennen (z. B. <code>m1_projektskizze_weltraumjagd_meier_yilmaz.pdf</code>) und zusammen mit den Fotos eurer Zeichnungen abgeben.</p>
+</aside>

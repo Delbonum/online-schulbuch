@@ -1,0 +1,134 @@
+<!--
+beschreibung: Hinweise für Lehrkräfte zum PyGame-Spieleprojekt: Konzeption, Ablaufplan, Durchführung des Änderungsauftrags mit und ohne Computerraum, Auftragspool und Bewertungsraster (nach Anmeldung sichtbar).
+unterseiten: nein
+-->
+<p>Diese Seite enthält die Konzeption des Projekts, einen Ablaufplan, mehrere Varianten für die Durchführung des Änderungsauftrags (auch ohne Computerraum), einen Auftragspool und die Bewertungsraster. Die Hinweise sind nur nach der Anmeldung über „Für Lehrkräfte“ in der Fußzeile sichtbar.</p>
+
+<lehrkraft titel="Hinweise für Lehrkräfte">
+<h2>Konzeption</h2>
+
+<p><strong>Ausgangslage:</strong> Ein Spieleprojekt mit PyGame ist motivierend, weil jede Gruppe ein eigenes Produkt schafft. Bewertet man aber vor allem das Produkt (Bildschirme, Highscore, Kommentare, Projektstruktur, Video), bewertet man heute zu großen Teilen, was KI-Werkzeuge in kurzer Zeit erzeugen. Code-Reviews mit jeder Gruppe prüfen das Verständnis zwar gut, kosten aber viel Unterrichtszeit und bleiben oft exemplarisch.</p>
+
+<p><strong>Grundidee:</strong> Bewertet wird nicht mehr in erster Linie, <em>was im Code steht</em>, sondern <em>was die Schülerinnen und Schüler mit ihrem Code können</em>. KI ist nach klaren Regeln erlaubt (KI-Ampel). Das zentrale Instrument ist der <strong>Änderungsauftrag</strong>: Jede Person setzt zweimal allein und ohne KI eine kleine Änderung am eigenen Gruppenprojekt um und erklärt sie. Er trägt jeweils den größten Teil der Note.</p>
+
+<ul>
+<li><strong>Individuell statt Prozentaufteilung:</strong> Die individuelle Leistung zeigt sich im Änderungsauftrag und im persönlichen Journal. Eine Selbsteinschätzung der Arbeitsanteile entfällt.</li>
+<li><strong>Steuerung über Anreize statt Verbote:</strong> Wer KI-Code übernimmt, ohne ihn zu verstehen, scheitert am Änderungsauftrag. Das wird von Anfang an offen kommuniziert und lenkt die KI-Nutzung in Richtung „erklären lassen“.</li>
+<li><strong>Pflichtanforderungen als Hürde:</strong> Bildschirme, Escape, Fullscreen, Highscore, Musik usw. sind Voraussetzung, bringen aber keine Punkte. Punkte gibt es für Qualität, eigenen Anteil und Gestaltung.</li>
+<li><strong>Einheitliche Architektur:</strong> Weil alle Spiele auf demselben Grundgerüst aufbauen (Spielschleife, Zustände, Ereignisse – aus der Seite „Das Grundgerüst“ oder einem eigenen PyGame-Kurs der Schule), lassen sich allgemeine Änderungsaufträge formulieren, die auf jedes Spiel passen.</li>
+<li><strong>Weniger Korrekturaufwand:</strong> Der Änderungsauftrag läuft für die ganze Klasse in einer Lektion und ist in einigen Minuten pro Person bewertet. Das Actionvideo entfällt; die Reflexion entsteht im Unterricht und ist kurz. Gespräche gibt es nur noch gezielt, wenn Ergebnisse nicht zusammenpassen.</li>
+</ul>
+
+<h2>Ablaufplan</h2>
+
+<p>Angaben in Lektionen (45 Minuten). Bei zwei Lektionen pro Woche dauert das Projekt ohne Vorbereitung etwa 13 bis 16 Wochen. Die Phasen lassen sich strecken oder stauchen; fest sind nur die Reihenfolge und die beiden Änderungsaufträge.</p>
+
+<table class="verlauf">
+<thead><tr><th>Phase</th><th>Lektionen</th><th>Inhalt</th><th>Abschluss</th></tr></thead>
+<tbody>
+<tr><td>Vorbereitung</td><td>6–10</td><td>PyGame-Kurs der Schule oder <a href="/informatik/projekte/spieleprojekt-pygame/grundgeruest/">Das Grundgerüst</a> mit Aufwärmaufgaben; <a href="/informatik/projekte/spieleprojekt-pygame/ki/">KI-Ampel</a> besprechen; Gruppen bilden</td><td>–</td></tr>
+<tr><td>Planung</td><td>3–4</td><td><a href="/informatik/projekte/spieleprojekt-pygame/anforderungen/">Anforderungen</a>, <a href="/informatik/projekte/spieleprojekt-pygame/projektskizze/">Projektskizze</a> mit Zustandsdiagramm (auf Papier, im Unterricht), Journal beginnen</td><td>M1</td></tr>
+<tr><td>Prototyp</td><td>8–10</td><td>Gruppenarbeit; eine Lektion vor M2: <a href="/informatik/projekte/spieleprojekt-pygame/aenderungsauftrag/">Änderungsauftrag</a> besprechen und üben</td><td>M2, dann Änderungsauftrag 1 (1 Lektion) → Note 1</td></tr>
+<tr><td>Ausbau</td><td>10–14</td><td>Gruppenarbeit; Pflichtanforderungen vervollständigen, eigene Erweiterungen</td><td>M3, dann Änderungsauftrag 2 (1 Lektion)</td></tr>
+<tr><td>Abschluss</td><td>2</td><td><a href="/informatik/projekte/spieleprojekt-pygame/abschluss/">Spielemesse</a> (1 Lektion), Reflexion (20–30 min)</td><td>Note 2</td></tr>
+</tbody>
+</table>
+
+<p>Zwischen M2 und dem Änderungsauftrag sollte möglichst wenig Zeit liegen (am besten die nächste Lektion), damit am abgegebenen Stand gearbeitet wird und niemand nach der Abgabe „nachlernt“, indem er den Code noch umbaut.</p>
+
+<h2>Den Änderungsauftrag durchführen</h2>
+
+<h3>Vorbereitung</h3>
+
+<ul>
+<li>Grundlage ist immer der abgegebene Stand (ZIP zu M2 bzw. M3). Bei Variante A und B arbeiten alle an einer frischen Kopie dieses Stands; bei Variante C wird er ausgedruckt.</li>
+<li>Pro Gruppe zwei bis drei passende Aufträge aus dem Pool wählen (vorher kurz in die Abgabe schauen, ob der Auftrag sinnvoll ist). Die Personen einer Gruppe bekommen verschiedene Aufträge; gelost wird zu Beginn.</li>
+<li>Den Pool geheim zu halten, ist nicht nötig: Die Aufträge sind allgemein und müssen im eigenen Code umgesetzt werden. Wer sie vorher übt, lernt genau das Richtige.</li>
+<li>Abgabe: geänderter Code (bzw. Ausdruck mit Änderungen) und die schriftliche Erklärung (drei bis fünf Sätze: wo, warum dort, was passiert jetzt).</li>
+</ul>
+
+<h3>Varianten nach Ausstattung</h3>
+
+<table class="verlauf">
+<thead><tr><th>Variante</th><th>Voraussetzung</th><th>Durchführung</th><th>Grenzen</th></tr></thead>
+<tbody>
+<tr><td><strong>A · verwaltete Geräte</strong></td><td>Computerraum oder Schulgeräte, auf denen sich Internet und KI sperren lassen</td><td>Python mit PyGame und eine Entwicklungsumgebung ohne KI-Funktionen (z. B. IDLE, das mit Python mitkommt) oder mit abgeschalteten KI-Funktionen; Netz aus; Projektkopie bereitstellen; Abgabe über das Schulnetz oder einen USB-Stick</td><td>keine – die beste Variante, wo verfügbar</td></tr>
+<tr><td><strong>B · eigene Geräte mit Aufsicht</strong></td><td>BYOD, keine Prüfungsumgebung für Python</td><td>Vor Beginn: WLAN aus bzw. Flugmodus, KI-Plugins und Zeilenvervollständigung in der Entwicklungsumgebung abschalten (Achtung: Neuere Versionen von PyCharm haben eine lokale KI-Vervollständigung, die auch ohne Internet arbeitet – in den Einstellungen unter „Inline Completion“ o. Ä.). Eine Bildschirmaufnahme läuft die ganze Zeit mit und wird mit abgegeben; Sitzordnung so, dass die Bildschirme von hinten sichtbar sind. Erklärung auf Papier. Abgabe am Ende im Raum, z. B. über die Lernplattform.</td><td>keine völlige Sicherheit; die Aufnahme dient als Nachweis und wird nur stichprobenartig bzw. bei Auffälligkeiten angesehen</td></tr>
+<tr><td><strong>C · Papier</strong></td><td>nichts außer einem Drucker</td><td>Die Lehrkraft druckt aus der Abgabe die zwei bis drei Dateien aus, die für den Auftrag relevant sind (mit Zeilennummern). Die Änderung wird von Hand in den Ausdruck geschrieben (neue Zeilen am Rand mit Pfeil an die richtige Stelle), dazu die Erklärung. Auch als Prüfung auf einer Plattform wie exam.net denkbar, wenn sich dort jeder Person ein eigenes Dokument mit ihrem Code bereitstellen lässt.</td><td>Lauffähigkeit nicht prüfbar – Kriterium „Umsetzung“ bewertet die Logik; kleine Syntaxfehler zählen nicht</td></tr>
+<tr><td><strong>D · Kurzcheck</strong> (Ergänzung)</td><td>–</td><td>Bei Zweifeln (z. B. starkes Spiel, schwacher Auftrag oder umgekehrt) ein Gespräch von 5 Minuten am eigenen Gerät: Die Lehrkraft nennt eine Mini-Änderung, die Person setzt sie um und denkt dabei laut.</td><td>nur gezielt einsetzen, nicht für alle</td></tr>
+</tbody>
+</table>
+
+<p>Variante B und C lassen sich kombinieren: Änderungsauftrag 1 auf Papier (hier geht es vor allem um Orientierung im Code), Änderungsauftrag 2 am Gerät mit Bildschirmaufnahme.</p>
+
+<h2>Auftragspool</h2>
+
+<p>Stufe 1 eignet sich für Änderungsauftrag 1 (Prototyp), Stufe 2 für Änderungsauftrag 2 (fertiges Spiel). Die Formulierungen sind allgemein gehalten und werden für das jeweilige Spiel konkretisiert („Spielfigur“ = das Raumschiff usw.). Die Spalte „Wo“ nennt, woran man eine gute Lösung erkennt.</p>
+
+<table class="verlauf">
+<thead><tr><th>Bereich</th><th>Auftrag</th><th>Stufe</th><th>Wo (gute Lösung)</th></tr></thead>
+<tbody>
+<tr><th colspan="4">Zustände und Übergänge</th></tr>
+<tr><td>Zustand</td><td>Mit P lässt sich das Spiel pausieren und fortsetzen; in der Pause steht ein Hinweis.</td><td>1</td><td>neuer Zustand, Wechsel im Ereignisteil, Aktualisieren bleibt unverändert</td></tr>
+<tr><td>Zustand</td><td>Vor jeder Runde läuft ein Countdown 3 – 2 – 1, erst dann startet das Spiel.</td><td>2</td><td>eigener Zustand oder Zeitvariable, Zeitmessung über Bilder oder <code>pygame.time.get_ticks()</code></td></tr>
+<tr><td>Übergang</td><td>Im Endbildschirm gibt es einen zusätzlichen Button „Zurück zum Menü“.</td><td>1</td><td>vorhandene Button-Logik wiederverwenden, Übergang zum Startzustand</td></tr>
+<tr><td>Übergang</td><td>Mit M gelangt man aus dem Spiel direkt ins Menü; beim nächsten Start beginnt eine neue Runde.</td><td>2</td><td>Spielstand zurücksetzen – wo geschieht das bisher?</td></tr>
+<tr><th colspan="4">Eingabe und Bewegung</th></tr>
+<tr><td>Eingabe</td><td>Die Spielfigur lässt sich zusätzlich mit W, A, S, D steuern.</td><td>1</td><td>dort, wo die Pfeiltasten abgefragt werden</td></tr>
+<tr><td>Bewegung</td><td>Solange die Umschalttaste gedrückt ist, bewegt sich die Figur halb so schnell.</td><td>1</td><td>Geschwindigkeit als Variable statt fester Zahl</td></tr>
+<tr><td>Bewegung</td><td>Die Spielfigur kann das Fenster nicht mehr verlassen (bzw. erscheint auf der anderen Seite wieder).</td><td>1</td><td>nach der Bewegung, Fenstergröße nicht fest eintippen</td></tr>
+<tr><th colspan="4">Spiellogik</th></tr>
+<tr><td>Schwierigkeit</td><td>Alle 10 Punkte wird das Spiel spürbar schneller (Gegner, Hindernisse o. Ä.).</td><td>2</td><td>Geschwindigkeit hängt vom Punktestand ab; zurücksetzen bei neuer Runde</td></tr>
+<tr><td>Leben</td><td>Die Spielfigur hat drei Leben; sie werden angezeigt, erst beim dritten Treffer ist das Spiel vorbei.</td><td>2</td><td>Kollision führt nicht mehr direkt zum Endzustand; Anzeige beim Zeichnen</td></tr>
+<tr><td>Schutzzeit</td><td>Nach einem Treffer ist die Figur eine Sekunde lang unverwundbar und blinkt.</td><td>2</td><td>Zeitpunkt merken, Kollision in dieser Zeit ignorieren, Blinken über Bildzähler</td></tr>
+<tr><td>Punkte</td><td>Ein bestimmtes Ereignis (z. B. ein besonderer Gegner, ein Bonus) gibt doppelte Punkte.</td><td>1</td><td>an der Stelle, an der Punkte vergeben werden</td></tr>
+<tr><th colspan="4">Anzeige, Ton, Daten</th></tr>
+<tr><td>Anzeige</td><td>Im Spiel wird zusätzlich die vergangene Zeit in Sekunden angezeigt.</td><td>1</td><td>Zeit messen beim Aktualisieren, anzeigen beim Zeichnen</td></tr>
+<tr><td>Anzeige</td><td>Der Endbildschirm zeigt an, ob ein neuer Highscore erreicht wurde.</td><td>1</td><td>Vergleich mit dem gespeicherten Wert <em>vor</em> dem Überschreiben</td></tr>
+<tr><td>Ton</td><td>Bei einer Kollision ertönt ein kurzer Ton (Datei wird bereitgestellt); stumm geschaltet bleibt es still.</td><td>2</td><td>Ton einmal laden, bei der Kollision abspielen, vorhandene Stummschaltung beachten</td></tr>
+<tr><td>Daten</td><td>Der Highscore speichert die besten drei Ergebnisse statt nur eines; der Endbildschirm zeigt sie an.</td><td>2</td><td>Liste statt Zahl, sortieren, Datei lesen und schreiben anpassen</td></tr>
+<tr><td>Daten</td><td>Mit der Taste R im Menü wird der Highscore auf null zurückgesetzt.</td><td>1</td><td>Datei überschreiben und Variable zurücksetzen</td></tr>
+</tbody>
+</table>
+
+<h2>Bewertungsraster</h2>
+
+<h3>Änderungsauftrag (je 12 Punkte)</h3>
+
+<table class="verlauf">
+<thead><tr><th>Kriterium</th><th>3 Punkte</th><th>2 Punkte</th><th>1 Punkt</th><th>0 Punkte</th></tr></thead>
+<tbody>
+<tr><td>Richtige Stelle</td><td>alle Änderungen an den passenden Stellen (Ereignisse, Aktualisieren, Zeichnen, richtige Datei)</td><td>meist passend, eine Stelle ungünstig</td><td>teilweise passend, Ansatz erkennbar</td><td>keine passende Stelle gefunden</td></tr>
+<tr><td>Umsetzung</td><td>Auftrag vollständig erfüllt</td><td>im Wesentlichen erfüllt, Kleinigkeit fehlt</td><td>teilweise erfüllt</td><td>nicht erfüllt</td></tr>
+<tr><td>Keine Nebenwirkungen</td><td>Rest des Spiels unverändert lauffähig</td><td>eine kleine Nebenwirkung</td><td>deutliche Nebenwirkung</td><td>Spiel startet nicht mehr</td></tr>
+<tr><td>Erklärung</td><td>korrekt, in eigenen Worten, begründet die Wahl der Stellen</td><td>korrekt, Begründung dünn</td><td>teilweise korrekt</td><td>fehlt oder falsch</td></tr>
+</tbody>
+</table>
+
+<p>Bei Variante C (Papier) bewertet „Umsetzung“ die Logik und „Keine Nebenwirkungen“, ob die Änderung anderes Verhalten erkennbar verändern würde; Syntaxfehler zählen nicht. Für eine schnelle Korrektur bei Variante A/B: Spiel starten, Auftrag ausprobieren, einmal normal spielen, Unterschiede zur Abgabe ansehen (z. B. mit einem Dateivergleich in der Entwicklungsumgebung), Erklärung lesen.</p>
+
+<h3>Note 1</h3>
+
+<ul>
+<li><strong>Änderungsauftrag 1</strong> (12 Punkte, 70 %)</li>
+<li><strong>Projektskizze</strong> (10 Punkte, 30 %): Spielidee und Vorbild 0–2 · Spielanalyse 0–3 · Zustandsdiagramm und Skizze 0–3 · Arbeitsplan mit Aufteilung und Abhängigkeiten 0–2</li>
+</ul>
+
+<h3>Note 2</h3>
+
+<ul>
+<li><strong>Änderungsauftrag 2</strong> (12 Punkte, 50 %)</li>
+<li><strong>Spiel</strong> (15 Punkte, 35 %): Funktion und Qualität 0–5 · eigener Anteil (originell, nicht trivial, funktionsfähig) 0–6 · Gestaltung 0–4. Fehlende Pflichtanforderungen nach der Nachbesserungsfrist: je 1 Punkt Abzug.</li>
+<li><strong>Journal und Reflexion</strong> (6 Punkte, 15 %): Journal (regelmäßig, nachvollziehbar, ehrlich, KI-Protokoll) 0–3 · Reflexion (konkret, selbstkritisch, Bezug zur Skizze) 0–3</li>
+</ul>
+
+<p>Die Prozentanteile werden auf die jeweilige Punktzahl umgerechnet (z. B. Note 1: Änderungsauftrag / 12 · 70 + Projektskizze / 10 · 30 = Prozent der Gesamtleistung) und dann nach der an der Schule üblichen Skala in eine Note übertragen.</p>
+
+<h2>Differenzierung</h2>
+
+<ul>
+<li><strong>Schwächere Gruppen:</strong> statt eines Tutorials das Grundgerüst schrittweise ausbauen (eine Figur, ein Hindernis, Kollision, Punkte). Das hält den Code klein und verständlich – ein Vorteil im Änderungsauftrag.</li>
+<li><strong>Starke Gruppen:</strong> Klassen und Sprite-Gruppen, Level aus Dateien laden, mehrere Spielmodi; im Änderungsauftrag Stufe-2-Aufträge schon beim Prototyp.</li>
+<li><strong>Dreiergruppen:</strong> zusätzlicher Spielmodus (siehe Anforderungen); jede Person bekommt einen eigenen Änderungsauftrag.</li>
+</ul>
+</lehrkraft>

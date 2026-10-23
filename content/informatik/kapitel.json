@@ -75,8 +75,36 @@
       "geplant": true
     },
     {
+      "titel": "Projekte",
+      "slug": "projekte",
+      "nummer": 45,
+      "icon": "projekt",
+      "beschreibung": "Größere Vorhaben, bei denen du das Gelernte selbst anwendest – planen, umsetzen, präsentieren.",
+      "seiten": [
+        {
+          "titel": "Spieleprojekt mit PyGame",
+          "kurz": "Spieleprojekt",
+          "slug": "spieleprojekt-pygame",
+          "ordner": true,
+          "beschreibung": "Zu zweit ein eigenes Computerspiel mit Python und PyGame entwickeln – mit KI als Werkzeug, aber so, dass du deinen Code selbst beherrschst.",
+          "seiten": [
+            { "titel": "Das Grundgerüst", "slug": "grundgeruest", "beschreibung": "Spielschleife, Zustände und Ereignisse: das Gerüst, auf dem jedes PyGame-Spiel in diesem Projekt aufbaut." },
+            { "titel": "Anforderungen an dein Spiel", "slug": "anforderungen", "kurz": "Anforderungen", "beschreibung": "Was dein Spiel mindestens können muss – und wo dein eigener Anteil beginnt." },
+            { "titel": "Arbeiten mit KI", "slug": "ki", "beschreibung": "Die KI-Ampel: wofür du KI im Projekt nutzen darfst, wie du sie angibst und warum du deinen Code trotzdem selbst verstehen musst." },
+            { "titel": "Projektskizze", "slug": "projektskizze", "beschreibung": "Vorlage für Meilenstein 1: Spielidee, Spielanalyse, Zustandsdiagramm und Arbeitsplan." },
+            { "titel": "Projektjournal", "slug": "projektjournal", "beschreibung": "Vorlage für dein persönliches Journal: Arbeitsschritte, Probleme, Lösungen und KI-Einsatz festhalten." },
+            { "titel": "Der Änderungsauftrag", "slug": "aenderungsauftrag", "beschreibung": "So zeigst du, dass du deinen Code beherrschst: Ablauf, Regeln und ein Übungsauftrag." },
+            { "titel": "Spielemesse und Reflexion", "slug": "abschluss", "kurz": "Spielemesse", "beschreibung": "Zum Schluss spielt ihr gegenseitig eure Spiele, gebt euch Rückmeldung und blickt auf das Projekt zurück." },
+            { "titel": "Bewertung", "slug": "bewertung", "beschreibung": "Wie die zwei Noten des Projekts zustande kommen." },
+            { "titel": "Hinweise für Lehrkräfte", "kurz": "Für Lehrkräfte", "slug": "lehrkraefte", "lehrkraft": true, "beschreibung": "Konzeption, Ablaufplan, Durchführung des Änderungsauftrags mit und ohne Computerraum, Auftragspool und Bewertungsraster." }
+          ]
+        }
+      ]
+    },
+    {
       "titel": "Toolsammlung",
       "slug": "werkzeuge",
+      "nummer": 50,
       "icon": "werkzeug",
       "beschreibung": "Alle interaktiven Werkzeuge und Lernspiele auf einen Blick.",
       "seiten": [

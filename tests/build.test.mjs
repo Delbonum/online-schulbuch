@@ -91,6 +91,11 @@ test('Kurzlinks: jede Seite hat eine feste, eindeutige Nummer', () => {
   for (const n of nummern) assert.match(n, /^\d+(\.\d+)*$/);
   assert.equal(kurz['/deutsch/'], '1');
   assert.equal(kurz['/informatik/'], '9', 'feste Fachnummer aus site.json');
+  assert.equal(kurz['/informatik/projekte/'], '9.45', 'feste Kapitelnummer aus kapitel.json');
+  assert.equal(kurz['/informatik/werkzeuge/'], '9.50');
+  const fach = readFileSync(join(OUT, 'informatik', 'index.html'), 'utf8');
+  const pos = ['Informatik &amp; Gesellschaft', 'Projekte', 'Toolsammlung'].map((s) => fach.indexOf(`<h3>${s}</h3>`));
+  assert.ok(pos[0] < pos[1] && pos[1] < pos[2], 'Projekte und Toolsammlung stehen nach den Themen');
   const html = readFileSync(join(OUT, 'deutsch', 'sprachgeschichte', 'index.html'), 'utf8');
   assert.match(html, new RegExp(`class="kurzlink">[^<]*<a href="https://online-schulbuch\\.de/${kurz['/deutsch/sprachgeschichte/'].replace(/\./g, '\\.')}"`));
 });
