@@ -167,6 +167,14 @@
           "extern": "/informatik/kryptogame/",
           "beschreibung": "Die Krypto-Zeitreise von Caesar bis RSA: Verschlüsselungsverfahren kennenlernen, anwenden und knacken.",
           "icon": "schloss"
+        },
+        {
+          "titel": "AutoCell",
+          "slug": "autocell",
+          "thema": "formale-sprachen",
+          "extern": "/informatik/autocell/",
+          "beschreibung": "Zelluläre Automaten entwerfen, simulieren und auswerten – vom Game of Life über Staus im Verkehr bis zur Ausbreitung von Krankheiten.",
+          "icon": "automat"
         }
       ]
     }

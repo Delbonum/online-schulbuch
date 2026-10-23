@@ -295,7 +295,7 @@ function wandle(html, quelle) {
 }
 
 // Seiten außerhalb der Fächer (Impressum usw.) und Werkzeug-Ordner, auf die Links zeigen dürfen
-const statischeUrls = new Set(['/', '/impressum/', '/datenschutz/', '/lizenz/', '/informatik/kryptogame/', ...faecher.map((f) => f.url)]);
+const statischeUrls = new Set(['/', '/impressum/', '/datenschutz/', '/lizenz/', '/informatik/kryptogame/', '/informatik/autocell/', ...faecher.map((f) => f.url)]);
 
 // ------------------------------------------------------------------ Bausteine
 
@@ -561,6 +561,7 @@ const APPS = [
   ['apps/ki-lernspiele/assets/js', 'assets/werkzeuge/ki-lernspiele/js'],
   ['apps/ki-lernspiele/assets/css', 'assets/werkzeuge/ki-lernspiele/css'],
   ['apps/werkzeuge', 'assets/werkzeuge'],
+  ['apps/autocell', 'informatik/autocell'], // fertig gebaute Web-Version, siehe apps/autocell/README.md
 ];
 for (const [von, nach] of APPS) {
   if (!existsSync(join(ROOT, von))) { fehler.push(`Werkzeug-Ordner fehlt: ${von}`); continue; }

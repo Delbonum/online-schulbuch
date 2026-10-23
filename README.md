@@ -21,6 +21,8 @@ apps/
   werkzeuge/              Zahlensysteme, QR-Code-Werkzeuge, Grammatik-Übungen,
                           arbeitsblatt/ (Bausteine für digitale Arbeitsblätter)
   kryptogame/             KryptoGAME – eigenständige App mit eigenem Build und PHP-Backend
+  autocell/               AutoCell – fertig gebaute Web-Version aus eigenem Repository (→ /informatik/autocell/,
+                          aktualisieren mit scripts/autocell-holen.mjs, siehe apps/autocell/README.md)
 scripts/build.mjs         baut aus content/, site/ und apps/ die fertige Website nach dist/
 scripts/deploy.sh         lädt die Vorschau oder die Live-Version hoch
 tests/                    Tests für den Seitengenerator

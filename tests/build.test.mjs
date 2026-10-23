@@ -24,7 +24,8 @@ test('Vorschau-Build läuft fehlerfrei durch', () => {
 });
 
 test('Jede Seite hat Titel, Überschrift und gültige interne Verweise', () => {
-  const seiten = alleDateien(OUT, '.html');
+  // fertig gebaute Fremd-Apps (AutoCell) haben ihr eigenes Seitengerüst
+  const seiten = alleDateien(OUT, '.html').filter((d) => !d.includes(join('informatik', 'autocell')));
   assert.ok(seiten.length > 40, `nur ${seiten.length} Seiten`);
   for (const datei of seiten) {
     const html = readFileSync(datei, 'utf8');
@@ -37,6 +38,11 @@ test('Jede Seite hat Titel, Überschrift und gültige interne Verweise', () => {
       assert.ok(ok, `Verweis ins Leere: ${pfad} in ${datei}`);
     }
   }
+});
+
+test('AutoCell wird unverändert unter /informatik/autocell/ mitgeliefert', () => {
+  for (const datei of ['index.html', 'sw.js', 'manifest.webmanifest']) assert.ok(existsSync(join(OUT, 'informatik', 'autocell', datei)), datei);
+  assert.doesNotMatch(readFileSync(join(OUT, 'informatik', 'autocell', 'index.html'), 'utf8'), /kurzlink|nav-baum/);
 });
 
 test('Eigenständige Apps werden auch aus dem Fließtext absolut verlinkt', () => {
