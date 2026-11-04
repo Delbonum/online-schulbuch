@@ -161,6 +161,14 @@
           "icon": "qr"
         },
         {
+          "titel": "Netzwerk-Simulation",
+          "slug": "netzwerk-simulation",
+          "thema": "netzwerke",
+          "beta": true,
+          "beschreibung": "Rechner, Switches und Router verkabeln, IP-Adressen vergeben und beobachten, wie Daten Schicht für Schicht durchs Netz laufen – mit Befehlszeile, Webserver, DNS und DHCP.",
+          "icon": "netzwerk"
+        },
+        {
           "titel": "KryptoGAME",
           "slug": "kryptogame",
           "thema": "kryptologie",

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Platzhalter: Router/Vermittlungsrechner (Zylinder mit Pfeilen) -->
+  <path d="M6 24v14c0 6 11.6 10 26 10s26-4 26-10V24z" fill="#3d4a5c"/>
+  <ellipse cx="32" cy="24" rx="26" ry="10" fill="#5b6778"/>
+  <g stroke="#cfe9be" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 19l7 5M22 19v4M22 19h4"/>
+    <path d="M42 29l-7-5M42 29v-4M42 29h-4"/>
+    <path d="M42 19l-7 5M42 19v4M42 19h-4"/>
+    <path d="M22 29l7-5M22 29v-4M22 29h4"/>
+  </g>
+</svg>

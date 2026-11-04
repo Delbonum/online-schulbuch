@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Platzhalter: Notebook -->
+  <rect x="11" y="12" width="42" height="30" rx="3" fill="#3d4a5c"/>
+  <rect x="14.5" y="15.5" width="35" height="23" rx="1.5" fill="#cfe9be"/>
+  <path d="M18 21h16M18 26h22M18 31h11" stroke="#0b6b72" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M4 45h56l-4 7H8z" fill="#5b6778"/>
+  <rect x="26" y="45" width="12" height="2.5" rx="1" fill="#8a9099"/>
+</svg>

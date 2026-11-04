@@ -23,6 +23,9 @@ apps/
                           Grammatik-Übungen, arbeitsblatt/ (Bausteine für digitale Arbeitsblätter),
                           live/ (gemeinsamer Rahmen der Live-Tools), umfragen/, wortwolke/, quiz/,
                           evaluation/ (Live-Tools, Daten über die Schulbuch-API)
+                          netzwerk/ (Netzwerk-Simulation im Stil von Filius: netz.js = TCP/IP-Stapel ohne DOM,
+                          befehle.js = Befehlszeile, netzwerk.js = Oberfläche; Geräte-Bilder in bilder/ sind
+                          Platzhalter und lassen sich durch Dateien gleichen Namens ersetzen)
   kryptogame/             KryptoGAME – eigenständige React-App mit eigenem Build (Backend: server/)
   autocell/               AutoCell – fertig gebaute Web-Version aus eigenem Repository (→ /informatik/autocell/,
                           aktualisieren mit scripts/autocell-holen.mjs, siehe apps/autocell/README.md)

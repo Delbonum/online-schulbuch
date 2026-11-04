@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Platzhalter: Rechner (Bildschirm mit Fuß und Tastatur) -->
+  <rect x="7" y="8" width="50" height="34" rx="3" fill="#3d4a5c"/>
+  <rect x="11" y="12" width="42" height="26" rx="1.5" fill="#cfe9be"/>
+  <path d="M15 18h20M15 23h28M15 28h14" stroke="#0b6b72" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M27 42h10l2 7H25z" fill="#5b6778"/>
+  <rect x="19" y="49" width="26" height="3" rx="1.5" fill="#3d4a5c"/>
+  <rect x="10" y="55" width="44" height="5" rx="1.5" fill="#8a9099"/>
+</svg>
