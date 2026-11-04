@@ -888,5 +888,147 @@ test('Umfrage exportieren und vollständig wieder importieren', function () use 
     check($client->call('POST', '/polls/import', ['format' => 'etwas anderes'])->status() === 400, 'fremde Datei abgelehnt');
 });
 
+// ------------------------------------------------------------------ Wortwolke, Quiz, Evaluation
+
+function lehrkraftClient(Database $db, QuizCatalog $catalog): Client
+{
+    (new UserRepository($db))->create('lehrerin', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $client = new Client($db, $catalog);
+    $client->login('lehrerin', 'geheim123');
+    return $client;
+}
+
+test('Werkzeuge getrennt: Liste nach kind, Fragetypen je Werkzeug', function () use ($catalog): void {
+    $db = freshDatabase();
+    $client = lehrkraftClient($db, $catalog);
+    $client->call('POST', '/polls', beispielUmfrage());
+    $wolke = $client->call('POST', '/polls', ['kind' => 'wordcloud', 'title' => 'Ideen', 'questions' => [['text' => 'Was fällt dir ein?', 'type' => 'words', 'maxWords' => 2]]]);
+    check($wolke->status() === 201 && asArray($wolke)['poll']['kind'] === 'wordcloud', 'Wortwolke angelegt');
+    check(count(asArray($client->callWithQuery('GET', '/polls', ['kind' => 'wordcloud']))['polls']) === 1, 'Liste nach Werkzeug gefiltert');
+    check(count(asArray($client->call('GET', '/polls'))['polls']) === 2, 'ohne Filter alle');
+    check($client->call('POST', '/polls', ['kind' => 'wordcloud', 'title' => 'x', 'questions' => [['text' => 'y', 'type' => 'scale']]])->status() === 400, 'falscher Fragetyp abgelehnt');
+    check($client->call('POST', '/polls', ['kind' => 'quiz', 'title' => 'x', 'questions' => [['text' => 'y', 'type' => 'quiz', 'options' => ['a', 'b'], 'correct' => []]]])->status() === 400, 'Quiz braucht eine richtige Antwort');
+});
+
+test('Wortwolke: Begriffe sammeln, Grenze je Person, Begriffe ausblenden', function () use ($catalog): void {
+    $db = freshDatabase();
+    $client = lehrkraftClient($db, $catalog);
+    $poll = asArray($client->call('POST', '/polls', ['kind' => 'wordcloud', 'title' => 'Ideen', 'questions' => [['id' => 'w1', 'text' => 'Was fällt dir ein?', 'type' => 'words', 'maxWords' => 2]]]))['poll'];
+    $run = asArray($client->call('POST', "/polls/{$poll['id']}/runs", []))['run'];
+    $s = new Client($db, $catalog);
+    $p = str_repeat('a', 16);
+    check(asArray($s->call('GET', "/join/{$run['code']}"))['kind'] === 'wordcloud', 'Teilnahme kennt das Werkzeug');
+    check(asArray($s->call('POST', "/join/{$run['code']}/answers", ['participant' => $p, 'answers' => ['w1' => ['  Freiheit ', 'Mut']]]))['words'] === ['Freiheit', 'Mut'], 'zwei Begriffe');
+    check($s->call('POST', "/join/{$run['code']}/answers", ['participant' => $p, 'answers' => ['w1' => 'noch einer']])->status() === 409, 'höchstens zwei');
+    $s->call('POST', "/join/{$run['code']}/answers", ['participant' => str_repeat('b', 16), 'answers' => ['w1' => 'freiheit']]);
+    $stand = asArray($client->call('GET', "/poll-runs/{$run['id']}"))['run'];
+    check($stand['participants'] === 2 && count($stand['words']['w1']) === 3, 'Lehrkraft sieht alle Begriffe');
+    $stand = asArray($client->call('PATCH', "/poll-runs/{$run['id']}", ['hide' => ['question' => 'w1', 'word' => 'Mut']]))['run'];
+    check($stand['settings']['hidden'] === [['question' => 'w1', 'word' => 'mut']], 'Begriff ausgeblendet');
+    $stand = asArray($client->call('PATCH', "/poll-runs/{$run['id']}", ['show' => ['question' => 'w1', 'word' => 'mut']]))['run'];
+    check($stand['settings']['hidden'] === [], 'wieder eingeblendet');
+});
+
+test('Quiz: Spielnamen, Zeit, Punkte nach Schnelligkeit, Rangliste', function () use ($catalog): void {
+    $db = freshDatabase();
+    $client = lehrkraftClient($db, $catalog);
+    $poll = asArray($client->call('POST', '/polls', ['kind' => 'quiz', 'title' => 'Quiz', 'questions' => [
+        ['id' => 'q1', 'text' => '2 + 2?', 'type' => 'quiz', 'options' => ['3', '4', '5'], 'correct' => [1], 'time' => 20],
+        ['id' => 'q2', 'text' => 'Hauptstadt der Schweiz?', 'type' => 'quiz', 'options' => ['Bern', 'Zürich'], 'correct' => [0], 'time' => 10],
+    ]]))['poll'];
+    $run = asArray($client->call('POST', "/polls/{$poll['id']}/runs", []))['run'];
+    check($run['phase'] === 'lobby', 'beginnt in der Lobby');
+    $s = new Client($db, $catalog);
+    [$a, $b] = [str_repeat('a', 16), str_repeat('b', 16)];
+    check($s->call('POST', "/join/{$run['code']}/name", ['participant' => $a, 'nickname' => 'Ada'])->status() === 200, 'Spielname gewählt');
+    check($s->call('POST', "/join/{$run['code']}/name", ['participant' => $b, 'nickname' => 'ada'])->status() === 409, 'Name schon vergeben');
+    $s->call('POST', "/join/{$run['code']}/name", ['participant' => $b, 'nickname' => 'Bo']);
+    check($s->call('POST', "/join/{$run['code']}/answers", ['participant' => $a, 'answers' => ['q1' => 1]])->status() === 409, 'in der Lobby keine Antworten');
+
+    $client->call('PATCH', "/poll-runs/{$run['id']}", ['start' => 0]);
+    $join = asArray($s->callWithQuery('GET', "/join/{$run['code']}", ['participant' => $a]));
+    check($join['phase'] === 'question' && !isset($join['question']['correct']), 'Frage ohne Lösung');
+    // A antwortet sofort richtig, B nach 10 von 20 Sekunden falsch
+    $s->call('POST', "/join/{$run['code']}/answers", ['participant' => $a, 'answers' => ['q1' => 1]]);
+    check($s->call('POST', "/join/{$run['code']}/answers", ['participant' => $a, 'answers' => ['q1' => 0]])->status() === 409, 'nur eine Antwort');
+    check(asArray($client->call('GET', "/poll-runs/{$run['id']}"))['run']['answers'] === null, 'Verteilung vor der Auflösung verborgen');
+    $db->execute('UPDATE poll_runs SET question_since = ? WHERE id = ?', [gmdate('Y-m-d H:i:s', time() - 10) . '.000', $run['id']]);
+    $s->call('POST', "/join/{$run['code']}/answers", ['participant' => $b, 'answers' => ['q1' => 2]]);
+    $stand = asArray($client->call('GET', "/poll-runs/{$run['id']}"))['run'];
+    check($stand['phase'] === 'reveal', 'alle haben geantwortet → Auflösung');
+    check($stand['ranking'][0]['nickname'] === 'Ada' && $stand['ranking'][0]['score'] >= 990 && $stand['ranking'][1]['score'] === 0, 'Punkte nach Schnelligkeit');
+    $join = asArray($s->callWithQuery('GET', "/join/{$run['code']}", ['participant' => $a]));
+    check($join['question']['correct'] === [1] && $join['points'] >= 990 && $join['rank'] === 1, 'Ergebnis auf dem Gerät');
+
+    $client->call('PATCH', "/poll-runs/{$run['id']}", ['start' => 1]);
+    $db->execute('UPDATE poll_runs SET question_since = ? WHERE id = ?', [gmdate('Y-m-d H:i:s', time() - 30) . '.000', $run['id']]);
+    check($s->call('POST', "/join/{$run['code']}/answers", ['participant' => $a, 'answers' => ['q2' => 0]])->status() === 409, 'Zeit abgelaufen');
+    check(asArray($client->call('GET', "/poll-runs/{$run['id']}"))['run']['phase'] === 'reveal', 'nach Ablauf der Zeit aufgelöst');
+    $client->call('PATCH', "/poll-runs/{$run['id']}", ['kick' => $b]);
+    check(count(asArray($client->call('GET', "/poll-runs/{$run['id']}"))['run']['ranking']) === 1, 'Spieler entfernt');
+    $client->call('PATCH', "/poll-runs/{$run['id']}", ['phase' => 'end']);
+    $client->call('PATCH', "/poll-runs/{$run['id']}", ['end' => true]);
+
+    $export = asArray($client->call('GET', "/polls/{$poll['id']}/export"));
+    check($export['runs'][0]['players'][0]['nickname'] === 'Ada' && $export['runs'][0]['answers'][0]['ms'] < 2000, 'Export mit Spielnamen und Antwortzeit');
+    $neu = asArray($client->call('POST', '/polls/import', json_decode(json_encode($export), true)))['poll'];
+    $stand = asArray($client->call('GET', "/poll-runs/{$neu['runs'][0]['id']}"))['run'];
+    check($neu['kind'] === 'quiz' && $stand['ranking'][0]['nickname'] === 'Ada' && $stand['ranking'][0]['score'] >= 990, 'Import stellt Rangliste wieder her');
+});
+
+test('Evaluation: anonym, keine Ergebnisse während der Durchführung, Mindestzahl', function () use ($catalog): void {
+    $db = freshDatabase();
+    $client = lehrkraftClient($db, $catalog);
+    $poll = asArray($client->call('POST', '/polls', ['kind' => 'evaluation', 'title' => 'Feedback', 'settings' => ['minResponses' => 3, 'intro' => 'Hallo'],
+        'questions' => [
+            ['id' => 'e1', 'text' => 'erklärt gut.', 'type' => 'choice', 'options' => ['trifft nicht zu', 'eher nicht', 'eher', 'trifft zu'], 'section' => 'Unsere Lehrkraft …', 'dimension' => 'Verständlichkeit'],
+            ['id' => 'e2', 'text' => 'erklärt alles auf einmal.', 'type' => 'choice', 'options' => ['1', '2', '3', '4'], 'dimension' => 'Verständlichkeit', 'reverse' => true],
+            ['id' => 'e3', 'text' => 'Was möchtest du noch sagen?', 'type' => 'text'],
+        ]]))['poll'];
+    check($poll['mode'] === 'all' && $poll['settings']['minResponses'] === 3 && $poll['questions'][1]['reverse'] === true, 'angelegt mit Skalen');
+    $run = asArray($client->call('POST', "/polls/{$poll['id']}/runs", []))['run'];
+    $s = new Client($db, $catalog);
+    $join = asArray($s->call('GET', "/join/{$run['code']}"));
+    check($join['intro'] === 'Hallo' && !isset($join['questions'][1]['reverse']) && !isset($join['questions'][0]['dimension']), 'Auswertungsangaben bleiben bei der Lehrkraft');
+    $p = str_repeat('a', 16);
+    $r0 = $s->call('POST', "/join/{$run['code']}/answers", ['participant' => $p, 'answers' => ['e1' => 3, 'e2' => 0, 'e3' => 'Alles gut']]);
+    check($r0->status() === 200, 'abgegeben: ' . json_encode($r0->data()));
+    check($s->call('POST', "/join/{$run['code']}/answers", ['participant' => $p, 'answers' => ['e1' => 0]])->status() === 409, 'nur eine Abgabe');
+    check(asArray($s->callWithQuery('GET', "/join/{$run['code']}", ['participant' => $p]))['submitted'] === true, 'Gerät weiß, dass abgegeben wurde');
+    check($db->fetchOne('SELECT COUNT(*) AS n FROM poll_answers WHERE participant = ?', [$p])['n'] === 0, 'Antworten nicht mit der Kennung verknüpft');
+    $stand = asArray($client->call('GET', "/poll-runs/{$run['id']}"))['run'];
+    check($stand['submissions'] === 1 && $stand['responses'] === null && !isset($stand['answers']), 'während der Durchführung nur die Anzahl');
+    $s->call('POST', "/join/{$run['code']}/answers", ['participant' => str_repeat('b', 16), 'answers' => ['e1' => 2]]);
+    $client->call('PATCH', "/poll-runs/{$run['id']}", ['end' => true]);
+    $stand = asArray($client->call('GET', "/poll-runs/{$run['id']}"))['run'];
+    check($stand['responses'] === null, 'unter der Mindestzahl keine Ergebnisse');
+    check(asArray($client->call('GET', "/polls/{$poll['id']}/export"))['runs'][0]['answers'] === [], 'Export ohne Antworten unter der Mindestzahl');
+
+    $run = asArray($client->call('POST', "/polls/{$poll['id']}/runs", []))['run'];
+    foreach (['c', 'd', 'e'] as $i => $x) {
+        $s->call('POST', "/join/{$run['code']}/answers", ['participant' => str_repeat($x, 16), 'answers' => ['e1' => $i, 'e2' => 3]]);
+    }
+    check(asArray($client->call('GET', "/poll-runs/{$run['id']}"))['run']['responses'] === null, 'vor dem Ende keine Ergebnisse');
+    $client->call('PATCH', "/poll-runs/{$run['id']}", ['end' => true]);
+    $stand = asArray($client->call('GET', "/poll-runs/{$run['id']}"))['run'];
+    check(count($stand['responses']) === 3 && $stand['responses'][0]['e2'] == 3, 'nach dem Ende: Rückmeldungen als ganze Bögen');
+    $export = asArray($client->call('GET', "/polls/{$poll['id']}/export"));
+    check(count($export['runs'][1]['answers']) === 6 && !isset($export['runs'][1]['answers'][0]['at']), 'Export ohne Zeitpunkte');
+    $neu = asArray($client->call('POST', '/polls/import', json_decode(json_encode($export), true)))['poll'];
+    check($neu['runs'][0]['participants'] === 3 || $neu['runs'][1]['participants'] === 3, 'Import vollständig');
+});
+
+test('Migration: bestehende Umfrage-Tabellen bekommen die neuen Spalten', function (): void {
+    $db = freshDatabase();
+    if ($db->driver() !== 'sqlite') {
+        return;
+    }
+    $db->pdo()->exec('ALTER TABLE poll_answers DROP COLUMN text_value');
+    $db->pdo()->exec('ALTER TABLE poll_polls DROP COLUMN kind');
+    check(!$db->hasColumn('poll_polls', 'kind'), 'Spalte fehlt vorher');
+    $db->migrate();
+    check($db->hasColumn('poll_polls', 'kind') && $db->hasColumn('poll_answers', 'text_value'), 'Spalten ergänzt');
+});
+
 fwrite(STDOUT, "\n{$passes} Prüfungen bestanden, {$failures} fehlgeschlagen.\n");
 exit($failures === 0 ? 0 : 1);

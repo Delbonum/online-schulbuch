@@ -420,6 +420,12 @@ a.nav-link:hover { background: var(--surface-2); }
 .lk-dialog .lk-fehler { color: var(--bad); min-height: 1.4em; margin: .4em 0 .6em; }
 .lk-dialog .lk-knoepfe { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 .lk-link[aria-pressed="true"]::before { content: "✓ "; }
+/* „Als Live-Umfrage“ in den Hinweisen für Lehrkräfte (Modus-Wahl und Knöpfe, siehe arbeitsblatt.js) */
+.als-umfrage { margin: .6em 0 0; }
+.als-umfrage p { margin: .4em 0; }
+.als-umfrage-modus { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: center; }
+.als-umfrage-modus span { font-weight: 600; }
+.als-umfrage-modus input { accent-color: var(--fach); }
 
 /* Tabellen im Fließtext (z. B. Verlaufspläne) und Zitate aus Lektüren */
 .verlauf { width: 100%; border-collapse: collapse; font-size: .92rem; margin: 1em 0 1.6em; display: block; overflow-x: auto; }

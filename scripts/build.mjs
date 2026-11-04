@@ -261,6 +261,8 @@ const BOX = {
   info: ['hinweis', 'Info'],
 };
 
+let alsUmfrageNr = 0;
+
 function wandle(html, quelle) {
   let s = html;
   // Kästen bekommen eine Überschrift mit Symbol; data-titel ersetzt die Standardüberschrift
@@ -289,6 +291,16 @@ function wandle(html, quelle) {
     }
     return `${attr}="${u(pfad)}"`;
   });
+  // „Als Live-Umfrage“ (in Hinweisen für Lehrkräfte): Modus-Wahl und Knöpfe, ausgewertet von arbeitsblatt.js
+  s = s.replace(/<als-umfrage ids="([^"]+)" titel="([^"]*)"(?: modus="(single|all)")?><\/als-umfrage>/g, (m, ids, titel, modus = 'all') => {
+    const name = `als-umfrage-${++alsUmfrageNr}`;
+    const wahl = (wert, text) => `<label><input type="radio" name="${name}" value="${wert}"${modus === wert ? ' checked' : ''}> ${text}</label>`;
+    return `<div class="als-umfrage" data-als-umfrage="${ids}" data-titel="${titel}">
+<p class="als-umfrage-modus"><span>Durchführen:</span> ${wahl('single', 'Frage für Frage')} ${wahl('all', 'Alle Fragen auf einmal')}</p>
+<p><button type="button" class="knopf primaer" data-als-umfrage-start>Live-Umfrage starten</button> <button type="button" class="knopf" data-als-umfrage-bearbeiten>Vorher bearbeiten</button></p>
+</div>`;
+  });
+  if (!VORSCHAU && /<als-umfrage\b/.test(s)) fehler.push(`Ungültiges <als-umfrage> (ids, titel, modus prüfen) in ${quelle}`);
   // Lehrkraft-Inhalte: verschlüsselt ausliefern (zuletzt, damit Kästen und Links darin schon umgewandelt sind)
   s = s.replace(LK_MUSTER, (m, titel = 'Für Lehrkräfte', inhalt) => {
     const kopf = `<p class="box-titel">${icon('schloss')}${esc(titel)}</p>`;

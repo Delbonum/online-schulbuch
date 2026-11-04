@@ -95,15 +95,18 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     KEY idx_login_ip (ip, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Werkzeug „Umfragen“ (/werkzeuge/umfragen/). Fragen stehen als JSON in der Umfrage; jede Durchführung
--- speichert eine Kopie davon, damit spätere Änderungen alte Ergebnisse nicht verfälschen.
+-- Live-Werkzeuge (/werkzeuge/…): Umfragen, Wortwolken, Quiz, Evaluationen (Spalte kind). Fragen und Einstellungen
+-- stehen als JSON im Eintrag; jede Durchführung speichert eine Kopie davon, damit spätere Änderungen alte
+-- Ergebnisse nicht verfälschen.
 CREATE TABLE IF NOT EXISTS poll_polls (
     id         INT UNSIGNED      NOT NULL AUTO_INCREMENT,
     teacher_id INT UNSIGNED      NOT NULL,
+    kind       VARCHAR(16)       NOT NULL DEFAULT 'poll',
     title      VARCHAR(200)      NOT NULL,
     mode       VARCHAR(16)       NOT NULL,
     countdown  SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     questions  MEDIUMTEXT        NOT NULL,
+    settings   TEXT              NULL,
     source     VARCHAR(255)      NULL,
     created_at DATETIME(3)       NOT NULL,
     updated_at DATETIME(3)       NOT NULL,
@@ -118,9 +121,12 @@ CREATE TABLE IF NOT EXISTS poll_runs (
     id             INT UNSIGNED      NOT NULL AUTO_INCREMENT,
     poll_id        INT UNSIGNED      NOT NULL,
     code           CHAR(6)           NULL,
+    kind           VARCHAR(16)       NOT NULL DEFAULT 'poll',
+    phase          VARCHAR(16)       NOT NULL DEFAULT 'open',
     mode           VARCHAR(16)       NOT NULL,
     countdown      SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     questions      MEDIUMTEXT        NOT NULL,
+    settings       TEXT              NULL,
     current_question SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     question_since DATETIME(3)       NOT NULL,
     started_at     DATETIME(3)       NOT NULL,
@@ -136,7 +142,28 @@ CREATE TABLE IF NOT EXISTS poll_answers (
     participant CHAR(16)     NOT NULL,
     question    VARCHAR(16)  NOT NULL,
     answer_value DOUBLE      NOT NULL,
+    text_value  TEXT         NULL,
+    answer_ms   INT          NULL,
     created_at  DATETIME(3)  NOT NULL,
     PRIMARY KEY (run_id, participant, question),
     CONSTRAINT fk_answer_run FOREIGN KEY (run_id) REFERENCES poll_runs (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Quiz: Spielnamen der Teilnehmenden (frei gewählt, nur für die Rangliste)
+CREATE TABLE IF NOT EXISTS poll_players (
+    run_id      INT UNSIGNED NOT NULL,
+    participant CHAR(16)     NOT NULL,
+    nickname    VARCHAR(40)  NOT NULL,
+    joined_at   DATETIME(3)  NOT NULL,
+    PRIMARY KEY (run_id, participant),
+    UNIQUE KEY uq_player_name (run_id, nickname),
+    CONSTRAINT fk_player_run FOREIGN KEY (run_id) REFERENCES poll_runs (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Evaluation: wer schon abgegeben hat – ohne Verbindung zu den (anonym gespeicherten) Antworten
+CREATE TABLE IF NOT EXISTS poll_submissions (
+    run_id      INT UNSIGNED NOT NULL,
+    participant CHAR(16)     NOT NULL,
+    PRIMARY KEY (run_id, participant),
+    CONSTRAINT fk_submission_run FOREIGN KEY (run_id) REFERENCES poll_runs (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

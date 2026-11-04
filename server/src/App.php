@@ -81,7 +81,7 @@ final class App
 
         $r->add('GET', '/teacher-content/key', [$teacherContentController, 'key']);
 
-        // Werkzeug „Umfragen“
+        // Live-Werkzeuge: Umfragen, Wortwolken, Quiz, Evaluationen (kind)
         $r->add('GET', '/polls', [$pollController, 'index']);
         $r->add('POST', '/polls', [$pollController, 'create']);
         $r->add('POST', '/polls/import', [$pollController, 'import']);
@@ -95,6 +95,7 @@ final class App
         $r->add('DELETE', '/poll-runs/{id}', [$pollController, 'deleteRun']);
         $r->add('GET', '/join/{code}', [$pollController, 'join']);
         $r->add('POST', '/join/{code}/answers', [$pollController, 'answer']);
+        $r->add('POST', '/join/{code}/name', [$pollController, 'nickname']);
 
         $r->add('GET', '/quizzes/{level}', [$quizController, 'show']);
         $r->add('POST', '/quizzes/{level}/submit', [$quizController, 'submit']);

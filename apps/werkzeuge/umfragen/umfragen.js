@@ -10,14 +10,11 @@
 // Live-Aktualisierung per regelmäßiger Abfrage (Lehrkraft alle 2 s, Teilnehmende alle 3 bzw. 10 s).
 
 import { skala, auswahl, zahl, prozent } from './statistik.js';
-import { qrSvg } from '../qr-code/qr-encode.js';
+import {
+  api, html, esc, datum, zeit, sekunden, lies, schreib, zweiSchritte, meldung, zugang, werkzeug, teilnahmeRahmen,
+} from '../live/live.js';
 
 const wurzel = document.getElementById('umfragen');
-const API = '/api';
-const BASIS = window.SCHULBUCH_BASIS ?? '/';
-const TOOL_URL = `${location.origin}${BASIS}werkzeuge/umfragen/`;
-// Kurze Adresse zum Abtippen (die Umleitung /umfrage gibt es nur auf der echten Seite)
-const KURZ_URL = BASIS === '/' ? `${location.host}/umfrage` : TOOL_URL.replace(/^https?:\/\//, '');
 const UEBERNAHME = 'umfragen:uebernahme';
 
 const MODI = {
@@ -33,262 +30,19 @@ const VORGABEN = [
   ['A', 'B', 'C', 'D'],
 ];
 
-// ------------------------------------------------------------------ Hilfen
+// ------------------------------------------------------------------ Rahmen (live.js)
 
-const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const datum = (iso) => new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
-const zeit = (iso) => new Date(iso).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-const sekunden = (s) => (s >= 60 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} min` : `${s} s`);
-const lies = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
-const schreib = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch { /* ohne Speicher */ } };
-
-async function api(methode, pfad, daten) {
-  // Schreibende Anfragen müssen als JSON kommen (CSRF-Schutz der API), auch ohne Inhalt
-  if (daten === undefined && methode !== 'GET') daten = {};
-  let antwort;
-  try {
-    antwort = await fetch(API + pfad, {
-      method: methode,
-      credentials: 'same-origin',
-      headers: { Accept: 'application/json', ...(daten !== undefined && { 'Content-Type': 'application/json' }) },
-      body: daten === undefined ? undefined : JSON.stringify(daten),
-    });
-  } catch {
-    throw Object.assign(new Error('Der Server ist nicht erreichbar. Bitte prüfe die Internetverbindung.'), { status: 0 });
-  }
-  const json = antwort.status === 204 ? null : await antwort.json().catch(() => null);
-  if (!antwort.ok) throw Object.assign(new Error(json?.error || `Serverfehler (${antwort.status}).`), { status: antwort.status });
-  return json;
-}
-
-function html(text) {
-  const t = document.createElement('template');
-  t.innerHTML = text.trim();
-  return t.content.firstElementChild;
-}
-
-// Knopf, der beim ersten Klick nachfragt („Wirklich löschen?“) und erst beim zweiten auslöst
-function zweiSchritte(knopf, frage, aktion) {
-  const text = knopf.textContent;
-  let scharf = false;
-  let timer;
-  knopf.addEventListener('click', () => {
-    if (!scharf) {
-      scharf = true;
-      knopf.textContent = frage;
-      knopf.classList.add('uf-warnung');
-      timer = setTimeout(() => { scharf = false; knopf.textContent = text; knopf.classList.remove('uf-warnung'); }, 4000);
-      return;
-    }
-    clearTimeout(timer);
-    aktion();
-  });
-}
-
-function meldung(ziel, text, art = 'fehler') {
-  ziel.innerHTML = text ? `<p class="uf-meldung ${art}" role="${art === 'fehler' ? 'alert' : 'status'}">${esc(text)}</p>` : '';
-}
-
-let lehrkraft = null; // angemeldete Lehrkraft oder null
-
-// ------------------------------------------------------------------ Start
-
-async function start() {
-  const params = new URLSearchParams(location.search);
-  const code = params.get('code');
-  if (code && /^\d{6}$/.test(code)) {
-    teilnehmen(code);
-    return;
-  }
-  try {
-    const { user } = await api('GET', '/auth/me');
-    lehrkraft = user?.role === 'teacher' ? user : null;
-  } catch {
-    lehrkraft = null;
-  }
-  if (params.has('uebernehmen') && lies(UEBERNAHME)) {
-    if (lehrkraft) uebernehmen();
-    else startseite('Melde dich an, um die Umfrage aus dem Schulbuch zu übernehmen.');
-    return;
-  }
-  startseite();
-}
-
-function startseite(hinweis = '') {
-  wurzel.replaceChildren();
-  const teil = html(`<section class="uf-karte uf-beitreten" aria-labelledby="uf-beitreten-titel">
-<h2 id="uf-beitreten-titel">An einer Umfrage teilnehmen</h2>
-<p>Gib den sechsstelligen Code ein, den deine Lehrkraft zeigt – oder scanne den QR-Code.</p>
-<form class="uf-code-form">
-<label class="sr" for="uf-code">Code</label>
-<input id="uf-code" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="123456" pattern="[0-9]{6}" required>
-<button type="submit" class="knopf primaer">Teilnehmen</button>
-</form>
-<div class="uf-code-meldung"></div>
-</section>`);
-  teil.querySelector('form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const wert = teil.querySelector('input').value.replace(/\D/g, '');
-    if (wert.length !== 6) { meldung(teil.querySelector('.uf-code-meldung'), 'Der Code hat sechs Ziffern.'); return; }
-    teilnehmen(wert, teil.querySelector('.uf-code-meldung'));
-  });
-  wurzel.append(teil);
-
-  const bereich = html('<section class="uf-lehrkraft-bereich" aria-label="Für Lehrkräfte"></section>');
-  wurzel.append(bereich);
-  if (lehrkraft) return liste(bereich);
-  anmeldung(bereich, hinweis);
-  return Promise.resolve();
-}
-
-function anmeldung(bereich, hinweis) {
-  bereich.replaceChildren(html(`<div class="uf-karte">
-<h2>Umfragen erstellen und durchführen</h2>
-<p>Für Lehrkräfte: Melde dich mit deinem Lehrkräfte-Konto des Online-Schulbuchs an (dasselbe wie im KryptoGAME).
-Noch kein Konto? <a href="/informatik/kryptogame/registrieren" target="_blank" rel="noopener">Zugang beantragen</a>.</p>
-${hinweis ? `<p class="uf-meldung info">${esc(hinweis)}</p>` : ''}
-<form class="uf-anmelden">
-<label>Benutzername <input name="name" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
-<label>Passwort <input name="passwort" type="password" autocomplete="current-password" required></label>
-<button type="submit" class="knopf primaer">Anmelden</button>
-</form>
-<div class="uf-anmelden-meldung"></div>
-</div>`));
-  const form = bereich.querySelector('form');
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const ziel = bereich.querySelector('.uf-anmelden-meldung');
-    meldung(ziel, 'Einen Moment …', 'info');
-    try {
-      const { user } = await api('POST', '/auth/login', { username: form.name.value.trim(), password: form.passwort.value });
-      if (user.role !== 'teacher') {
-        await api('POST', '/auth/logout', {}).catch(() => {});
-        throw new Error('Das ist kein Konto für Lehrkräfte.');
-      }
-      lehrkraft = user;
-      if (new URLSearchParams(location.search).has('uebernehmen') && lies(UEBERNAHME)) uebernehmen();
-      else liste(bereich);
-    } catch (err) {
-      meldung(ziel, err.status === 401 ? 'Benutzername oder Passwort stimmen nicht.' : err.message);
-    }
-  });
-}
-
-async function abmelden() {
-  await api('POST', '/auth/logout', {}).catch(() => {});
-  // Die Anmeldung gilt für die ganze Website – also auch die Inhalte für Lehrkräfte wieder sperren
-  try { localStorage.removeItem('schulbuch-lehrkraft'); sessionStorage.removeItem('schulbuch-lehrkraft'); } catch { /* egal */ }
-  lehrkraft = null;
-  startseite();
-}
-
-// Fehler 401 heißt: Sitzung abgelaufen → zurück zur Anmeldung
-function fehlerBehandeln(err, ziel) {
-  if (err.status === 401 || err.status === 403) {
-    lehrkraft = null;
-    startseite('Deine Anmeldung ist abgelaufen. Bitte melde dich erneut an.');
-    return;
-  }
-  meldung(ziel, err.message);
-}
-
-// ------------------------------------------------------------------ Liste der eigenen Umfragen
-
-async function liste(bereich = wurzel.querySelector('.uf-lehrkraft-bereich')) {
-  if (!bereich) { startseite(); return; }
-  bereich.replaceChildren(html(`<div class="uf-karte">
-<div class="uf-kopfzeile"><h2>Meine Umfragen</h2><p class="klein">Angemeldet als <strong>${esc(lehrkraft.username)}</strong> · <button type="button" class="uf-link uf-abmelden">Abmelden</button></p></div>
-<div class="uf-leiste">
-<button type="button" class="knopf primaer uf-neu">+ Neue Umfrage</button>
-<label class="knopf uf-import">Importieren … <input type="file" accept=".json,application/json" class="sr"></label>
-</div>
-<div class="uf-liste-meldung"></div>
-<div class="uf-liste"><p class="klein">Lädt …</p></div>
-<p class="klein uf-fussnote">Umfragen, die 500 Tage lang weder bearbeitet noch durchgeführt wurden, werden automatisch gelöscht.
-Mit „Exportieren“ speicherst du eine Umfrage samt Ergebnissen als Datei und kannst sie später wieder importieren.</p>
-</div>`));
-  const ziel = bereich.querySelector('.uf-liste-meldung');
-  bereich.querySelector('.uf-abmelden').addEventListener('click', abmelden);
-  bereich.querySelector('.uf-neu').addEventListener('click', () => editor(null));
-  bereich.querySelector('.uf-import input').addEventListener('change', async (e) => {
-    const datei = e.target.files[0];
-    e.target.value = '';
-    if (!datei) return;
-    try {
-      const daten = JSON.parse(await datei.text());
-      const { poll } = await api('POST', '/polls/import', daten);
-      await liste(bereich);
-      meldung(bereich.querySelector('.uf-liste-meldung'), `„${poll.title}“ wurde importiert.`, 'info');
-    } catch (err) {
-      if (err instanceof SyntaxError) meldung(ziel, 'Die Datei ist keine gültige Umfrage-Datei.');
-      else fehlerBehandeln(err, ziel);
-    }
-  });
-
-  let polls;
-  try {
-    ({ polls } = await api('GET', '/polls'));
-  } catch (err) {
-    fehlerBehandeln(err, ziel);
-    return;
-  }
-  const liste_ = bereich.querySelector('.uf-liste');
-  if (!polls.length) {
-    liste_.innerHTML = '<p>Du hast noch keine Umfragen. Lege eine neue an oder übernimm eine aus dem Schulbuch (in den Hinweisen für Lehrkräfte, z. B. bei Meinungslinien).</p>';
-    return;
-  }
-  liste_.replaceChildren(...polls.map((p) => umfrageKarte(p, bereich)));
-}
-
-function umfrageKarte(p, bereich) {
-  const laufend = p.runs.find((r) => r.code);
-  const fertig = p.runs.filter((r) => !r.code);
-  const karte = html(`<article class="uf-umfrage" data-id="${p.id}">
-<h3>${esc(p.title)}</h3>
-<p class="klein uf-meta">${p.questions.length} ${p.questions.length === 1 ? 'Frage' : 'Fragen'} · ${MODI[p.mode][0]}${p.mode === 'single' && p.countdown ? ` · Countdown ${sekunden(p.countdown)}` : ''}
-· zuletzt aktiv ${datum(p.activeAt)} · ohne Aktivität gelöscht am ${datum(p.deletesAt)}</p>
-${laufend ? `<p class="uf-laeuft">Läuft gerade – Code <strong>${laufend.code}</strong> · ${laufend.participants} Teilnehmende <button type="button" class="knopf primaer uf-oeffnen">Live-Ansicht öffnen</button></p>` : ''}
-<div class="uf-leiste">
-<button type="button" class="knopf primaer uf-starten">Durchführen</button>
-<button type="button" class="knopf uf-bearbeiten">Bearbeiten</button>
-<button type="button" class="knopf uf-export">Exportieren</button>
-<button type="button" class="knopf uf-loeschen">Löschen</button>
-</div>
-${fertig.length ? `<details class="uf-durchfuehrungen"><summary>Ergebnisse früherer Durchführungen (${fertig.length})</summary><ul>${fertig.map((r) => `<li data-run="${r.id}">${zeit(r.startedAt)} · ${MODI[r.mode][0]} · ${r.participants} Teilnehmende
-<button type="button" class="uf-link uf-ergebnis">ansehen</button> <button type="button" class="uf-link uf-run-loeschen">löschen</button></li>`).join('')}</ul></details>` : ''}
-</article>`);
-  const ziel = bereich.querySelector('.uf-liste-meldung');
-  karte.querySelector('.uf-starten').addEventListener('click', () => startDialog(p, karte));
-  karte.querySelector('.uf-bearbeiten').addEventListener('click', () => editor(p));
-  karte.querySelector('.uf-oeffnen')?.addEventListener('click', async () => {
-    try { buehne((await api('GET', `/poll-runs/${laufend.id}`)).run, false); } catch (err) { fehlerBehandeln(err, ziel); }
-  });
-  karte.querySelector('.uf-export').addEventListener('click', async () => {
-    try {
-      const daten = await api('GET', `/polls/${p.id}/export`);
-      const name = `umfrage-${p.title.toLowerCase().replace(/[^a-z0-9äöüß]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'export'}-${new Date().toISOString().slice(0, 10)}.json`;
-      const url = URL.createObjectURL(new Blob([JSON.stringify(daten, null, 2)], { type: 'application/json' }));
-      const a = Object.assign(document.createElement('a'), { href: url, download: name });
-      document.body.append(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (err) { fehlerBehandeln(err, ziel); }
-  });
-  zweiSchritte(karte.querySelector('.uf-loeschen'), 'Wirklich löschen?', async () => {
-    try { await api('DELETE', `/polls/${p.id}`); liste(bereich); } catch (err) { fehlerBehandeln(err, ziel); }
-  });
-  karte.querySelectorAll('li[data-run]').forEach((li) => {
-    const id = li.dataset.run;
-    li.querySelector('.uf-ergebnis').addEventListener('click', async () => {
-      try { buehne((await api('GET', `/poll-runs/${id}`)).run, true); } catch (err) { fehlerBehandeln(err, ziel); }
-    });
-    zweiSchritte(li.querySelector('.uf-run-loeschen'), 'wirklich löschen?', async () => {
-      try { await api('DELETE', `/poll-runs/${id}`); liste(bereich); } catch (err) { fehlerBehandeln(err, ziel); }
-    });
-  });
-  return karte;
-}
+const W = werkzeug({
+  kind: 'poll',
+  wurzel,
+  editor: (p, vorlage) => editor(p, vorlage),
+  durchfuehren: (p, karte) => startDialog(p, karte),
+  buehne: (run, nurLesen) => buehne(run, nurLesen),
+  teilnehmen: (code, stand) => teilnehmen(code, stand),
+  sonderstart: () => uebernehmen(),
+  beschreibung: (p) => `${p.questions.length} ${p.questions.length === 1 ? 'Frage' : 'Fragen'} · ${MODI[p.mode][0]}${p.mode === 'single' && p.countdown ? ` · Countdown ${sekunden(p.countdown)}` : ''}`,
+  leereListe: (el) => el.append(html('<p>Tipp: In den Hinweisen für Lehrkräfte im Schulbuch lassen sich Meinungslinien und Lesechecks mit einem Klick als Live-Umfrage starten.</p>')),
+});
 
 // Vor dem Start: Modus und Countdown bestätigen (vorbelegt aus der Umfrage)
 function startDialog(p, karte) {
@@ -310,7 +64,7 @@ ${Object.entries(MODI).map(([k, [titel, text]]) => `<label class="uf-modus"><inp
     try {
       const { run } = await api('POST', `/polls/${p.id}/runs`, { mode: d.modus.value, countdown: d.modus.value === 'single' ? Number(d.countdown.value) : 0 });
       buehne(run, false);
-    } catch (err) { fehlerBehandeln(err, d.querySelector('.uf-start-meldung')); }
+    } catch (err) { W.fehler(err, d.querySelector('.uf-start-meldung')); }
   });
   karte.append(d);
   d.querySelector('input:checked')?.focus();
@@ -319,30 +73,46 @@ ${Object.entries(MODI).map(([k, [titel, text]]) => `<label class="uf-modus"><inp
 // ------------------------------------------------------------------ Übernahme aus dem Schulbuch
 
 async function uebernehmen() {
+  const params = new URLSearchParams(location.search);
+  if (!params.has('uebernehmen') || !lies(UEBERNAHME)) return false;
+  if (!W.lehrkraft) {
+    await W.startseite('Melde dich an – danach geht es mit der Umfrage aus dem Schulbuch weiter.');
+    return true;
+  }
   let vorlage;
   try { vorlage = JSON.parse(lies(UEBERNAHME)); } catch { vorlage = null; }
   schreib(UEBERNAHME, null);
+  const modus = params.get('start');
   history.replaceState(null, '', location.pathname);
-  if (!vorlage?.questions?.length) { startseite(); return; }
-  await startseite();
-  const bereich = wurzel.querySelector('.uf-lehrkraft-bereich');
+  if (!vorlage?.questions?.length) return false;
   let polls = [];
-  try { ({ polls } = await api('GET', '/polls')); } catch { /* dann eben ohne Abgleich */ }
-  const vorhanden = vorlage.source ? polls.filter((p) => p.source === vorlage.source) : [];
-  if (!vorhanden.length) { editor(null, vorlage); return; }
-  const p = vorhanden[0];
+  try { ({ polls } = await api('GET', '/polls?kind=poll')); } catch { /* dann eben ohne Abgleich */ }
+  const vorhanden = vorlage.source ? polls.find((p) => p.source === vorlage.source) : null;
+
+  if (modus === 'single' || modus === 'all') {
+    // Direkt starten: dieselbe Stelle im Schulbuch nutzt immer dieselbe Umfrage (frühere Ergebnisse bleiben dabei)
+    await W.startseite();
+    try {
+      const p = vorhanden ?? (await api('POST', '/polls', { ...vorlage, kind: 'poll', mode: modus })).poll;
+      await W.sofortStarten(p, wurzel.querySelector('.uf-liste-meldung'), { mode: modus, countdown: 0 });
+    } catch (err) { W.fehler(err, wurzel.querySelector('.uf-liste-meldung')); }
+    return true;
+  }
+
+  // Vorher bearbeiten
+  if (!vorhanden) { editor(null, vorlage); return true; }
+  await W.startseite();
+  const bereich = wurzel.querySelector('.uf-lehrkraft-bereich');
+  const p = vorhanden;
   const hinweis = html(`<div class="uf-karte uf-hinweis">
 <h2>Umfrage aus dem Schulbuch</h2>
 <p>Diese Umfrage hast du schon angelegt: <strong>${esc(p.title)}</strong> (zuletzt aktiv ${datum(p.activeAt)}, ${p.runs.length} Durchführungen).</p>
-<div class="uf-leiste"><button type="button" class="knopf primaer uf-vorhanden">Vorhandene verwenden</button><button type="button" class="knopf uf-nochmal">Neu anlegen</button></div>
+<div class="uf-leiste"><button type="button" class="knopf primaer uf-vorhanden">Vorhandene bearbeiten</button><button type="button" class="knopf uf-nochmal">Neu anlegen</button></div>
 </div>`);
-  hinweis.querySelector('.uf-vorhanden').addEventListener('click', () => {
-    hinweis.remove();
-    const karte = bereich.querySelector(`.uf-umfrage[data-id="${p.id}"]`);
-    if (karte) { startDialog(p, karte); karte.scrollIntoView({ block: 'center' }); }
-  });
+  hinweis.querySelector('.uf-vorhanden').addEventListener('click', () => editor(p));
   hinweis.querySelector('.uf-nochmal').addEventListener('click', () => editor(null, vorlage));
   bereich.prepend(hinweis);
+  return true;
 }
 
 // ------------------------------------------------------------------ Editor
@@ -396,7 +166,7 @@ ${Object.entries(MODI).map(([k, [titel, text]]) => `<label class="uf-modus"><inp
     zeichne();
     liste_.lastElementChild?.querySelector('textarea')?.focus();
   }));
-  form.querySelector('.uf-abbrechen').addEventListener('click', () => startseite());
+  form.querySelector('.uf-abbrechen').addEventListener('click', () => W.startseite());
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -414,13 +184,8 @@ ${Object.entries(MODI).map(([k, [titel, text]]) => `<label class="uf-modus"><inp
       const { poll: gespeichert } = poll
         ? await api('PATCH', `/polls/${poll.id}`, body)
         : await api('POST', '/polls', body);
-      await startseite();
-      const karte = wurzel.querySelector(`.uf-umfrage[data-id="${gespeichert.id}"]`);
-      if (karte) {
-        karte.scrollIntoView({ block: 'center' });
-        if (danach === 'starten') startDialog(gespeichert, karte);
-      }
-    } catch (err) { fehlerBehandeln(err, ziel); }
+      await W.nachSpeichern(gespeichert, danach === 'starten');
+    } catch (err) { W.fehler(err, ziel); }
   });
   wurzel.append(form);
   form.titel.focus();
@@ -543,7 +308,7 @@ function buehne(run, nurLesen) {
     if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
     el.remove();
     document.documentElement.classList.remove('uf-buehne-offen');
-    liste();
+    W.liste();
   };
   el.querySelector('.uf-schliessen').addEventListener('click', schliessen);
   el.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !document.fullscreenElement) schliessen(); });
@@ -580,17 +345,9 @@ function buehne(run, nurLesen) {
       ? `<span class="uf-abzeichen">${nurLesen ? `Durchführung vom ${zeit(r.startedAt)}` : 'Beendet'}</span> ${r.participants} Teilnehmende`
       : `<span class="uf-abzeichen live">Live</span> <strong class="uf-teilnehmende">${r.participants}</strong> Teilnehmende`;
 
-    const zugang = el.querySelector('.uf-zugang');
-    zugang.hidden = !live;
-    if (live) {
-      const ziel = `${TOOL_URL}?code=${r.code}`;
-      if (zugang.dataset.code !== r.code) {
-        zugang.dataset.code = r.code;
-        zugang.innerHTML = `<div class="uf-qr">${qrSvg(ziel, { titel: `QR-Code zur Umfrage (${ziel})` })}</div>
-<p class="uf-zugang-text">${esc(KURZ_URL)}</p>
-<p class="uf-code" aria-label="Code ${r.code.split('').join(' ')}">${r.code.slice(0, 3)} ${r.code.slice(3)}</p>`;
-      }
-    }
+    const zugangEl = el.querySelector('.uf-zugang');
+    zugangEl.hidden = !live;
+    if (live) zugang(zugangEl, r.kind, r.code);
 
     const ausw = el.querySelector('.uf-auswertung');
     if (r.mode === 'single' || zustand.ansicht !== null) {
@@ -737,127 +494,69 @@ ${saeulen}${achse}${marker(s.mittel, 'uf-mittel')}${marker(s.median, 'uf-median'
 
 // ------------------------------------------------------------------ Teilnahme (Schülerinnen und Schüler)
 
-function kennung(code) {
-  const schluessel = `umfrage-teilnahme:${code}`;
-  let k = lies(schluessel);
-  if (!k || !/^[a-z0-9]{16}$/.test(k)) {
-    const zufall = crypto.getRandomValues(new Uint8Array(16));
-    k = [...zufall].map((b) => 'abcdefghijklmnopqrstuvwxyz0123456789'[b % 36]).join('');
-    schreib(schluessel, k);
-  }
-  return k;
-}
-
-let teilnahmeTimer = null;
-
-async function teilnehmen(code, fehlerZiel = null) {
-  clearTimeout(teilnahmeTimer);
-  const ich = kennung(code);
-  let stand;
-  try {
-    stand = await api('GET', `/join/${code}?participant=${ich}`);
-  } catch (err) {
-    if (fehlerZiel) { meldung(fehlerZiel, err.status === 404 ? 'Zu diesem Code läuft gerade keine Umfrage.' : err.message); return; }
-    startseite();
-    meldung(wurzel.querySelector('.uf-code-meldung'), err.status === 404 ? 'Zu diesem Code läuft gerade keine Umfrage.' : err.message);
-    return;
-  }
-  history.replaceState(null, '', `${location.pathname}?code=${code}`);
-  wurzel.replaceChildren();
-  const el = html(`<section class="uf-karte uf-teilnahme" aria-live="polite">
-<p class="klein uf-teilnahme-kopf">Umfrage · Code ${code}</p>
-<h2>${esc(stand.title)}</h2>
-<div class="uf-teilnahme-inhalt"></div>
-<div class="uf-teilnahme-meldung"></div>
-</section>`);
-  wurzel.append(el);
-  const inhalt = el.querySelector('.uf-teilnahme-inhalt');
-  const meldeZiel = el.querySelector('.uf-teilnahme-meldung');
+function teilnehmen(code, stand) {
   let angezeigt = null; // Kennung der angezeigten Frage(n), damit Eingaben beim Aktualisieren erhalten bleiben
   let countdownEnde = null;
+  let t;
 
-  function zeichne() {
-    const schluessel = stand.mode === 'single' ? `${stand.current}` : 'alle';
+  async function senden(antworten) {
+    try {
+      const antwort = await t.senden('answers', { answers: antworten });
+      if (!antwort) return;
+      t.stand.answers = antwort.answers;
+      aktualisiereStatus();
+      meldung(t.meldeZiel, t.stand.mode === 'single' ? 'Gesendet. Du kannst deine Antwort noch ändern, bis die nächste Frage kommt.' : 'Gesendet. Du kannst deine Antworten noch ändern, solange die Umfrage läuft.', 'info');
+    } catch (err) {
+      if (err.status === 409) t.abfragen();
+    }
+  }
+
+  function aktualisiereStatus() {
+    t.inhalt.querySelectorAll('.uf-antwort').forEach((b) => b.zeigeGesendet(t.stand.answers[b.dataset.frage]));
+    countdownEnde = t.stand.remaining !== null && t.stand.remaining !== undefined ? Date.now() + t.stand.remaining * 1000 : null;
+    tick();
+  }
+
+  function tick() {
+    const anzeige = t?.inhalt.querySelector('.uf-countdown-anzeige');
+    if (!anzeige) return;
+    if (countdownEnde === null) { anzeige.textContent = ''; return; }
+    anzeige.textContent = ` · noch ${sekunden(Math.max(0, Math.ceil((countdownEnde - Date.now()) / 1000)))}`;
+  }
+
+  function zeichne(tn) {
+    t = tn;
+    const s = t.stand;
+    const schluessel = s.mode === 'single' ? `${s.current}` : 'alle';
     if (schluessel === angezeigt) { aktualisiereStatus(); return; }
     angezeigt = schluessel;
-    if (stand.mode === 'single') {
-      const f = stand.questions[0];
-      inhalt.replaceChildren(html(`<div class="uf-einzeln">
-<p class="uf-frage-nr">Frage ${stand.current + 1} von ${stand.total}<span class="uf-countdown-anzeige"></span></p>
-</div>`));
-      const block = antwortBlock(f, stand.answers[f.id], senden);
-      inhalt.firstElementChild.append(block);
-      inhalt.firstElementChild.append(html('<p class="klein uf-warten">Die nächste Frage erscheint automatisch, sobald deine Lehrkraft weiterschaltet.</p>'));
+    if (s.mode === 'single') {
+      const f = s.questions[0];
+      const box = html(`<div class="uf-einzeln"><p class="uf-frage-nr">Frage ${s.current + 1} von ${s.total}<span class="uf-countdown-anzeige"></span></p></div>`);
+      box.append(antwortBlock(f, s.answers[f.id], senden));
+      box.append(html('<p class="klein uf-warten">Die nächste Frage erscheint automatisch, sobald deine Lehrkraft weiterschaltet.</p>'));
+      t.inhalt.replaceChildren(box);
     } else {
       const form = html('<form class="uf-alle"></form>');
-      stand.questions.forEach((f, i) => {
-        const block = antwortBlock(f, stand.answers[f.id], null, i + 1);
-        form.append(block);
-      });
+      s.questions.forEach((f, i) => form.append(antwortBlock(f, s.answers[f.id], null, i + 1)));
       form.append(html('<div class="uf-leiste"><button type="submit" class="knopf primaer">Antworten senden</button></div>'));
       form.addEventListener('submit', (e) => {
         e.preventDefault();
         const antworten = {};
         form.querySelectorAll('.uf-antwort').forEach((b) => { if (b.wert() !== null) antworten[b.dataset.frage] = b.wert(); });
-        if (!Object.keys(antworten).length) { meldung(meldeZiel, 'Du hast noch keine Frage beantwortet.'); return; }
+        if (!Object.keys(antworten).length) { meldung(t.meldeZiel, 'Du hast noch keine Frage beantwortet.'); return; }
         senden(antworten);
       });
-      inhalt.replaceChildren(form);
+      t.inhalt.replaceChildren(form);
     }
     aktualisiereStatus();
   }
 
-  function aktualisiereStatus() {
-    inhalt.querySelectorAll('.uf-antwort').forEach((b) => b.zeigeGesendet(stand.answers[b.dataset.frage]));
-    countdownEnde = stand.remaining !== null && stand.remaining !== undefined ? Date.now() + stand.remaining * 1000 : null;
-    tick();
-  }
-
-  function tick() {
-    const anzeige = inhalt.querySelector('.uf-countdown-anzeige');
-    if (!anzeige) return;
-    if (countdownEnde === null) { anzeige.textContent = ''; return; }
-    const rest = Math.max(0, Math.ceil((countdownEnde - Date.now()) / 1000));
-    anzeige.textContent = ` · noch ${sekunden(rest)}`;
-  }
-  const tickTimer = setInterval(() => { if (!el.isConnected) clearInterval(tickTimer); else tick(); }, 500);
-
-  async function senden(antworten) {
-    meldung(meldeZiel, '');
-    try {
-      const { answers } = await api('POST', `/join/${code}/answers`, { participant: ich, answers: antworten });
-      stand.answers = answers;
-      aktualisiereStatus();
-      meldung(meldeZiel, stand.mode === 'single' ? 'Gesendet. Du kannst deine Antwort noch ändern, bis die nächste Frage kommt.' : 'Gesendet. Du kannst deine Antworten noch ändern, solange die Umfrage läuft.', 'info');
-    } catch (err) {
-      if (err.status === 404) { ende(); return; }
-      if (err.status === 409) { meldung(meldeZiel, err.message); abfragen(); return; }
-      meldung(meldeZiel, err.message);
-    }
-  }
-
-  function ende() {
-    clearTimeout(teilnahmeTimer);
-    inhalt.innerHTML = '<p class="uf-ende">Die Umfrage ist beendet. Danke fürs Mitmachen!</p>';
-    meldung(meldeZiel, '');
-    history.replaceState(null, '', location.pathname);
-  }
-
-  async function abfragen() {
-    clearTimeout(teilnahmeTimer);
-    if (!el.isConnected) return;
-    try {
-      stand = await api('GET', `/join/${code}?participant=${ich}`);
-      zeichne();
-      teilnahmeTimer = setTimeout(abfragen, stand.mode === 'single' ? 3000 : 10000);
-    } catch (err) {
-      if (err.status === 404) { ende(); return; }
-      teilnahmeTimer = setTimeout(abfragen, 6000);
-    }
-  }
-
-  zeichne();
-  teilnahmeTimer = setTimeout(abfragen, stand.mode === 'single' ? 3000 : 10000);
+  const rahmen = teilnahmeRahmen(wurzel, code, stand, {
+    zeichne,
+    intervall: (s) => (s.mode === 'single' ? 3000 : 10000),
+  });
+  const tickTimer = setInterval(() => { if (!rahmen.el.isConnected) clearInterval(tickTimer); else tick(); }, 500);
 }
 
 // Eingabe für eine Frage. `sofort` = eigener Senden-Knopf (Modus „Frage für Frage“).
@@ -902,4 +601,4 @@ function antwortBlock(f, bisher, sofort, nummer = null) {
   return block;
 }
 
-start();
+W.start();

@@ -9,6 +9,24 @@
       "slug": "umfragen",
       "icon": "umfrage",
       "beschreibung": "Live-Umfragen mit Schiebereglern und Antwortvorgaben: Code oder QR-Code zeigen, Ergebnisse live auf dem Beamer."
+    },
+    {
+      "titel": "Wortwolke",
+      "slug": "wortwolke",
+      "icon": "wolke",
+      "beschreibung": "Die Klasse schickt Begriffe, am Beamer wächst live eine Wortwolke – mit Moderation."
+    },
+    {
+      "titel": "Quiz",
+      "slug": "quiz",
+      "icon": "quiz",
+      "beschreibung": "Quiz-Spiel für die ganze Klasse: Spielnamen, Zeitlimit, Punkte für Tempo, Rangliste und Siegerpodest."
+    },
+    {
+      "titel": "Evaluation",
+      "slug": "evaluation",
+      "icon": "evaluation",
+      "beschreibung": "Anonyme Unterrichtsevaluation mit fertigem Feedbackbogen; Auswertung erst nach dem Ende."
     }
   ]
 }

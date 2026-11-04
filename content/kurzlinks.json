@@ -136,5 +136,8 @@
   "/informatik/werkzeuge/qr-pixel-editor/": "9.50.3",
   "/informatik/werkzeuge/qr-masken/": "9.50.4",
   "/werkzeuge/": "50",
-  "/werkzeuge/umfragen/": "50.1"
+  "/werkzeuge/umfragen/": "50.1",
+  "/werkzeuge/wortwolke/": "50.2",
+  "/werkzeuge/quiz/": "50.3",
+  "/werkzeuge/evaluation/": "50.4"
 }

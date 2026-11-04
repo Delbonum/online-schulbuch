@@ -70,6 +70,20 @@ final class Database
                     ? 'TINYINT(1) NOT NULL DEFAULT 0'
                     : 'INTEGER NOT NULL DEFAULT 0',
             ],
+            // Live-Werkzeuge (seit November 2026: Wortwolke, Quiz, Evaluation neben den Umfragen)
+            'poll_polls' => [
+                'kind' => $this->driver() === 'mysql' ? "VARCHAR(16) NOT NULL DEFAULT 'poll'" : "TEXT NOT NULL DEFAULT 'poll'",
+                'settings' => 'TEXT NULL',
+            ],
+            'poll_runs' => [
+                'kind' => $this->driver() === 'mysql' ? "VARCHAR(16) NOT NULL DEFAULT 'poll'" : "TEXT NOT NULL DEFAULT 'poll'",
+                'phase' => $this->driver() === 'mysql' ? "VARCHAR(16) NOT NULL DEFAULT 'open'" : "TEXT NOT NULL DEFAULT 'open'",
+                'settings' => 'TEXT NULL',
+            ],
+            'poll_answers' => [
+                'text_value' => 'TEXT NULL',
+                'answer_ms' => $this->driver() === 'mysql' ? 'INT NULL' : 'INTEGER NULL',
+            ],
         ];
         foreach ($columns as $table => $definitions) {
             foreach ($definitions as $column => $type) {
@@ -147,6 +161,10 @@ final class Database
      */
     public function transaction(callable $callback): mixed
     {
+        // Verschachtelt: Die äußere Transaktion umfasst alles
+        if ($this->pdo->inTransaction()) {
+            return $callback();
+        }
         $this->pdo->beginTransaction();
         try {
             $result = $callback();

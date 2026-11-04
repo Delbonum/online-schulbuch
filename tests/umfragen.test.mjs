@@ -1,8 +1,11 @@
-// Auswertung des Werkzeugs „Umfragen“ und QR-Code-Erzeugung.
+// Live-Werkzeuge: Auswertung der Umfragen, Wortwolke, Evaluation (mit Vorlage PoKUK) und QR-Code-Erzeugung.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { skala, auswahl, quantil, zahl } from '../apps/werkzeuge/umfragen/statistik.js';
 import { qrEncode } from '../apps/werkzeuge/qr-code/qr-encode.js';
+import { zaehleWoerter, wolkeLayout } from '../apps/werkzeuge/wortwolke/wolke.js';
+import { wert, kennzahlen, skalen, aussagen, freitexte, csv } from '../apps/werkzeuge/evaluation/auswertung.js';
+import { POKUK } from '../apps/werkzeuge/evaluation/vorlagen.js';
 
 test('Skala: Mittelwert, Median, Quartile, Streuung, Häufigkeiten', () => {
   const s = skala([2, 4, 4, 4, 5, 5, 7, 9], { min: 0, max: 10, step: 1 });
@@ -60,4 +63,48 @@ test('QR-Code: Größe, Suchmuster und Formatinformation passen', () => {
   const b = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => modules[8][size - 1 - i]);
   assert.deepEqual(a.slice(0, 6), b.slice(0, 6));
   assert.throws(() => qrEncode('x'.repeat(400)));
+});
+
+test('Wortwolke: Begriffe ohne Rücksicht auf Groß-/Kleinschreibung zählen, überlappungsfrei anordnen', () => {
+  const w = zaehleWoerter(['Freiheit', 'freiheit', ' Freiheit ', 'Mut', 'mut  ', 'Liebe']);
+  assert.deepEqual(w.map((x) => [x.text, x.anzahl]), [['Freiheit', 3], ['Mut', 2], ['Liebe', 1]]);
+  const { teile, box } = wolkeLayout(w, (text, g) => text.length * g * 0.6);
+  assert.equal(teile.length, 3);
+  assert.ok(teile[0].groesse > teile[2].groesse, 'häufigster Begriff am größten');
+  for (const a of teile) for (const b of teile) {
+    if (a !== b) assert.ok(a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y, 'keine Überlappung');
+  }
+  assert.ok(box.w > 0 && box.h > 0);
+});
+
+test('Evaluation: Stufen, Umpolung, Skalen wie in der Auswertungsmaske', () => {
+  const f = { id: 'a', type: 'choice', options: ['1', '2', '3', '4'], dimension: 'S' };
+  const r = { ...f, id: 'b', reverse: true };
+  assert.equal(wert(f, 0), 1);
+  assert.equal(wert(r, 3, true), 1, 'umgepolt: „trifft zu“ zählt 1');
+  assert.equal(wert(r, 3), 4, 'Einzelaussage zeigt den angekreuzten Wert');
+  const boegen = [{ a: 3, b: 0 }, { a: 2, b: 1 }, { a: 3 }];
+  const [s] = skalen([f, r], boegen);
+  // Personen: (4+4)/2 = 4, (3+3)/2 = 3, 4 → Mittelwert 11/3, Median 4, SD (Grundgesamtheit) 0,471
+  assert.equal(s.n, 3);
+  assert.ok(Math.abs(s.mittel - 11 / 3) < 1e-9);
+  assert.equal(s.median, 4);
+  assert.ok(Math.abs(s.sd - 0.4714) < 1e-3);
+  assert.deepEqual(aussagen([f], boegen)[0].verteilung, [0, 0, 1, 2]);
+  assert.equal(kennzahlen([]).mittel, null);
+  const t = freitexte([{ id: 'c', type: 'text', text: 'Sonst?' }], [{ c: 'gut' }, { c: ' ' }, {}]);
+  assert.deepEqual(t[0].texte, ['gut']);
+  const datei = csv([f, r, { id: 'c', type: 'text', text: 'Sonst?' }], [{ a: 3, b: 0, c: 'Ja; "gut"' }]);
+  assert.match(datei, /^\uFEFF"Bogen";"a";"b";"c";"Skala: S"\r\n1;4;1;"Ja; ""gut""";4\r\n/);
+});
+
+test('Vorlage PoKUK: 45 Aussagen, zehn Skalen, Ver6 umgepolt, gültige Kürzel', () => {
+  assert.equal(POKUK.questions.length, 45);
+  assert.equal(POKUK.settings.dimensions.length, 10);
+  assert.ok(POKUK.questions.every((q) => /^[a-z0-9]{1,16}$/.test(q.id) && q.options.length === 4 && q.dimension));
+  assert.deepEqual(POKUK.questions.filter((q) => q.reverse).map((q) => q.id), ['ver6']);
+  const anzahl = (name) => POKUK.questions.filter((q) => q.dimension === name).length;
+  assert.equal(anzahl('Kognitive Aktivierung'), 7);
+  assert.equal(anzahl('Zeitverluste und Störungen'), 5);
+  assert.ok(POKUK.questions.filter((q) => q.section.startsWith('Bei der')).every((q) => q.id.startsWith('zeit')));
 });

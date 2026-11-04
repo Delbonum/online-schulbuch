@@ -21,7 +21,8 @@ apps/
   ki-lernspiele/          Tic Tac Toe, NIM, Bauernschach (Spiellogik + Tests)
   werkzeuge/              Zahlensysteme, QR-Code-Werkzeuge (qr-encode.js erzeugt echte QR-Codes),
                           Grammatik-Übungen, arbeitsblatt/ (Bausteine für digitale Arbeitsblätter),
-                          umfragen/ (Live-Umfragen, Daten über die Schulbuch-API)
+                          live/ (gemeinsamer Rahmen der Live-Tools), umfragen/, wortwolke/, quiz/,
+                          evaluation/ (Live-Tools, Daten über die Schulbuch-API)
   kryptogame/             KryptoGAME – eigenständige React-App mit eigenem Build (Backend: server/)
   autocell/               AutoCell – fertig gebaute Web-Version aus eigenem Repository (→ /informatik/autocell/,
                           aktualisieren mit scripts/autocell-holen.mjs, siehe apps/autocell/README.md)
@@ -120,34 +121,49 @@ aufklappbare Kästen ohne Antwortfelder entfallen (mit Lösungen: alles offen, p
 Die Mischung ist fest, damit Blatt und Lösungsfassung zusammenpassen. Die `data-notiz`-ids müssen im ganzen Schulbuch eindeutig
 sein – deshalb mit dem Kürzel der Reihe beginnen (`sezuan-…`). Gleiche id auf einer späteren Seite = Rückblick.
 
-### Live-Umfragen aus dem Schulbuch
+### Live-Werkzeuge (Umfragen, Wortwolke, Quiz, Evaluation)
 
-Das Tool **Umfragen** (`/werkzeuge/umfragen/`, Kurzadresse `online-schulbuch.de/umfrage`) führt Umfragen mit
-Schiebereglern (Skala) und Antwortvorgaben durch: Lehrkräfte legen sie an (eigenes Konto), wählen den Modus
-„Frage für Frage“ (ausführliche Auswertung, Weiterschalten oder Countdown) oder „Alle Fragen auf einmal“ (kompakte
-Auswertung), zeigen Code und QR-Code am Beamer und sehen die Ergebnisse live. Schülerinnen und Schüler nehmen ohne
-Konto teil. Umfragen lassen sich exportieren/importieren (JSON mit allen Durchführungen) und werden nach 500 Tagen
-ohne Bearbeitung oder Durchführung automatisch gelöscht.
+Die fächerübergreifenden Tools unter `/werkzeuge/` teilen sich einen Rahmen (`apps/werkzeuge/live/live.js` und
+`live.css`): Lehrkräfte melden sich mit ihrem Konto an, legen Einträge an, führen sie durch (sechsstelliger Code,
+QR-Code und Kurzadresse am Beamer) und sehen ihre früheren Durchführungen. **Schülerinnen und Schüler brauchen kein
+Konto** – sie geben den Code auf einer beliebigen Tool-Seite ein (falsche Seite leitet weiter) oder scannen den QR-Code.
+Jeder Eintrag lässt sich samt allen Ergebnissen als JSON **exportieren und vollständig wieder importieren**; Einträge,
+die **500 Tage** weder bearbeitet noch durchgeführt wurden, löscht der Server.
 
-Meinungslinien und Quizze im Schulbuch lassen sich mit einem Knopf in den Hinweisen für Lehrkräfte direkt als
-Umfrage übernehmen – die Seite selbst funktioniert unverändert weiter:
+| Tool | Seite / Kurzadresse | Besonderheiten |
+| --- | --- | --- |
+| Umfragen | `/werkzeuge/umfragen/`, `/umfrage` | Schieberegler und Antwortvorgaben; „Frage für Frage“ (ausführliche Statistik, Countdown) oder „Alle Fragen auf einmal“ (kompakt) |
+| Wortwolke | `/werkzeuge/wortwolke/`, `/wortwolke` | 1–5 Begriffe pro Person; Begriffe per Klick ausblenden (Moderation); Ansicht als Liste |
+| Quiz | `/werkzeuge/quiz/`, `/quiz` | Spielnamen, Lobby, Zeit je Frage, 500–1000 Punkte je nach Tempo, Auflösung, Rangliste, Siegerpodest |
+| Evaluation | `/werkzeuge/evaluation/`, `/evaluation` | anonym; während der Durchführung nur die Zahl der Abgaben; Auswertung (Skalen wie in der PoKUK-Maske, Aussagen, Freitexte, CSV) erst nach dem Ende und ab einer Mindestzahl (Standard 5); Vorlagen in `apps/werkzeuge/evaluation/vorlagen.js` |
+
+Anonymität der Evaluation (serverseitig, `PollController`): Antworten werden unter einer neuen Zufallskennung ohne
+Zeitpunkt gespeichert, getrennt davon nur, *dass* eine Kennung abgegeben hat; Ergebnisse und Export gibt es erst
+nach dem Ende und ab der Mindestzahl.
+
+#### Live-Umfragen aus dem Schulbuch
+
+Meinungslinien und Quizze im Schulbuch lassen sich in den Hinweisen für Lehrkräfte direkt als Umfrage starten – die
+Seite selbst funktioniert unverändert weiter:
 
 ```html
 <div class="quiz" data-id="reihe-lesecheck-1" …> … </div>          <!-- Quiz braucht dafür eine data-id -->
 <lehrkraft titel="Als Live-Umfrage durchführen">
 <p>Kurz erklären, wofür sich die Umfrage hier eignet (Lehrkräfte werden gesiezt).</p>
-<p><button type="button" class="knopf primaer" data-als-umfrage="id-1 id-2" data-titel="Titel der Umfrage"
-  data-modus="single">Als Live-Umfrage durchführen</button></p>
+<als-umfrage ids="id-1 id-2" titel="Titel der Umfrage" modus="single"></als-umfrage>
 </lehrkraft>
 ```
 
-`data-als-umfrage` nennt die `data-id` von Meinungslinien (`.position`, werden Skalenfragen 0–10 mit den Polen als
-Beschriftung) oder Quizzen (`.quiz`, werden Auswahlfragen mit Lösung, die Vorgaben fest gemischt). `data-modus`:
-`single` (Frage für Frage) oder `all`; ohne Angabe bei mehreren Fragen `all`. Passt der Text einer Meinungslinie
-nicht als Frage, ersetzt ihn `data-umfrage-text` an der `.position`. Den Kasten direkt hinter die Meinungslinie bzw.
-das Quiz setzen. **Bei neuen Inhalten mitdenken:** Jede Meinungslinie (Meinungsbild der Klasse, Vorher-nachher-
-Vergleich) und jeder Lesecheck bzw. jedes Verständnisquiz, das sich für eine gemeinsame Diagnose in der Klasse eignet,
-bekommt so einen Knopf. Selbstchecks zum eigenständigen Üben und Tests (z. B. Abschlusstest) nicht.
+Der Build macht aus `<als-umfrage>` eine Modus-Wahl (`modus` = Vorauswahl: `single` „Frage für Frage“ oder `all`)
+und die Knöpfe **„Live-Umfrage starten“** (Standard: startet sofort im gewählten Modus, ohne Speichern und Start-Dialog)
+und „Vorher bearbeiten“. Dieselbe Stelle im Schulbuch nutzt immer dieselbe Umfrage der Lehrkraft (frühere Ergebnisse
+bleiben unter „Ergebnisse früherer Durchführungen“). `ids` nennt die `data-id` von Meinungslinien (`.position`, werden
+Skalenfragen 0–10 mit den Polen als Beschriftung) oder Quizzen (`.quiz`, werden Auswahlfragen mit Lösung, die Vorgaben
+fest gemischt). Passt der Text einer Meinungslinie nicht als Frage, ersetzt ihn `data-umfrage-text` an der `.position`.
+Den Kasten direkt hinter die Meinungslinie bzw. das Quiz setzen. **Bei neuen Inhalten mitdenken:** Jede Meinungslinie
+(Meinungsbild der Klasse, Vorher-nachher-Vergleich) und jeder Lesecheck bzw. jedes Verständnisquiz, das sich für eine
+gemeinsame Diagnose in der Klasse eignet, bekommt so einen Kasten. Selbstchecks zum eigenständigen Üben und Tests
+(z. B. Abschlusstest) nicht.
 
 ### Inhalte für Lehrkräfte
 
@@ -248,11 +264,12 @@ Es gibt keine Abhängigkeiten außer Node.js (ab Version 20).
   Eine Anmeldung gilt überall – im Schulbuch (Inhalte für Lehrkräfte) und in den Werkzeugen (z. B. KryptoGAME).
   Session-Cookie `SCHULBUCH_SESSION`, nur für `/api/`.
 - **Schlüssel für die Inhalte für Lehrkräfte:** `GET /api/teacher-content/key` (nur Lehrkräfte).
-- **Umfragen** (Tabellen `poll_*`): `/api/polls` (anlegen, bearbeiten, löschen, `…/export`, `/polls/import`),
-  `POST /api/polls/{id}/runs` (Durchführung mit sechsstelligem Code starten), `/api/poll-runs/{id}` (Stand mit allen
-  Antworten; `PATCH` mit `current`, `countdown` oder `end`), ohne Konto: `GET /api/join/{code}` und
-  `POST /api/join/{code}/answers`. Der Countdown rückt beim Abruf serverseitig weiter; Durchführungen enden nach
-  12 Stunden automatisch.
+- **Live-Tools** (Tabellen `poll_*`, Spalte `kind`: `poll`, `wordcloud`, `quiz`, `evaluation`): `/api/polls[?kind=…]`
+  (anlegen, bearbeiten, löschen, `…/export`, `/polls/import`), `POST /api/polls/{id}/runs` (Durchführung mit
+  sechsstelligem Code starten), `/api/poll-runs/{id}` (Stand; `PATCH` steuert: `current`, `countdown`, `hide`/`show`,
+  `start`, `phase`, `kick`, `end`), ohne Konto: `GET /api/join/{code}`, `POST /api/join/{code}/answers`,
+  `POST /api/join/{code}/name` (Quiz). Countdown und Ablauf einer Quizfrage rücken beim Abruf serverseitig weiter;
+  Durchführungen enden nach 12 Stunden automatisch.
 - **Neue Tabellen** legt die API nach dem Hochladen beim ersten Aufruf selbst an (Markierung
   `data/.schema-<Prüfsumme>`), denn auf dem Server gibt es kein PHP auf der Kommandozeile.
 - **KryptoGAME:** Fortschritt, Prüfungen (Bewertung auf dem Server), Statistik.

@@ -83,10 +83,12 @@ CREATE INDEX IF NOT EXISTS idx_login_ip ON login_attempts (ip, created_at);
 CREATE TABLE IF NOT EXISTS poll_polls (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     teacher_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    kind       TEXT    NOT NULL DEFAULT 'poll',
     title      TEXT    NOT NULL,
     mode       TEXT    NOT NULL,
     countdown  INTEGER NOT NULL DEFAULT 0,
     questions  TEXT    NOT NULL,
+    settings   TEXT    NULL,
     source     TEXT    NULL,
     created_at TEXT    NOT NULL,
     updated_at TEXT    NOT NULL,
@@ -99,9 +101,12 @@ CREATE TABLE IF NOT EXISTS poll_runs (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     poll_id        INTEGER NOT NULL REFERENCES poll_polls (id) ON DELETE CASCADE,
     code           TEXT    NULL UNIQUE,
+    kind           TEXT    NOT NULL DEFAULT 'poll',
+    phase          TEXT    NOT NULL DEFAULT 'open',
     mode           TEXT    NOT NULL,
     countdown      INTEGER NOT NULL DEFAULT 0,
     questions      TEXT    NOT NULL,
+    settings       TEXT    NULL,
     current_question INTEGER NOT NULL DEFAULT 0,
     question_since TEXT    NOT NULL,
     started_at     TEXT    NOT NULL,
@@ -114,6 +119,23 @@ CREATE TABLE IF NOT EXISTS poll_answers (
     participant TEXT    NOT NULL,
     question    TEXT    NOT NULL,
     answer_value REAL    NOT NULL,
+    text_value  TEXT    NULL,
+    answer_ms   INTEGER NULL,
     created_at  TEXT    NOT NULL,
     PRIMARY KEY (run_id, participant, question)
+);
+
+CREATE TABLE IF NOT EXISTS poll_players (
+    run_id      INTEGER NOT NULL REFERENCES poll_runs (id) ON DELETE CASCADE,
+    participant TEXT    NOT NULL,
+    nickname    TEXT    NOT NULL COLLATE NOCASE,
+    joined_at   TEXT    NOT NULL,
+    PRIMARY KEY (run_id, participant),
+    UNIQUE (run_id, nickname)
+);
+
+CREATE TABLE IF NOT EXISTS poll_submissions (
+    run_id      INTEGER NOT NULL REFERENCES poll_runs (id) ON DELETE CASCADE,
+    participant TEXT    NOT NULL,
+    PRIMARY KEY (run_id, participant)
 );

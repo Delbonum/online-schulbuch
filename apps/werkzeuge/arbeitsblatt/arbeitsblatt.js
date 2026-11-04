@@ -627,11 +627,12 @@ document.querySelectorAll('ul.abhaken[data-id]').forEach((liste) => {
 
 // ---------------------------------------------------------------- Als Live-Umfrage durchführen
 //
-//   <button type="button" class="knopf" data-als-umfrage="id1 id2 …" data-titel="…" [data-modus="single|all"]>
+//   <als-umfrage ids="id1 id2 …" titel="…" modus="single|all"></als-umfrage>   (im Inhalt, siehe build.mjs)
 //
-// Steht in den Hinweisen für Lehrkräfte (<lehrkraft>). Die ids sind data-id von Meinungslinien (.position)
-// oder Quizzen (.quiz[data-id]); daraus wird eine Umfrage für das Werkzeug „Umfragen“ gebaut und in einem
-// neuen Tab geöffnet (Übergabe über localStorage, siehe apps/werkzeuge/umfragen/umfragen.js).
+// Steht in den Hinweisen für Lehrkräfte (<lehrkraft>). Der Build macht daraus eine Modus-Wahl und die Knöpfe
+// „Live-Umfrage starten“ und „Vorher bearbeiten“. Die ids sind data-id von Meinungslinien (.position) oder Quizzen
+// (.quiz[data-id]); daraus wird eine Umfrage für das Werkzeug „Umfragen“ gebaut und in einem neuen Tab sofort
+// gestartet bzw. zum Bearbeiten geöffnet (Übergabe über localStorage, siehe apps/werkzeuge/umfragen/umfragen.js).
 // Mit data-umfrage-text an einer Meinungslinie lässt sich der Fragetext für die Umfrage ersetzen.
 
 // Feste, aber gut verteilte Reihenfolge der Antwortvorgaben (hängt nur vom Fragetext ab)
@@ -668,14 +669,16 @@ function umfrageFragen(id) {
 }
 
 document.addEventListener('click', (e) => {
-  const knopf = e.target.closest('[data-als-umfrage]');
-  if (!knopf) return;
-  const ids = knopf.dataset.alsUmfrage.split(/\s+/).filter(Boolean);
+  const knopf = e.target.closest('[data-als-umfrage-start], [data-als-umfrage-bearbeiten]');
+  const box = knopf?.closest('[data-als-umfrage]');
+  if (!box) return;
+  const ids = box.dataset.alsUmfrage.split(/\s+/).filter(Boolean);
   const questions = ids.flatMap(umfrageFragen).filter((f) => f.text);
   if (!questions.length) return;
+  const modus = box.querySelector('input[type="radio"]:checked')?.value ?? (questions.length > 1 ? 'all' : 'single');
   const umfrage = {
-    title: knopf.dataset.titel || document.querySelector('h1')?.textContent.trim() || 'Umfrage',
-    mode: knopf.dataset.modus || (questions.length > 1 ? 'all' : 'single'),
+    title: box.dataset.titel || document.querySelector('h1')?.textContent.trim() || 'Umfrage',
+    mode: modus,
     countdown: 0,
     questions,
     source: `${location.pathname}#${ids.join(',')}`,
@@ -686,5 +689,7 @@ document.addEventListener('click', (e) => {
     knopf.after(Object.assign(document.createElement('p'), { className: 'klein', textContent: 'Der Browser erlaubt keine Übergabe (privates Fenster?).' }));
     return;
   }
-  window.open(`${window.SCHULBUCH_BASIS ?? '/'}werkzeuge/umfragen/?uebernehmen=1`, '_blank');
+  // Standard: sofort starten; „Vorher bearbeiten“ öffnet den Editor
+  const start = knopf.hasAttribute('data-als-umfrage-start') ? `&start=${modus}` : '';
+  window.open(`${window.SCHULBUCH_BASIS ?? '/'}werkzeuge/umfragen/?uebernehmen=1${start}`, '_blank');
 });
