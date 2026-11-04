@@ -11,12 +11,13 @@
 // (z. B. Lektüren: content/deutsch/lektueren/brecht/der-gute-mensch-von-sezuan/vorspiel.html).
 //
 // Inhalte für Lehrkräfte stehen in <lehrkraft titel="…">…</lehrkraft>. Sie werden beim Bauen mit
-// dem Passwort aus .lehrkraft-passwort (oder der Umgebungsvariable LEHRKRAFT_PASSWORT) verschlüsselt
-// und erst im Browser nach der Anmeldung entschlüsselt.
+// dem Schlüssel aus .lehrkraft-schluessel (oder der Umgebungsvariable LEHRKRAFT_SCHLUESSEL) verschlüsselt
+// und erst im Browser entschlüsselt, nachdem sich eine Lehrkraft bei der Schulbuch-API (/api/) angemeldet
+// und dort den Schlüssel abgeholt hat.
 
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
-import { createHash, createHmac, createCipheriv, pbkdf2Sync } from 'node:crypto';
+import { createHash, createHmac, createCipheriv } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { icon } from './icons.mjs';
 
@@ -90,12 +91,18 @@ function klartext(html) {
 
 // ------------------------------------------------------------------ Lehrkraft-Inhalte
 
-// Diese Werte muss auch site/assets/js/schulbuch.js kennen; sie stehen deshalb im Fußbereich jeder Seite.
-const LK_SALZ = 'online-schulbuch.de/lehrkraft/v1';
-const LK_RUNDEN = 200000;
-const LK_PASSWORT = (process.env.LEHRKRAFT_PASSWORT
-  ?? (existsSync(join(ROOT, '.lehrkraft-passwort')) ? readFileSync(join(ROOT, '.lehrkraft-passwort'), 'utf8') : '')).trim();
-const LK_SCHLUESSEL = LK_PASSWORT ? pbkdf2Sync(LK_PASSWORT, LK_SALZ, LK_RUNDEN, 32, 'sha256') : null;
+// 32 zufällige Byte als Base64 (erzeugen: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))").
+// Derselbe Wert steht auf dem Server in api/config.php ('content_key'); neuer Schlüssel = alle Lehrkräfte
+// müssen sich neu anmelden (z. B. wenn ein Konto gesperrt wurde).
+const LK_SCHLUESSEL_B64 = (process.env.LEHRKRAFT_SCHLUESSEL
+  ?? (existsSync(join(ROOT, '.lehrkraft-schluessel')) ? readFileSync(join(ROOT, '.lehrkraft-schluessel'), 'utf8') : '')).trim();
+const LK_SCHLUESSEL = LK_SCHLUESSEL_B64 ? Buffer.from(LK_SCHLUESSEL_B64, 'base64') : null;
+if (LK_SCHLUESSEL && LK_SCHLUESSEL.length !== 32) {
+  console.error('.lehrkraft-schluessel muss 32 Byte als Base64 enthalten.');
+  process.exit(1);
+}
+// Adresse der Schulbuch-API (Anmeldung, Schlüssel) – immer an der Wurzel, auch in der Vorschau
+const API = '/api';
 const LK_MUSTER = /<lehrkraft(?:\s+titel="([^"]*)")?>([\s\S]*?)<\/lehrkraft>/g;
 
 // AES-256-GCM. Der Startwert (IV) wird aus dem Inhalt abgeleitet, damit gleiche Inhalte bei jedem
@@ -286,7 +293,7 @@ function wandle(html, quelle) {
   s = s.replace(LK_MUSTER, (m, titel = 'Für Lehrkräfte', inhalt) => {
     const kopf = `<p class="box-titel">${icon('schloss')}${esc(titel)}</p>`;
     if (!LK_SCHLUESSEL) {
-      if (!VORSCHAU) fehler.push('Inhalte für Lehrkräfte vorhanden, aber kein Passwort: Datei .lehrkraft-passwort anlegen oder LEHRKRAFT_PASSWORT setzen');
+      if (!VORSCHAU) fehler.push('Inhalte für Lehrkräfte vorhanden, aber kein Schlüssel: Datei .lehrkraft-schluessel anlegen oder LEHRKRAFT_SCHLUESSEL setzen');
       return `<aside class="box lehrkraft gesperrt">${kopf}<p>In dieser Vorschau sind keine Inhalte für Lehrkräfte enthalten.</p></aside>`;
     }
     return `<aside class="box lehrkraft gesperrt" data-lk="${verschluessle(inhalt.trim())}">${kopf}<p>Nur für Lehrkräfte – nach der <a href="#lehrkraft" data-lk-anmelden>Anmeldung</a> sichtbar.</p></aside>`;
@@ -349,7 +356,7 @@ function fuss(fach) {
   return `<footer class="fuss">
 <div class="fuss-innen">
 <p><img src="${logo(fach)}" alt="" width="22" height="22"> ${esc(site.titel)} von ${esc(site.autor)} · Inhalte unter <a href="${u('/lizenz/')}">${esc(site.lizenz.name)}</a></p>
-<nav aria-label="Rechtliches">${LK_PRUEF ? `<a href="#lehrkraft" class="lk-link" data-lk-anmelden data-lk-pruef="${LK_PRUEF}" data-lk-salz="${LK_SALZ}" data-lk-runden="${LK_RUNDEN}">Für Lehrkräfte</a>` : ''}<a href="${u('/impressum/')}">Impressum</a><a href="${u('/datenschutz/')}">Datenschutz</a><a href="${u('/lizenz/')}">Lizenz</a></nav>
+<nav aria-label="Rechtliches">${LK_PRUEF ? `<a href="#lehrkraft" class="lk-link" data-lk-anmelden data-lk-pruef="${LK_PRUEF}" data-api="${API}">Für Lehrkräfte</a>` : ''}<a href="${u('/impressum/')}">Impressum</a><a href="${u('/datenschutz/')}">Datenschutz</a><a href="${u('/lizenz/')}">Lizenz</a></nav>
 </div>
 </footer>
 <dialog class="suche" aria-label="Suche">

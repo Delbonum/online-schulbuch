@@ -24,8 +24,13 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
 ## Inhalte
 - Werkzeuge liegen in `apps/` und stehen vorerst nur in der Toolsammlung
   (`/informatik/werkzeuge/`); die Einbindung in Fachkapitel erfolgt später, wenn es dort Inhalte gibt.
-- Das KryptoGAME ist eine eigenständige App (eigenes Design, eigener Build + PHP-Backend) und wird nur
-  verlinkt (neuer Tab). `scripts/deploy.sh` fasst `/informatik/kryptogame/` nie an.
+- Das KryptoGAME ist eine eigenständige App (eigenes Design, eigener Build) und wird nur verlinkt (neuer Tab).
+  `scripts/deploy.sh live` fasst `/informatik/kryptogame/` nie an; dafür gibt es `scripts/deploy.sh kryptogame`.
+- **Schulbuch-API** (`server/`, live unter `/api/`): gemeinsame Konten, Klassen und Anmeldung für die ganze Website
+  (Inhalte für Lehrkräfte, KryptoGAME, künftige Werkzeuge wie Wortwolke/Quiz). Neue Werkzeuge nutzen
+  `/api/auth/me` statt einer eigenen Anmeldung; eigene Tabellen mit Präfix. Tests: `php server/tests/run.php`
+  (PHP ist lokal nicht installiert – portables PHP genügt). Server-Konfiguration (`httpdocs/api/config.php`,
+  `config.basis.php`) nie überschreiben. Details: README „Schulbuch-API“.
 - `materialien/` ist unveröffentlichtes Unterrichtsmaterial und bleibt lokal (gitignored).
 - Externe Einbettungen (LearningApps) nur per Klick laden (Datenschutz).
 - **Kacheln nur für Fächer (Startseite) und Kapitel ersten Grades (Fachseite)**, nie innerhalb eines Kapitels –
@@ -36,5 +41,6 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
   Reihen sind **flexibel planbar** (Kern- und Zusatzseiten, Kasten „Einsatz dieser Seite“, Kurzfassungen, Leseplan,
   Planungsmodelle) und bekommen passende Bilder (eigene SVG-Skizzen, Fotos nur frei lizenziert mit Nachweis).
 - Lösungen/Lehrerhinweise in `<lehrkraft>`, **abschnittsweise**: hinter jedem `<h2>`-Abschnitt ein Kasten mit den
-  Lösungen zu dessen Aufgaben, nie alle gesammelt am Seitenende (README „Inhalte für Lehrkräfte“); Passwort in `.lehrkraft-passwort` (lokal, nie committen).
-  Live-Build bricht ohne Passwort ab.
+  Lösungen zu dessen Aufgaben, nie alle gesammelt am Seitenende (README „Inhalte für Lehrkräfte“). Lehrkräfte melden sich mit eigenem Konto an; der
+  Schlüssel steht in `.lehrkraft-schluessel` (lokal, nie committen) und gleich auf dem Server in `api/config.php`.
+  Live-Build bricht ohne Schlüssel ab.

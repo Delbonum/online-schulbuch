@@ -53,7 +53,8 @@ export default function RegisterPage() {
     <div className="max-w-lg mx-auto text-style py-8">
       <h1 className="text-2xl font-bold mb-2 heading-style">Als Lehrkraft registrieren</h1>
       <p className="mb-6 text-sm">
-        Lehrkräfte können Klassen und Zugänge für ihre Schüler/-innen anlegen und deren Fortschritt sehen. Jede
+        Mit dem Konto siehst du im ganzen Online-Schulbuch die Hinweise für Lehrkräfte und Lösungsvorschläge. Im
+        KryptoGAME legst du Klassen und Zugänge für deine Schüler/-innen an und siehst deren Fortschritt. Jede
         Registrierung wird von Hand freigegeben, das kann ein bis zwei Tage dauern.
       </p>
 

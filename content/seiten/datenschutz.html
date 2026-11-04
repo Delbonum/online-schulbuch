@@ -9,12 +9,12 @@ E-Mail: <a href="mailto:philippe.nix@gmx.net">philippe.nix@gmx.net</a></p>
 <p>Die Website liegt bei der Bitpalast GmbH, Sensburger Allee 27, 14055 Berlin, Deutschland. Der Hoster verarbeitet die Daten ausschließlich in meinem Auftrag; mit ihm besteht ein Vertrag über die Auftragsverarbeitung nach Art. 28 DSGVO. Die Server stehen in Rechenzentren der Hetzner Online GmbH; die Daten werden ausschließlich in der Europäischen Union bzw. im Europäischen Wirtschaftsraum verarbeitet.</p>
 <p>Beim Aufruf einer Seite speichert der Server automatisch Informationen, die dein Browser übermittelt: IP-Adresse, Datum und Uhrzeit, aufgerufene Seite, Browsertyp und Betriebssystem sowie die zuvor besuchte Seite (Referrer). Diese Daten sind technisch nötig, um die Website sicher und stabil auszuliefern und Fehler oder Angriffe erkennen zu können (berechtigtes Interesse; Art. 6 Abs. 1 lit. f DSGVO). Die Logdateien werden nach 14 Tagen automatisch gelöscht.</p>
 
-<h2>Keine Cookies im Schulbuch</h2>
-<p>Die Seiten des Schulbuchs und die Lernspiele setzen keine Cookies. Schriften und Programmbibliotheken werden nicht von fremden Servern geladen. Die Suche läuft vollständig in deinem Browser.</p>
+<h2>Cookies und Speicher im Browser</h2>
+<p>Die Seiten des Schulbuchs und die Lernspiele setzen keine Cookies. Nur wer sich mit einem Konto anmeldet (Lehrkräfte, Schülerzugänge im KryptoGAME), bekommt ein technisch notwendiges Sitzungs-Cookie (siehe <a href="#konten">Konten</a>). Schriften und Programmbibliotheken werden nicht von fremden Servern geladen. Die Suche läuft vollständig in deinem Browser.</p>
 <p>Einige Angaben speichert das Schulbuch im Speicher deines Browsers (localStorage bzw. sessionStorage). Sie bleiben auf deinem Gerät und werden nie an den Server oder an Dritte übertragen:</p>
 <ul>
 <li><strong>Antworten in digitalen Arbeitsblättern</strong> (Textfelder, Quiz, Abhaklisten, Meinungslinien), damit du später weiterarbeiten kannst. Unter jeder solchen Seite kannst du sie mit „Löschen“ entfernen.</li>
-<li><strong>Anmeldung für Lehrkräfte:</strong> ein aus dem Passwort abgeleiteter Schlüssel (nie das Passwort selbst) – nur bis zum Schließen des Browsers oder, wenn du „auf diesem Gerät angemeldet bleiben“ wählst, bis zur Abmeldung – sowie die Einstellung, ob die Hinweise für Lehrkräfte ein- oder ausgeblendet sind.</li>
+<li><strong>Anmeldung für Lehrkräfte:</strong> der Schlüssel, mit dem die Hinweise für Lehrkräfte lesbar werden (nie das Passwort) – nur bis zum Schließen des Browsers oder, wenn du „auf diesem Gerät angemeldet bleiben“ wählst, bis zur Abmeldung – sowie die Einstellung, ob die Hinweise für Lehrkräfte ein- oder ausgeblendet sind.</li>
 </ul>
 <p>Rechtsgrundlage ist das berechtigte Interesse, die Funktionen bereitzustellen, die du selbst nutzt (Art. 6 Abs. 1 lit. f DSGVO). Du kannst diese Daten jederzeit in den Einstellungen deines Browsers löschen.</p>
 
@@ -24,9 +24,10 @@ E-Mail: <a href="mailto:philippe.nix@gmx.net">philippe.nix@gmx.net</a></p>
 <h2>AutoCell</h2>
 <p>Die Simulationssoftware AutoCell unter <a href="/informatik/autocell/">/informatik/autocell/</a> läuft vollständig in deinem Browser. Deine Projekte werden nicht übertragen; du speicherst sie selbst als Datei. Im Speicher deines Browsers (localStorage) merkt sich AutoCell nur die gewählte Ansicht, den zuletzt benutzten Ordner und Spielstände versteckter Extras. Damit AutoCell auch offline funktioniert, legt dein Browser beim ersten Aufruf eine Kopie der Programmdateien an (Service Worker). Beides kannst du in den Einstellungen deines Browsers jederzeit löschen.</p>
 
-<h2>KryptoGAME</h2>
+<h2 id="konten">Konten für Lehrkräfte und das KryptoGAME</h2>
+<p>Lehrkräfte melden sich mit einem eigenen Konto an (unten auf jeder Seite über „Für Lehrkräfte“ oder im KryptoGAME); die Anmeldung gilt dann für die ganze Website.</p>
 <p>Das KryptoGAME unter <a href="/informatik/kryptogame/">/informatik/kryptogame/</a> kann ohne Anmeldung als Gast gespielt werden; der Spielstand bleibt dann nur im Speicher deines Browsers (localStorage) und wird nicht übertragen.</p>
-<p>Wer mit einem Zugang spielt, den die Lehrkraft angelegt hat, dessen Daten werden in einer Datenbank auf dem Server gespeichert:</p>
+<p>Für Konten von Lehrkräften und für Zugänge, die eine Lehrkraft für ihre Schülerinnen und Schüler anlegt, werden in einer Datenbank auf dem Server gespeichert:</p>
 <ul>
 <li>Benutzername und Passwort (nur als Hash-Wert, nie im Klartext), Rolle und Zuordnung zu Lehrkraft und Klasse,</li>
 <li>Spielfortschritt sowie Prüfungsversuche mit Punktzahl und Antworten, damit die Lehrkraft den Lernstand sehen kann.</li>

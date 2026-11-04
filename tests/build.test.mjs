@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { pbkdf2Sync, createDecipheriv } from 'node:crypto';
+import { randomBytes, createDecipheriv } from 'node:crypto';
 import { readFileSync, readdirSync, statSync, existsSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -114,18 +114,18 @@ test('Inhalte für Lehrkräfte stehen ohne Passwort nicht in der Vorschau und ni
   assert.doesNotMatch(readFileSync(join(OUT, 'suche.json'), 'utf8'), /Erwartungshorizonte \(Auszüge\)/);
 });
 
-test('Mit Passwort werden Lehrkraft-Inhalte verschlüsselt und lassen sich entschlüsseln', () => {
+test('Mit Schlüssel werden Lehrkraft-Inhalte verschlüsselt und lassen sich entschlüsseln', () => {
   const ziel = 'dist-test-lk';
+  const schluessel = randomBytes(32);
   execFileSync(process.execPath, ['scripts/build.mjs', '--basis=vorschau', `--ziel=${ziel}`], {
-    cwd: ROOT, stdio: 'pipe', env: { ...process.env, LEHRKRAFT_PASSWORT: 'geheim' },
+    cwd: ROOT, stdio: 'pipe', env: { ...process.env, LEHRKRAFT_SCHLUESSEL: schluessel.toString('base64') },
   });
   try {
     const html = readFileSync(join(ROOT, ziel, 'deutsch', 'lektueren', 'brecht', 'der-gute-mensch-von-sezuan', 'lehrkraefte', 'index.html'), 'utf8');
     assert.doesNotMatch(html, /Leitfrage der Reihe/, 'Klartext darf nicht in der Seite stehen');
     assert.match(html, /class="kopf-knopf lk-schalter" role="switch"/, 'Schalter für die Lehrkraft-Ansicht im Kopf');
-    const [, salz, runden] = html.match(/data-lk-salz="([^"]+)" data-lk-runden="(\d+)"/);
+    assert.match(html, /data-api="\/api"/, 'Adresse der API für die Anmeldung, auch in der Vorschau');
     const [, wert] = html.match(/data-lk="([^"]+)"/);
-    const schluessel = pbkdf2Sync('geheim', salz, Number(runden), 32, 'sha256');
     const [iv, daten] = wert.split('.').map((t) => Buffer.from(t, 'base64'));
     const d = createDecipheriv('aes-256-gcm', schluessel, iv);
     d.setAuthTag(daten.subarray(-16));
@@ -136,14 +136,14 @@ test('Mit Passwort werden Lehrkraft-Inhalte verschlüsselt und lassen sich entsc
   }
 });
 
-test('Live-Build bricht ohne Lehrkraft-Passwort ab', () => {
+test('Live-Build bricht ohne Lehrkraft-Schlüssel ab', () => {
   const env = { ...process.env };
-  delete env.LEHRKRAFT_PASSWORT;
+  delete env.LEHRKRAFT_SCHLUESSEL;
   const r = spawnSync(process.execPath, ['scripts/build.mjs', '--ziel=dist-test-live'], { cwd: ROOT, env, encoding: 'utf8' });
   rmSync(join(ROOT, 'dist-test-live'), { recursive: true, force: true });
-  if (existsSync(join(ROOT, '.lehrkraft-passwort'))) return; // lokal mit Passwortdatei: nichts zu prüfen
+  if (existsSync(join(ROOT, '.lehrkraft-schluessel'))) return; // lokal mit Schlüsseldatei: nichts zu prüfen
   assert.notEqual(r.status, 0);
-  assert.match(r.stderr, /kein Passwort/);
+  assert.match(r.stderr, /kein Schlüssel/);
 });
 
 test.after(() => rmSync(OUT, { recursive: true, force: true }));

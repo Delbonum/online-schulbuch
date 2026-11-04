@@ -29,8 +29,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "test:api": "php backend/tests/run.php",
-    "start:api": "php -S 127.0.0.1:8000 backend/dev-server.php",
+    "test:api": "php ../../server/tests/run.php",
+    "start:api": "php -S 127.0.0.1:8000 ../../server/dev-server.php",
     "format": "prettier --write src",
     "format:check": "prettier --check src"
   },

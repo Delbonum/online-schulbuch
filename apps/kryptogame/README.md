@@ -62,15 +62,18 @@ Jedes Level folgt demselben Aufbau:
 
 ```
 Browser ──► React-App (statische Dateien)          /informatik/kryptogame/
-        └─► PHP-API  ──► MySQL/MariaDB              /informatik/kryptogame/api/
+        └─► Schulbuch-API (PHP) ──► MySQL/MariaDB  /api/   (Quelltext: server/ im Repository)
 ```
 
 **Frontend** – [React 18](https://react.dev/) mit Create React App, [React Router 6](https://reactrouter.com/),
 [Tailwind CSS 3](https://tailwindcss.com/), [Recharts](https://recharts.org/) (nur im nachgeladenen Dashboard),
 [lucide-react](https://lucide.dev/).
 
-**Backend** – schlanke PHP-API **ohne externe Abhängigkeiten** (PHP ≥ 8.1, PDO), läuft auf gewöhnlichem Shared
-Hosting. Daten liegen in **MySQL/MariaDB**; für die lokale Entwicklung genügt **SQLite**.
+**Backend** – die Schulbuch-API in `server/` (Repository-Wurzel): schlanke PHP-API **ohne externe Abhängigkeiten**
+(PHP ≥ 8.1, PDO), läuft auf gewöhnlichem Shared Hosting. Daten liegen in **MySQL/MariaDB**; für die lokale Entwicklung
+genügt **SQLite**. Seit November 2026 ist sie für die ganze Website zuständig: Ein Lehrkräfte-Konto gilt auch im
+Schulbuch (Inhalte für Lehrkräfte) und in künftigen Werkzeugen. Die Pfade unten (`bin/`, `quizzes/`, …) beziehen
+sich auf `server/`.
 
 **Oberfläche** – ein gemeinsamer Seitenrahmen (`.page` in `src/index.css`) gibt allen Levelseiten dieselbe
 Textbreite, Abstände und Überschriften. Das Layout ist für Handys ausgelegt: Die Navigation wird dort zum Overlay,
@@ -99,8 +102,7 @@ Schülerkonten löscht die jeweilige Lehrkraft im Dashboard.
 ## Projektstruktur
 
 ```
-KryptoGAME/
-├── backend/                     # PHP-API (wird nach …/kryptogame/api/ hochgeladen)
+server/                          # Schulbuch-API (Repository-Wurzel, wird nach /api/ hochgeladen)
 │   ├── index.php                # Einstiegspunkt aller API-Anfragen
 │   ├── setup.php                # Einrichtung per Browser (nur mit Setup-Token aktiv)
 │   ├── .htaccess                # Routing + Zugriffsschutz für alle anderen Dateien
@@ -111,6 +113,7 @@ KryptoGAME/
 │   ├── src/                     # App, Router, Controller, Repositories, Services
 │   ├── tests/run.php            # Backend-Tests
 │   └── dev-server.php           # Router für den eingebauten PHP-Webserver
+apps/kryptogame/
 ├── public/index.html
 ├── src/
 │   ├── levels.js                # ⭐ Zentrale Level-Konfiguration (Seiten, Reihenfolge, Navigation)
@@ -140,14 +143,16 @@ KryptoGAME/
 
 ### 1. Backend einrichten
 
+Im Ordner `server/` der Repository-Wurzel:
+
 ```bash
-cp backend/config.example.php backend/config.php
+cp config.example.php config.php
 ```
 
-In `backend/config.php` für die lokale Entwicklung:
+In `server/config.php` für die lokale Entwicklung:
 
 ```php
-'db' => ['dsn' => 'sqlite:data/kryptogame.sqlite'],
+'db' => ['dsn' => 'sqlite:data/schulbuch.sqlite'],
 'secure_cookies' => false,
 'debug' => true,
 'allowed_origins' => ['http://127.0.0.1:8000'],
@@ -156,8 +161,8 @@ In `backend/config.php` für die lokale Entwicklung:
 Datenbank anlegen und eine Lehrkraft erstellen:
 
 ```bash
-php backend/bin/console.php migrate
-php backend/bin/console.php create-teacher MeinName meinPasswort
+php server/bin/console.php migrate
+php server/bin/console.php create-teacher MeinName meinPasswort
 ```
 
 ### 2. Starten
@@ -179,8 +184,8 @@ Der React-Entwicklungsserver leitet alle API-Aufrufe per Proxy an den PHP-Server
 | `npm test`                                        | Frontend-Tests (Jest, Testing Library)    |
 | `npm run test:api`                                | Backend-Tests                             |
 | `npm run format`                                  | Code mit Prettier formatieren             |
-| `php backend/bin/console.php check-quizzes`       | Prüfungsdateien auf Fehler prüfen         |
-| `php backend/bin/console.php set-password <name>` | Passwort zurücksetzen (erzeugt ein neues) |
+| `php server/bin/console.php check-quizzes`        | Prüfungsdateien auf Fehler prüfen         |
+| `php server/bin/console.php set-password <name>`  | Passwort zurücksetzen (erzeugt ein neues) |
 
 ## Tests
 
@@ -193,8 +198,8 @@ Die Backend-Tests lassen sich auch gegen MySQL/MariaDB ausführen (Achtung: die 
 gelöscht):
 
 ```bash
-KRYPTOGAME_TEST_DSN="mysql:host=127.0.0.1;dbname=kryptotest;charset=utf8mb4" \
-KRYPTOGAME_TEST_USER=… KRYPTOGAME_TEST_PASSWORD=… php backend/tests/run.php
+SCHULBUCH_TEST_DSN="mysql:host=127.0.0.1;dbname=kryptotest;charset=utf8mb4" \
+SCHULBUCH_TEST_USER=… SCHULBUCH_TEST_PASSWORD=… php server/tests/run.php
 ```
 
 Die Backend-Tests prüfen außerdem, dass jede Prüfungsdatei mit ihren eigenen Lösungen bestanden wird und dass keine
@@ -205,19 +210,24 @@ Lösung an den Browser ausgeliefert wird. Die Frontend-Tests rechnen die Geheimt
 Voraussetzungen beim Hoster: Apache (oder kompatibel, z. B. LiteSpeed) mit `mod_rewrite`, PHP ≥ 8.1 mit `pdo_mysql`
 und `mbstring`, eine MySQL-/MariaDB-Datenbank.
 
+Für online-schulbuch.de erledigt das alles `scripts/deploy.sh kryptogame` bzw. `scripts/deploy.sh api`
+(zusammen: `scripts/deploy.sh api kryptogame`, eine einzige SSH-Anmeldung). Von Hand:
+
 1. **Datenbank** im Kundenmenü des Hosters anlegen.
 2. **Frontend bauen:** `npm run build`
 3. **Hochladen:**
    - Inhalt von `build/` → `/informatik/kryptogame/`
-   - Inhalt von `backend/` → `/informatik/kryptogame/api/`
-     (`tests/`, `dev-server.php` und `data/` werden auf dem Server nicht benötigt)
-4. **Konfigurieren:** `api/config.example.php` → `api/config.php` kopieren und Datenbankzugang eintragen.
+   - Inhalt von `server/` → `/api/`
+     (`tests/`, `dev-server.php` und `data/` werden auf dem Server nicht benötigt; `quizzes/` besser außerhalb
+     des Webordners ablegen und `quizzes_dir` setzen)
+4. **Konfigurieren:** `api/config.example.php` → `api/config.php` kopieren und Datenbankzugang, `site_url` und
+   `content_key` (Schlüssel der Inhalte für Lehrkräfte) eintragen.
 5. **Einrichten** – mit SSH-Zugang:
    ```bash
    php api/bin/console.php migrate
    php api/bin/console.php create-teacher MeinName
    ```
-   Ohne SSH: in `config.php` ein langes, zufälliges `setup_token` eintragen, `…/kryptogame/api/setup.php` im Browser
+   Ohne SSH: in `config.php` ein langes, zufälliges `setup_token` eintragen, `…/api/setup.php` im Browser
    öffnen, Tabellen anlegen und Lehrkräfte erstellen. **Danach das Token wieder auf `''` setzen.**
 6. **Direktaufrufe von Unterseiten** (z. B. nach dem Neuladen von `/level2/start`) brauchen eine Weiterleitung auf
    `index.html`. Dazu im Ordner `/informatik/kryptogame/` diese `.htaccess` ablegen:
@@ -239,7 +249,7 @@ Render und der JSONBin-Speicher werden nicht mehr genutzt. Liegen irgendwo noch 
 lassen sie sich weiterhin übernehmen – Passwörter werden dabei gehasht:
 
 ```bash
-php backend/bin/console.php import-json export.json
+php server/bin/console.php import-json export.json
 ```
 
 Ohne SSH geht das auch über `setup.php`. Vorhandene Benutzernamen werden übersprungen, Fortschritt und Prüfungsverlauf
@@ -252,7 +262,7 @@ kommen mit.
 2. **Werkzeuge** unter `src/components/tools/` ablegen; Rechenlogik gehört (mit Tests) nach `src/lib/`.
 3. **In `src/levels.js` eintragen** – Reihenfolge der Seiten, Titel für die Navigation, `quiz: true` für die
    Prüfungsseite und eine versteckte `abschluss`-Seite.
-4. **Prüfung** als `backend/quizzes/levelN.json` anlegen. Fragetypen:
+4. **Prüfung** als `server/quizzes/levelN.json` anlegen. Fragetypen:
 
    ```json
    { "id": 1, "type": "text", "prompt": "…", "answer": "LÖSUNG" }
@@ -265,11 +275,11 @@ kommen mit.
    auch eine Liste gleichwertiger Lösungen sein. Bei `order` stehen die Einträge in der richtigen Reihenfolge – sie
    werden für die Anzeige gemischt.
 
-5. `php backend/bin/console.php check-quizzes` und die Tests ausführen.
+5. `php server/bin/console.php check-quizzes` und die Tests ausführen.
 
 ## Backend-API
 
-Alle Pfade relativ zu `…/api`. Anfragen und Antworten im JSON-Format.
+Alle Pfade relativ zu `/api`. Anfragen und Antworten im JSON-Format.
 
 | Methode  | Pfad                      | Rolle      | Zweck                                                        |
 | -------- | ------------------------- | ---------- | ------------------------------------------------------------ |
@@ -278,6 +288,7 @@ Alle Pfade relativ zu `…/api`. Anfragen und Antworten im JSON-Format.
 | `GET`    | `/auth/me`                | –          | Angemeldete Person inkl. `passedLevels` (oder `null`)        |
 | `POST`   | `/auth/password`          | angemeldet | Eigenes Passwort ändern (`currentPassword`, `newPassword`)   |
 | `DELETE` | `/auth/account`           | Lehrkraft  | Eigenes Konto endgültig löschen (Passwort zur Bestätigung)   |
+| `GET`    | `/teacher-content/key`    | Lehrkraft  | Schlüssel der Inhalte für Lehrkräfte im Schulbuch            |
 | `GET`    | `/quizzes/{level}`        | –          | Prüfung ohne Lösungen                                        |
 | `POST`   | `/quizzes/{level}/submit` | –          | Antworten bewerten (`answers`); speichert bei Schüler/-innen |
 | `GET`    | `/students`               | Lehrkraft  | Eigene Schüler/-innen und verfügbare Level                   |

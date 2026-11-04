@@ -1,7 +1,8 @@
-// Zugriff auf das PHP-Backend. Die Session läuft über ein HttpOnly-Cookie,
-// deshalb werden keine Zugangsdaten im Browser gespeichert.
+// Zugriff auf die Schulbuch-API (PHP, server/ im Repository). Sie liegt für die ganze Website unter /api,
+// damit eine Anmeldung im KryptoGAME auch im Schulbuch gilt und umgekehrt. Die Session läuft über ein
+// HttpOnly-Cookie, deshalb werden keine Zugangsdaten im Browser gespeichert.
 
-const API_BASE = (process.env.REACT_APP_API_URL || `${process.env.PUBLIC_URL}/api`).replace(/\/$/, "");
+const API_BASE = (process.env.REACT_APP_API_URL || "/api").replace(/\/$/, "");
 
 export class ApiError extends Error {
   constructor(status, message) {

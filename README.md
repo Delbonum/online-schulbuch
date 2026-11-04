@@ -20,11 +20,13 @@ apps/
   ki-lernspiele/          Tic Tac Toe, NIM, Bauernschach (Spiellogik + Tests)
   werkzeuge/              Zahlensysteme, QR-Code-Werkzeuge, Grammatik-Übungen,
                           arbeitsblatt/ (Bausteine für digitale Arbeitsblätter)
-  kryptogame/             KryptoGAME – eigenständige App mit eigenem Build und PHP-Backend
+  kryptogame/             KryptoGAME – eigenständige React-App mit eigenem Build (Backend: server/)
   autocell/               AutoCell – fertig gebaute Web-Version aus eigenem Repository (→ /informatik/autocell/,
                           aktualisieren mit scripts/autocell-holen.mjs, siehe apps/autocell/README.md)
+server/                   Schulbuch-API (PHP + MySQL, → /api/): Konten, Klassen, Anmeldung für Lehrkräfte,
+                          Daten des KryptoGAMEs; später auch für Live-Werkzeuge
 scripts/build.mjs         baut aus content/, site/ und apps/ die fertige Website nach dist/
-scripts/deploy.sh         lädt die Vorschau oder die Live-Version hoch
+scripts/deploy.sh         lädt Vorschau, Live-Version, API und KryptoGAME hoch
 tests/                    Tests für den Seitengenerator
 materialien/              unveröffentlichtes Unterrichtsmaterial (nur lokal, nicht im Repository)
 ```
@@ -113,11 +115,16 @@ sein – deshalb mit dem Kürzel der Reihe beginnen (`sezuan-…`). Gleiche id a
 
 ### Inhalte für Lehrkräfte
 
-Alles in `<lehrkraft titel="…">…</lehrkraft>` wird beim Bauen mit AES-GCM verschlüsselt (Schlüssel aus dem
-Passwort per PBKDF2) und erst im Browser nach der Anmeldung über „Für Lehrkräfte“ in der Fußzeile entschlüsselt.
-Das Passwort steht in der Datei `.lehrkraft-passwort` im Projektordner (gitignored, nie committen) oder in der
-Umgebungsvariable `LEHRKRAFT_PASSWORT`. Ohne Passwort fehlen diese Inhalte in der Vorschau; der
-Live-Build bricht ab. Lehrkraft-Inhalte erscheinen nicht im Suchindex. Ohne Anmeldung sind die Kästen ganz
+Alles in `<lehrkraft titel="…">…</lehrkraft>` wird beim Bauen mit AES-GCM verschlüsselt und erst im Browser
+entschlüsselt. Lehrkräfte melden sich dazu über „Für Lehrkräfte“ in der Fußzeile mit ihrem **eigenen Konto** an
+(dasselbe wie im KryptoGAME, siehe [Schulbuch-API](#schulbuch-api)); die API gibt den Schlüssel nur an Lehrkräfte
+heraus. Wer schon im KryptoGAME angemeldet ist, wird ohne Passwort freigeschaltet.
+Der Schlüssel (32 Byte, Base64) steht in der Datei `.lehrkraft-schluessel` im Projektordner (gitignored, nie
+committen) oder in der Umgebungsvariable `LEHRKRAFT_SCHLUESSEL` – und derselbe Wert auf dem Server in
+`api/config.php` (`content_key`). Ohne Schlüssel fehlen diese Inhalte in der Vorschau; der Live-Build bricht ab.
+Wird ein Konto gesperrt, kann es einen schon gemerkten Schlüssel weiter benutzen: dann einen neuen Schlüssel
+erzeugen (Befehl steht in `scripts/build.mjs`), auf dem Server eintragen und neu bauen – alle Lehrkräfte melden
+sich einmal neu an. Lehrkraft-Inhalte erscheinen nicht im Suchindex. Ohne Anmeldung sind die Kästen ganz
 unsichtbar. Nach der Anmeldung erscheint im Kopf links neben der Suche ein Schalter (Symbol: Lehrkraft an der Tafel), der die Kästen aus- und
 wieder einblendet, ohne abzumelden (z. B. für den Beamer; gemerkt in `localStorage`).
 
@@ -180,6 +187,7 @@ npm run build             # baut die Live-Version (bricht ab, solange Platzhalte
 npm test                  # Tests für Spiele, Werkzeuge und den Seitengenerator
 scripts/deploy.sh vorschau
 scripts/deploy.sh live
+scripts/deploy.sh live api kryptogame   # mehrere Teile zusammen, mit nur einer SSH-Anmeldung
 scripts/pruefen.sh live   # prüft nach dem Hochladen, was auf dem Server liegt
 ```
 
@@ -189,14 +197,36 @@ zu viele Verbindungen eintreffen.
 
 Lokal ansehen: nach `npm run build` im Ordner `dist/` z. B. `python -m http.server 8000` starten.
 Für die Vorschau (`npm run vorschau`) den Server im Ordner über `dist/` starten und `dist` in `vorschau` umbenennen
-bzw. kopieren, da alle Adressen mit `/vorschau/` beginnen. Die Lehrkraft-Anmeldung braucht `https` oder `localhost`.
+bzw. kopieren, da alle Adressen mit `/vorschau/` beginnen. Die Lehrkraft-Anmeldung braucht `https` oder `localhost` und eine laufende Schulbuch-API unter `/api/`.
 Es gibt keine Abhängigkeiten außer Node.js (ab Version 20).
+
+## Schulbuch-API
+
+`server/` ist eine schlanke PHP-API ohne Abhängigkeiten (PHP ≥ 8.1, MySQL/MariaDB, lokal SQLite), live unter
+`/api/`. Sie ist für die **ganze Website** zuständig:
+
+- **Konten:** Lehrkräfte (Selbstregistrierung mit Freigabe durch das Master-Konto), Klassen und Schülerzugänge.
+  Eine Anmeldung gilt überall – im Schulbuch (Inhalte für Lehrkräfte) und in den Werkzeugen (z. B. KryptoGAME).
+  Session-Cookie `SCHULBUCH_SESSION`, nur für `/api/`.
+- **Schlüssel für die Inhalte für Lehrkräfte:** `GET /api/teacher-content/key` (nur Lehrkräfte).
+- **KryptoGAME:** Fortschritt, Prüfungen (Bewertung auf dem Server), Statistik.
+
+Neue Werkzeuge mit Lehrkraft-Modus fragen `GET /api/auth/me` (`role: "teacher"`) ab, statt eine eigene Anmeldung
+mitzubringen. Eigene Daten eines Werkzeugs bekommen eigene Tabellen mit Präfix und eigene Pfade
+(z. B. `wolke_…` und `/api/wolke/…`); Konten und Klassen werden gemeinsam genutzt.
+
+Tests: `php server/tests/run.php`. Lokal starten: `php -S 127.0.0.1:8000 server/dev-server.php`
+(Einrichtung, Befehle und alle Endpunkte: `apps/kryptogame/README.md`).
+
+Auf dem Server liegt die Konfiguration in `httpdocs/api/config.php` (bindet `config.basis.php` mit dem
+Datenbankzugang ein); `scripts/deploy.sh api` lädt sie nie hoch. Die Prüfungen mit Lösungen liegen außerhalb des
+Webordners in `kryptogame-data/quizzes/`.
 
 ## KryptoGAME
 
-Das KryptoGAME ist eine eigenständige React-App mit PHP-Backend und Datenbank. Es wird separat gebaut und
-hochgeladen (siehe `apps/kryptogame/README.md`) und liegt immer unter `/informatik/kryptogame/`.
-`scripts/deploy.sh` fasst diesen Ordner nie an.
+Das KryptoGAME ist eine eigenständige React-App (eigenes Design, eigener Build) unter `/informatik/kryptogame/`;
+seine Daten verwaltet die Schulbuch-API. `scripts/deploy.sh kryptogame` baut und lädt es hoch, `scripts/deploy.sh live`
+fasst den Ordner nie an. Details: `apps/kryptogame/README.md`.
 
 ## Lizenz
 

@@ -98,16 +98,19 @@
   });
 
   // ---------------------------------------------------------- Inhalte für Lehrkräfte
-  // Der Build verschlüsselt alles in <lehrkraft> mit AES-GCM. Mit dem Passwort wird hier derselbe
-  // Schlüssel abgeleitet (PBKDF2); gemerkt wird nur der Schlüssel, nie das Passwort.
+  // Der Build verschlüsselt alles in <lehrkraft> mit AES-GCM. Den Schlüssel gibt die Schulbuch-API
+  // (dieselbe wie beim KryptoGAME) nur an angemeldete Lehrkräfte heraus; gemerkt wird nur der Schlüssel,
+  // nie das Passwort. Wer schon im KryptoGAME als Lehrkraft angemeldet ist, braucht kein Passwort mehr.
   const lkLink = document.querySelector('[data-lk-pruef]');
   if (lkLink) {
     const SPEICHER = 'schulbuch-lehrkraft';
-    const text = new TextEncoder();
+    const API = lkLink.dataset.api;
     const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-    const zuB64 = (bytes) => btoa(String.fromCharCode(...bytes));
     const lies = () => { try { return sessionStorage.getItem(SPEICHER) || localStorage.getItem(SPEICHER); } catch { return null; } };
     const vergiss = () => { try { sessionStorage.removeItem(SPEICHER); localStorage.removeItem(SPEICHER); } catch { /* egal */ } };
+    const merke = (schluessel, dauerhaft) => {
+      try { (dauerhaft ? localStorage : sessionStorage).setItem(SPEICHER, schluessel); } catch { /* gilt dann nur für diese Seite */ }
+    };
 
     // Lehrkraft-Ansicht ein-/ausschalten, ohne sich abzumelden (z. B. für den Beamer); gilt für alle Seiten
     const ANSICHT = 'schulbuch-lehrkraft-ansicht';
@@ -123,23 +126,33 @@
       try { an ? localStorage.removeItem(ANSICHT) : localStorage.setItem(ANSICHT, 'aus'); } catch { /* gilt dann nur für diese Seite */ }
     });
 
+    // Anfrage an die Schulbuch-API; Fehler tragen den HTTP-Status (0 = Server nicht erreichbar).
+    async function anfrage(methode, pfad, daten) {
+      let antwort;
+      try {
+        antwort = await fetch(API + pfad, {
+          method: methode,
+          credentials: 'same-origin',
+          headers: { Accept: 'application/json', ...(daten && { 'Content-Type': 'application/json' }) },
+          body: daten && JSON.stringify(daten),
+        });
+      } catch {
+        throw Object.assign(new Error('Der Server ist nicht erreichbar.'), { status: 0 });
+      }
+      const json = antwort.status === 204 ? null : await antwort.json().catch(() => null);
+      if (!antwort.ok) throw Object.assign(new Error(json?.error || `Serverfehler (${antwort.status}).`), { status: antwort.status });
+      return json;
+    }
+
     async function entschluessle(schluessel, wert) {
       const [iv, daten] = wert.split('.');
       const klar = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64(iv) }, schluessel, b64(daten));
       return new TextDecoder().decode(klar);
     }
 
-    async function ableiten(passwort) {
-      const basis = await crypto.subtle.importKey('raw', text.encode(passwort), 'PBKDF2', false, ['deriveBits']);
-      const bits = await crypto.subtle.deriveBits({
-        name: 'PBKDF2', hash: 'SHA-256', salt: text.encode(lkLink.dataset.lkSalz), iterations: Number(lkLink.dataset.lkRunden),
-      }, basis, 256);
-      return new Uint8Array(bits);
-    }
-
     // Wirft einen Fehler, wenn der Schlüssel nicht passt (GCM prüft die Echtheit mit).
-    async function freischalten(roh) {
-      const schluessel = await crypto.subtle.importKey('raw', roh, 'AES-GCM', false, ['decrypt']);
+    async function freischalten(schluesselB64) {
+      const schluessel = await crypto.subtle.importKey('raw', b64(schluesselB64), 'AES-GCM', false, ['decrypt']);
       await entschluessle(schluessel, lkLink.dataset.lkPruef);
       for (const box of document.querySelectorAll('.lehrkraft[data-lk]')) {
         const html = await entschluessle(schluessel, box.dataset.lk);
@@ -155,46 +168,71 @@
     }
 
     let lkDialog = null;
-    function anmelden() {
-      if (!window.crypto?.subtle) {
-        alert('Die Anmeldung funktioniert nur über eine sichere Verbindung (https).');
-        return;
-      }
+    function dialogZeigen() {
       if (!lkDialog) {
         lkDialog = document.createElement('dialog');
         lkDialog.className = 'lk-dialog';
         lkDialog.innerHTML = `<form method="dialog">
 <h2>Anmeldung für Lehrkräfte</h2>
-<p>Mit dem Passwort werden Lehrerhinweise und Lösungsvorschläge sichtbar. Das Passwort selbst wird nicht gespeichert.</p>
+<p>Mit deinem Lehrkräfte-Konto siehst du Lehrerhinweise und Lösungsvorschläge und nutzt die Werkzeuge
+(z. B. das KryptoGAME) im Lehrkraft-Modus.</p>
+<label class="sr" for="lk-name">Benutzername</label>
+<input id="lk-name" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Benutzername" required>
 <label class="sr" for="lk-passwort">Passwort</label>
-<input id="lk-passwort" type="password" autocomplete="current-password" placeholder="Passwort">
+<input id="lk-passwort" type="password" autocomplete="current-password" placeholder="Passwort" required>
 <p><label><input type="checkbox" class="lk-merken"> auf diesem Gerät angemeldet bleiben</label></p>
 <p class="lk-fehler" aria-live="polite"></p>
 <div class="lk-knoepfe"><button type="button" class="knopf lk-abbrechen">Abbrechen</button><button type="submit" class="knopf primaer">Anmelden</button></div>
+<p class="lk-zusatz">Noch kein Konto? <a href="/informatik/kryptogame/registrieren" target="_blank" rel="noopener">Zugang beantragen</a></p>
 </form>`;
         document.body.append(lkDialog);
-        const feld = lkDialog.querySelector('input[type=password]');
+        const name = lkDialog.querySelector('#lk-name');
+        const passwort = lkDialog.querySelector('#lk-passwort');
         const fehler = lkDialog.querySelector('.lk-fehler');
         lkDialog.querySelector('.lk-abbrechen').addEventListener('click', () => lkDialog.close());
         lkDialog.querySelector('form').addEventListener('submit', async (e) => {
           e.preventDefault();
           fehler.textContent = 'Einen Moment …';
           try {
-            const roh = await ableiten(feld.value);
-            await freischalten(roh);
-            try {
-              (lkDialog.querySelector('.lk-merken').checked ? localStorage : sessionStorage).setItem(SPEICHER, zuB64(roh));
-            } catch { /* ohne Speicher gilt die Anmeldung nur für diese Seite */ }
-            feld.value = '';
+            const { user } = await anfrage('POST', '/auth/login', { username: name.value.trim(), password: passwort.value });
+            if (user.role !== 'teacher') {
+              await anfrage('POST', '/auth/logout', {}).catch(() => {});
+              throw new Error('Das ist kein Konto für Lehrkräfte.');
+            }
+            const { key } = await anfrage('GET', '/teacher-content/key');
+            await freischalten(key);
+            merke(key, lkDialog.querySelector('.lk-merken').checked);
+            passwort.value = '';
             fehler.textContent = '';
             lkDialog.close();
-          } catch {
-            fehler.textContent = 'Das Passwort stimmt nicht.';
-            feld.select();
+          } catch (err) {
+            fehler.textContent = err.status === 401 ? 'Benutzername oder Passwort stimmen nicht.' : err.message;
+            passwort.select();
           }
         });
       }
       lkDialog.showModal();
+    }
+
+    async function anmelden() {
+      if (!window.crypto?.subtle) {
+        alert('Die Anmeldung funktioniert nur über eine sichere Verbindung (https).');
+        return;
+      }
+      // Schon angemeldet (z. B. im KryptoGAME)? Dann gleich freischalten, sonst nach dem Passwort fragen.
+      try {
+        const { key } = await anfrage('GET', '/teacher-content/key');
+        await freischalten(key);
+        merke(key, false);
+      } catch {
+        dialogZeigen();
+      }
+    }
+
+    async function abmelden() {
+      vergiss();
+      await anfrage('POST', '/auth/logout', {}).catch(() => {});
+      location.reload();
     }
 
     document.addEventListener('click', (e) => {
@@ -202,14 +240,14 @@
       if (!ausloeser) return;
       e.preventDefault();
       if (document.documentElement.classList.contains('lehrkraft-modus')) {
-        if (ausloeser === lkLink) { vergiss(); location.reload(); }
+        if (ausloeser === lkLink) abmelden();
       } else {
         anmelden();
       }
     });
 
     const gemerkt = lies();
-    if (gemerkt && window.crypto?.subtle) freischalten(b64(gemerkt)).catch(vergiss);
+    if (gemerkt && window.crypto?.subtle) freischalten(gemerkt).catch(vergiss);
   }
 
   // ---------------------------------------------------------- Suche

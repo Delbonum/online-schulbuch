@@ -411,7 +411,9 @@ a.nav-link:hover { background: var(--surface-2); }
 .lk-dialog::backdrop { background: rgb(0 0 0 / 35%); }
 .lk-dialog h2 { font-size: 1.3rem; margin: 0 0 .4em; }
 .lk-dialog p { margin: 0 0 .9em; font-size: .95rem; }
-.lk-dialog input { font: inherit; width: 100%; padding: 8px 12px; border: 2px solid var(--border); border-radius: 10px; }
+.lk-dialog input:not([type=checkbox]) { font: inherit; width: 100%; padding: 8px 12px; border: 2px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
+.lk-dialog p:has(.lk-merken) { margin-top: .2em; }
+.lk-dialog .lk-zusatz { margin: .9em 0 0; font-size: .88rem; color: var(--muted); }
 .lk-dialog .lk-fehler { color: var(--bad); min-height: 1.4em; margin: .4em 0 .6em; }
 .lk-dialog .lk-knoepfe { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 .lk-link[aria-pressed="true"]::before { content: "✓ "; }

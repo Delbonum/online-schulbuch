@@ -3,6 +3,8 @@ import { api } from "../lib/api";
 import { requiredLevel } from "../lib/progress";
 
 const GUEST_PROGRESS_KEY = "kryptogame.guestPassedLevels";
+// Gemerkter Schlüssel für die Inhalte für Lehrkräfte im Schulbuch (site/assets/js/schulbuch.js)
+const SCHULBUCH_LEHRKRAFT_KEY = "schulbuch-lehrkraft";
 
 const AuthContext = createContext(null);
 
@@ -60,6 +62,13 @@ export function AuthProvider({ children }) {
       await api.logout();
     } finally {
       setUser(null);
+      // Die Anmeldung gilt für die ganze Website – also auch im Schulbuch abmelden
+      try {
+        localStorage.removeItem(SCHULBUCH_LEHRKRAFT_KEY);
+        sessionStorage.removeItem(SCHULBUCH_LEHRKRAFT_KEY);
+      } catch {
+        // kein Speicher verfügbar – dann ist dort auch nichts gemerkt
+      }
     }
   }, []);
 

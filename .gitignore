@@ -14,8 +14,16 @@ Thumbs.db
 # Unterrichtsmaterial, das (noch) nicht veröffentlicht wird – bleibt nur lokal
 /materialien/
 
-# Passwort für die Inhalte für Lehrkräfte – nur lokal, nie veröffentlichen
+# Schlüssel für die Inhalte für Lehrkräfte – nur lokal, nie veröffentlichen
+.lehrkraft-schluessel
 .lehrkraft-passwort
+
+# Schulbuch-API: Konfiguration mit Zugangsdaten und lokale Daten
+/server/config.php
+/server/config.production.php
+/server/data/*.sqlite
+/server/data/*.sqlite-journal
+/server/users.json
 
 # Lokale Hinweise für Claude (Serverzugang usw.) – nicht veröffentlichen
 CLAUDE.local.md
