@@ -1,0 +1,14 @@
+{
+  "titel": "Tools",
+  "global": true,
+  "beschreibung": "Werkzeuge für den Unterricht in allen Fächern – und alle Tools der einzelnen Fächer auf einen Blick.",
+  "icon": "werkzeug",
+  "kapitel": [
+    {
+      "titel": "Umfragen",
+      "slug": "umfragen",
+      "icon": "umfrage",
+      "beschreibung": "Live-Umfragen mit Schiebereglern und Antwortvorgaben: Code oder QR-Code zeigen, Ergebnisse live auf dem Beamer."
+    }
+  ]
+}

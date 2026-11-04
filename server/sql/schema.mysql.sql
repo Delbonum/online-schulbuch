@@ -94,3 +94,49 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     KEY idx_login_username (username, created_at),
     KEY idx_login_ip (ip, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Werkzeug „Umfragen“ (/werkzeuge/umfragen/). Fragen stehen als JSON in der Umfrage; jede Durchführung
+-- speichert eine Kopie davon, damit spätere Änderungen alte Ergebnisse nicht verfälschen.
+CREATE TABLE IF NOT EXISTS poll_polls (
+    id         INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    teacher_id INT UNSIGNED      NOT NULL,
+    title      VARCHAR(200)      NOT NULL,
+    mode       VARCHAR(16)       NOT NULL,
+    countdown  SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    questions  MEDIUMTEXT        NOT NULL,
+    source     VARCHAR(255)      NULL,
+    created_at DATETIME(3)       NOT NULL,
+    updated_at DATETIME(3)       NOT NULL,
+    active_at  DATETIME(3)       NOT NULL,
+    PRIMARY KEY (id),
+    KEY idx_poll_teacher (teacher_id),
+    KEY idx_poll_active (active_at),
+    CONSTRAINT fk_poll_teacher FOREIGN KEY (teacher_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS poll_runs (
+    id             INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    poll_id        INT UNSIGNED      NOT NULL,
+    code           CHAR(6)           NULL,
+    mode           VARCHAR(16)       NOT NULL,
+    countdown      SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    questions      MEDIUMTEXT        NOT NULL,
+    current_question SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    question_since DATETIME(3)       NOT NULL,
+    started_at     DATETIME(3)       NOT NULL,
+    ended_at       DATETIME(3)       NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_run_code (code),
+    KEY idx_run_poll (poll_id),
+    CONSTRAINT fk_run_poll FOREIGN KEY (poll_id) REFERENCES poll_polls (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS poll_answers (
+    run_id      INT UNSIGNED NOT NULL,
+    participant CHAR(16)     NOT NULL,
+    question    VARCHAR(16)  NOT NULL,
+    answer_value DOUBLE      NOT NULL,
+    created_at  DATETIME(3)  NOT NULL,
+    PRIMARY KEY (run_id, participant, question),
+    CONSTRAINT fk_answer_run FOREIGN KEY (run_id) REFERENCES poll_runs (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

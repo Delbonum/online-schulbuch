@@ -16,6 +16,13 @@ require __DIR__ . '/src/bootstrap.php';
 try {
     $config = Config::load(__DIR__ . '/config.php');
     $db = Database::connect($config['db']);
+    // Nach einem Update mit neuen Tabellen (z. B. für ein neues Werkzeug) das Schema einmal nachziehen –
+    // auf dem Server gibt es kein PHP auf der Kommandozeile. Die Markierung hängt am Inhalt der Schemadatei.
+    $marker = __DIR__ . '/data/.schema-' . md5_file(__DIR__ . '/sql/schema.' . $db->driver() . '.sql');
+    if (!is_file($marker)) {
+        $db->migrate();
+        @touch($marker);
+    }
 } catch (Throwable $e) {
     error_log('[Schulbuch-API] ' . $e);
     Response::error(503, 'Der Server ist nicht richtig eingerichtet.')->send();

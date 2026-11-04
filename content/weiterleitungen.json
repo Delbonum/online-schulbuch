@@ -1,5 +1,14 @@
 {
-  "umleiten": [],
+  "umleiten": [
+    [
+      "/umfrage",
+      "/werkzeuge/umfragen/"
+    ],
+    [
+      "/umfrage/",
+      "/werkzeuge/umfragen/"
+    ]
+  ],
   "entfernt": [
     "/informatik/test.html",
     "/api.php"

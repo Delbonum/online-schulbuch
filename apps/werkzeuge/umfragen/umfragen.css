@@ -1,0 +1,169 @@
+/* Werkzeug „Umfragen“ */
+
+.umfragen { --uf-akzent: var(--fach); --uf-mittel: #c8372d; --uf-median: #22883b; }
+
+.uf-karte { margin: 0 0 28px; padding: 20px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.uf-karte h2 { margin-top: 0; }
+.uf-karte > :last-child { margin-bottom: 0; }
+.uf-kopfzeile { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+.uf-kopfzeile p { margin: 0; }
+.uf-leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0; }
+.uf-link { font: inherit; background: none; border: 0; padding: 0; color: var(--fach); text-decoration: underline; cursor: pointer; }
+.uf-link:disabled { color: var(--muted); text-decoration: none; cursor: default; opacity: .5; }
+.knopf.uf-warnung, .uf-link.uf-warnung { background: var(--bad); border-color: var(--bad); color: #fff; text-decoration: none; padding: 2px 8px; border-radius: 6px; }
+.knopf.uf-warnung { padding: 8px 14px; border-radius: 10px; }
+.knopf:disabled { opacity: .45; cursor: default; }
+.uf-meldung { padding: 8px 12px; border-radius: 8px; margin: 10px 0; }
+.uf-meldung.fehler { background: var(--bad-soft); color: #8a1f17; }
+.uf-meldung.info { background: var(--fach-soft); }
+.uf-fussnote { color: var(--muted); margin-top: 18px; }
+
+/* Code eingeben */
+.uf-beitreten { text-align: center; }
+.uf-code-form { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 14px 0 4px; }
+.uf-code-form input { font: 700 1.8rem/1 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: .2em; width: 9.5em; text-align: center; padding: 10px 12px; border: 2px solid var(--border); border-radius: 10px; }
+.uf-code-form .knopf { font-size: 1.1rem; padding: 10px 22px; }
+
+/* Anmeldung und Formulare */
+.uf-anmelden { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; }
+.uf-anmelden label, .uf-feld, .uf-skala-felder label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: .92rem; }
+.uf-karte input:not([type=radio]):not([type=checkbox]):not([type=range]):not([type=file]),
+.uf-karte select, .uf-karte textarea { font: inherit; font-weight: 400; padding: 7px 10px; border: 2px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); }
+.uf-feld { margin: 12px 0; }
+.uf-feld input, .uf-feld textarea { width: 100%; }
+.uf-karte fieldset { border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px 14px; margin: 14px 0; }
+.uf-karte legend { font-weight: 700; padding: 0 6px; }
+.uf-modus { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; cursor: pointer; }
+.uf-modus input { margin-top: .35em; accent-color: var(--fach); }
+.uf-countdown { display: inline-flex; gap: 8px; align-items: center; margin-top: 6px; }
+.uf-countdown[hidden] { display: none; }
+
+/* Liste */
+.uf-umfrage { border-top: 1px solid var(--border); padding: 16px 0 6px; }
+.uf-umfrage h3 { margin: 0 0 4px; }
+.uf-meta { color: var(--muted); margin: 0; }
+.uf-laeuft { background: var(--good-soft); padding: 8px 12px; border-radius: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.uf-durchfuehrungen summary { cursor: pointer; color: var(--fach); font-weight: 600; }
+.uf-durchfuehrungen li { margin: 4px 0; }
+.uf-start-dialog { background: var(--fach-soft); border-radius: 10px; padding: 4px 16px 8px; margin: 6px 0 12px; }
+.uf-start-dialog fieldset { background: var(--surface); }
+.uf-hinweis { border-left: 6px solid var(--fach); }
+
+/* Editor */
+.uf-fragen { list-style: none; padding: 0; margin: 0; counter-reset: none; }
+.uf-frage { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin: 0 0 14px; background: var(--surface-2); }
+.uf-frage-kopf { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.uf-frage-knoepfe { margin-left: auto; display: flex; gap: 12px; }
+.uf-frage .uf-feld { margin: 10px 0 6px; }
+.uf-skala-felder { display: flex; flex-wrap: wrap; gap: 10px 16px; margin: 8px 0; }
+.uf-skala-felder input[type=number] { width: 7em; }
+.uf-optionen { margin: 8px 0; padding-left: 1.6em; }
+.uf-optionen li { margin: 6px 0; }
+.uf-optionen li > input { width: min(100%, 26em); }
+.uf-optionen label { margin: 0 8px; white-space: nowrap; }
+.uf-editor-fuss { border-top: 1px solid var(--border); padding-top: 14px; }
+
+/* Teilnahme */
+.uf-teilnahme-kopf { color: var(--muted); margin: 0; }
+.uf-antwort { background: var(--surface); }
+.uf-antwort legend { font-size: 1.1rem; font-weight: 700; }
+.uf-antwort.gesendet { border-color: var(--good); }
+.uf-gesendet { color: var(--good); font-weight: 600; min-height: 1.3em; margin: 6px 0; }
+.uf-nr { display: inline-grid; place-items: center; min-width: 1.6em; height: 1.6em; border-radius: 50%; background: var(--fach); color: #fff; font-size: .85em; }
+.uf-regler input { width: 100%; accent-color: var(--fach); height: 32px; }
+.uf-regler.unberuehrt input { opacity: .45; }
+.uf-pole { display: flex; justify-content: space-between; gap: 12px; font-size: .9rem; color: var(--muted); }
+.uf-pole output { font-weight: 700; color: var(--text); font-size: 1.05rem; text-align: center; }
+.uf-pole span:last-child { text-align: right; }
+.uf-optionen-wahl { display: grid; gap: 8px; }
+.uf-optionen-wahl label { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border: 2px solid var(--border); border-radius: 10px; cursor: pointer; font-size: 1.05rem; }
+.uf-optionen-wahl label:has(input:checked) { border-color: var(--fach); background: var(--fach-soft); }
+.uf-optionen-wahl input { accent-color: var(--fach); width: 1.2em; height: 1.2em; }
+.uf-frage-nr { font-weight: 700; color: var(--muted); }
+.uf-warten { color: var(--muted); }
+.uf-ende { font-size: 1.2rem; text-align: center; padding: 20px 0; }
+
+/* ------------------------------------------------------------ Live-Ansicht (Beamer) */
+
+.uf-buehne-offen, .uf-buehne-offen body { overflow: hidden; }
+.uf-buehne {
+  --uf-mittel: #c8372d; --uf-median: #22883b;
+  --fach: var(--neutral-akzent); --fach-soft: var(--neutral-soft);
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column;
+  background: #fff; color: var(--text);
+  overflow: auto;
+}
+.uf-buehne-kopf { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; padding: 10px 20px; border-bottom: 4px solid var(--fach); background: var(--surface-2); }
+.uf-buehne-kopf h2 { margin: 0; font-size: clamp(1.1rem, 2vw, 1.6rem); }
+.uf-buehne-status { display: flex; align-items: center; gap: 8px; }
+.uf-teilnehmende { font-size: 1.3rem; }
+.uf-abzeichen { font: 700 .8rem var(--schrift-titel); text-transform: uppercase; letter-spacing: .05em; padding: 3px 8px; border-radius: 6px; background: var(--border); }
+.uf-abzeichen.live { background: var(--bad); color: #fff; }
+.uf-buehne-knoepfe { margin-left: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+.uf-buehne-inhalt { flex: 1; display: flex; gap: 28px; padding: 20px clamp(16px, 3vw, 40px); min-height: 0; }
+.uf-zugang { flex: 0 0 auto; width: 220px; text-align: center; }
+.uf-zugang[hidden] { display: none; }
+.uf-qr svg { width: 100%; height: auto; display: block; border: 1px solid var(--border); }
+.uf-zugang-text { margin: 10px 0 0; font-weight: 600; word-break: break-all; }
+.uf-code { margin: 4px 0 0; font: 800 2.4rem/1.1 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: .08em; color: var(--fach); }
+.uf-buehne.code-gross .uf-zugang { width: min(46vw, 70vh); }
+.uf-buehne.code-gross .uf-code { font-size: clamp(3rem, 8vw, 6.5rem); }
+.uf-buehne.code-gross .uf-zugang-text { font-size: clamp(1.1rem, 2.2vw, 1.8rem); }
+.uf-auswertung { flex: 1; min-width: 0; }
+.uf-buehne-meldung { padding: 0 20px; }
+.uf-frage-leiste { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.uf-countdown-anzeige { font: 700 1.6rem var(--schrift-titel); }
+.uf-countdown-anzeige.knapp { color: var(--bad); }
+.uf-frage-text { font-size: clamp(1.3rem, 2.6vw, 2.2rem); margin: 6px 0 18px; line-height: 1.25; }
+.uf-leer, .uf-verborgen { font-size: 1.3rem; color: var(--muted); padding: 40px 0; text-align: center; }
+.uf-navigation { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 18px; }
+
+.uf-histogramm { width: 100%; height: auto; display: block; overflow: visible; }
+.uf-histogramm.gross { height: clamp(160px, 34vh, 360px); }
+.uf-saeule { fill: var(--fach); }
+.uf-saeule-zahl { font: 700 15px var(--schrift-text); fill: var(--text); }
+.uf-achse { font: 14px var(--schrift-text); fill: var(--muted); }
+.uf-mittel { stroke: var(--uf-mittel); stroke-width: 3; vector-effect: non-scaling-stroke; }
+.uf-median { stroke: var(--uf-median); stroke-width: 3; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; }
+.uf-boxplot { width: 100%; height: 34px; display: block; margin-top: 6px; }
+.uf-box { fill: var(--fach-soft); stroke: var(--fach); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.uf-box-linie { stroke: var(--fach); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.uf-legende { color: var(--muted); }
+.uf-leg-mittel, .uf-leg-median { display: inline-block; width: 22px; height: 0; border-top: 3px solid var(--uf-mittel); vertical-align: middle; margin: 0 4px 0 10px; }
+.uf-leg-median { border-top: 3px dashed var(--uf-median); }
+.uf-kennzahlen { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 18px 0 0; }
+.uf-kennzahlen div { background: var(--surface-2); border-radius: 8px; padding: 8px 12px; }
+.uf-kennzahlen dt { font-size: .85rem; color: var(--muted); }
+.uf-kennzahlen dd { margin: 2px 0 0; font: 700 clamp(1.1rem, 2vw, 1.6rem) var(--schrift-titel); }
+
+.uf-balken-liste { display: grid; gap: 10px; }
+.uf-balken-zeile { display: grid; grid-template-columns: minmax(6em, 14em) 1fr auto; align-items: center; gap: 12px; font-size: clamp(1rem, 1.7vw, 1.4rem); }
+.uf-balken-zeile.richtig .uf-balken-label { color: var(--good); font-weight: 700; }
+.uf-balken-zeile.richtig .uf-balken > span { background: var(--good); }
+.uf-balken { display: block; height: 1.6em; background: var(--surface-2); border-radius: 6px; overflow: hidden; }
+.uf-balken > span { display: block; height: 100%; background: var(--fach); transition: width .4s; }
+.uf-balken-wert { font-weight: 700; white-space: nowrap; }
+
+.uf-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.uf-kachel { font: inherit; text-align: left; display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); color: var(--text); cursor: pointer; }
+.uf-kachel:hover { border-color: var(--fach); }
+.uf-kachel-nr { font: 700 .85rem var(--schrift-titel); color: var(--fach); }
+.uf-kachel-text { font-weight: 700; line-height: 1.3; }
+.uf-kachel .uf-histogramm { height: 60px; border-bottom: 2px solid var(--border); }
+.uf-mini-skala { display: flex; justify-content: space-between; font-size: .8rem; color: var(--muted); margin-top: -4px; }
+.uf-kachel-werte { color: var(--text); }
+.uf-mini-balken { display: grid; gap: 4px; }
+.uf-mini-zeile { display: grid; grid-template-columns: minmax(4em, 8em) 1fr 3.2em; gap: 8px; align-items: center; font-size: .88rem; }
+.uf-mini-zeile .uf-balken { height: 1em; }
+.uf-mini-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uf-mini-wert { text-align: right; font-weight: 600; }
+.uf-tipp { color: var(--muted); }
+
+@media (max-width: 760px) {
+  .uf-buehne-inhalt { flex-direction: column; }
+  .uf-zugang, .uf-buehne.code-gross .uf-zugang { width: min(100%, 300px); margin: 0 auto; }
+  .uf-balken-zeile { grid-template-columns: 1fr auto; }
+  .uf-balken-zeile .uf-balken { grid-column: 1 / -1; grid-row: 2; }
+}
+

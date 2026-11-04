@@ -5,10 +5,11 @@
   "autor": "Philippe Nix",
   "faecher": [
     "deutsch",
-    "informatik"
+    "informatik",
+    "werkzeuge"
   ],
   "fachnummern": {
-    "_hinweis": "Feste Nummern für Kurzlinks und Gliederung – nie ändern. Weitere Nummern (Sprachen, Kunst …) unter Vorbehalt.",
+    "_hinweis": "Feste Nummern für Kurzlinks und Gliederung – nie ändern. Weitere Nummern (Sprachen, Kunst …) unter Vorbehalt. 50 = fächerübergreifende Tools (kein Fach, \"global\": true in content/werkzeuge/kapitel.json).",
     "deutsch": 1,
     "mathematik": 2,
     "geschichte": 3,
@@ -18,7 +19,8 @@
     "erdkunde": 7,
     "politik": 8,
     "informatik": 9,
-    "musik": 10
+    "musik": 10,
+    "werkzeuge": 50
   },
   "lizenz": {
     "name": "CC BY-NC-SA 4.0",

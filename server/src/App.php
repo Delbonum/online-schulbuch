@@ -6,6 +6,7 @@ namespace Schulbuch;
 
 use Schulbuch\Controller\AuthController;
 use Schulbuch\Controller\ClassController;
+use Schulbuch\Controller\PollController;
 use Schulbuch\Controller\QuizController;
 use Schulbuch\Controller\RegistrationController;
 use Schulbuch\Controller\TeacherContentController;
@@ -19,6 +20,7 @@ use Schulbuch\Http\Router;
 use Schulbuch\Http\Session;
 use Schulbuch\Repository\LoginThrottle;
 use Schulbuch\Repository\ClassRepository;
+use Schulbuch\Repository\PollRepository;
 use Schulbuch\Repository\ProgressRepository;
 use Schulbuch\Repository\RegistrationRepository;
 use Schulbuch\Repository\UserRepository;
@@ -66,6 +68,7 @@ final class App
             $apiUrl,
         );
         $teacherContentController = new TeacherContentController($auth, $contentKey);
+        $pollController = new PollController($auth, new PollRepository($db));
 
         $this->router = new Router();
         $r = $this->router;
@@ -77,6 +80,21 @@ final class App
         $r->add('DELETE', '/auth/account', [$authController, 'deleteAccount']);
 
         $r->add('GET', '/teacher-content/key', [$teacherContentController, 'key']);
+
+        // Werkzeug „Umfragen“
+        $r->add('GET', '/polls', [$pollController, 'index']);
+        $r->add('POST', '/polls', [$pollController, 'create']);
+        $r->add('POST', '/polls/import', [$pollController, 'import']);
+        $r->add('GET', '/polls/{id}', [$pollController, 'show']);
+        $r->add('PATCH', '/polls/{id}', [$pollController, 'update']);
+        $r->add('DELETE', '/polls/{id}', [$pollController, 'delete']);
+        $r->add('GET', '/polls/{id}/export', [$pollController, 'export']);
+        $r->add('POST', '/polls/{id}/runs', [$pollController, 'startRun']);
+        $r->add('GET', '/poll-runs/{id}', [$pollController, 'showRun']);
+        $r->add('PATCH', '/poll-runs/{id}', [$pollController, 'updateRun']);
+        $r->add('DELETE', '/poll-runs/{id}', [$pollController, 'deleteRun']);
+        $r->add('GET', '/join/{code}', [$pollController, 'join']);
+        $r->add('POST', '/join/{code}/answers', [$pollController, 'answer']);
 
         $r->add('GET', '/quizzes/{level}', [$quizController, 'show']);
         $r->add('POST', '/quizzes/{level}/submit', [$quizController, 'submit']);

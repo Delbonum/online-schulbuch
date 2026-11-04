@@ -90,6 +90,23 @@ test('Kacheln nur auf Start- und Fachseiten, innerhalb von Kapiteln nur Listen',
   assert.match(readFileSync(join(OUT, 'deutsch', 'index.html'), 'utf8'), /class="kacheln/);
 });
 
+test('Tools: Kachel auf der Startseite, Übersicht mit fächerübergreifenden und fachspezifischen Tools', () => {
+  const start = readFileSync(join(OUT, 'index.html'), 'utf8');
+  assert.match(start, /class="kachel fach-kachel fach-werkzeuge" href="\/vorschau\/werkzeuge\/"/);
+  const seite = readFileSync(join(OUT, 'werkzeuge', 'index.html'), 'utf8');
+  assert.match(seite, /<body class="fach-werkzeuge">/);
+  const oben = seite.indexOf('Fächerübergreifende Tools');
+  const unten = seite.indexOf('Fachspezifische Tools');
+  assert.ok(oben > 0 && unten > oben, 'erst fächerübergreifende, dann fachspezifische Tools');
+  assert.ok(seite.indexOf('<h3>Umfragen</h3>') > oben && seite.indexOf('<h3>Umfragen</h3>') < unten);
+  assert.match(seite.slice(unten), /<a class="kachel fach-informatik" href="\/informatik\/kryptogame\/"/, 'KryptoGAME in Informatik-Farbe');
+  assert.match(seite.slice(unten), /<a class="kachel fach-informatik" href="\/vorschau\/informatik\/werkzeuge\/zahlensysteme\/"/);
+  const kurz = JSON.parse(readFileSync(join(ROOT, 'content', 'kurzlinks.json'), 'utf8'));
+  assert.equal(kurz['/werkzeuge/'], '50');
+  assert.equal(kurz['/werkzeuge/umfragen/'], '50.1');
+  assert.match(readFileSync(join(OUT, 'werkzeuge', 'umfragen', 'index.html'), 'utf8'), /<div id="umfragen" class="umfragen">/);
+});
+
 test('Kurzlinks: jede Seite hat eine feste, eindeutige Nummer', () => {
   const kurz = JSON.parse(readFileSync(join(ROOT, 'content', 'kurzlinks.json'), 'utf8'));
   const nummern = Object.values(kurz);

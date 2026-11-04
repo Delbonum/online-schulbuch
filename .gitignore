@@ -23,6 +23,7 @@ Thumbs.db
 /server/config.production.php
 /server/data/*.sqlite
 /server/data/*.sqlite-journal
+/server/data/.schema-*
 /server/users.json
 
 # Lokale Hinweise für Claude (Serverzugang usw.) – nicht veröffentlichen

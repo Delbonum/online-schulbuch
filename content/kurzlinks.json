@@ -134,5 +134,7 @@
   "/informatik/werkzeuge/bauernschach/": "9.50.1.3",
   "/informatik/werkzeuge/zahlensysteme/": "9.50.2",
   "/informatik/werkzeuge/qr-pixel-editor/": "9.50.3",
-  "/informatik/werkzeuge/qr-masken/": "9.50.4"
+  "/informatik/werkzeuge/qr-masken/": "9.50.4",
+  "/werkzeuge/": "50",
+  "/werkzeuge/umfragen/": "50.1"
 }

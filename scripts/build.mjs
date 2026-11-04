@@ -406,11 +406,13 @@ function brotkrumen(seite) {
   return `<nav class="brotkrumen" aria-label="Du bist hier">${nr && !seite.knoten.entwurf ? `<span class="brotkrumen-nr">${nr}:</span>` : ''}<ol>${teile.map((t) => `<li><a href="${u(t.url)}">${esc(t.titel)}</a></li>`).join('')}<li aria-current="page">${esc(seite.knoten.kurz ?? seite.knoten.titel)}</li></ol></nav>`;
 }
 
-function kachel(knoten) {
+// fach: Kachel in der Farbe eines anderen Fachs (Übersicht der fachspezifischen Tools), mit dem Fach in der Fußzeile
+function kachel(knoten, fach = null) {
   const titel = esc(knoten.lang ?? knoten.titel);
+  const klasse = fach ? ` fach-${fach.slug}` : '';
   const besch = knoten.beschreibung ? `<p>${esc(knoten.beschreibung)}</p>` : '';
   const anzahl = knoten.seiten?.length && !knoten.geplant ? zaehleSeiten(knoten) - (knoten.seite ? 1 : 0) : 0;
-  const meta = [];
+  const meta = fach ? [esc(fach.titel)] : [];
   if (knoten.zeitraum && !knoten.lang) meta.push(esc(knoten.zeitraum));
   if (anzahl) meta.push(`${anzahl} ${anzahl === 1 ? 'Seite' : 'Seiten'}`);
   if (knoten.beta) meta.push('Beta');
@@ -418,15 +420,15 @@ function kachel(knoten) {
   const ic = knoten.icon ? `<span class="kachel-icon">${icon(knoten.icon)}</span>` : '';
   const fuss = meta.length ? `<p class="kachel-meta">${meta.join(' · ')}</p>` : '';
   if (knoten.geplant) {
-    return `<div class="kachel geplant">${ic}<h3>${titel}</h3>${besch}<p class="kachel-meta"><span class="abzeichen">in Vorbereitung</span></p></div>`;
+    return `<div class="kachel geplant${klasse}">${ic}<h3>${titel}</h3>${besch}<p class="kachel-meta"><span class="abzeichen">in Vorbereitung</span></p></div>`;
   }
   if (knoten.extern) {
-    return `<a class="kachel" href="${u(knoten.url)}" target="_blank" rel="noopener">${ic}<h3>${titel} ${icon('extern', 'icon klein')}</h3>${besch}<p class="kachel-meta">${meta.concat('öffnet in neuem Tab').join(' · ')}</p></a>`;
+    return `<a class="kachel${klasse}" href="${u(knoten.url)}" target="_blank" rel="noopener">${ic}<h3>${titel} ${icon('extern', 'icon klein')}</h3>${besch}<p class="kachel-meta">${meta.concat('öffnet in neuem Tab').join(' · ')}</p></a>`;
   }
-  return `<a class="kachel" href="${u(knoten.url)}">${ic}<h3>${titel}</h3>${besch}${fuss}</a>`;
+  return `<a class="kachel${klasse}" href="${u(knoten.url)}">${ic}<h3>${titel}</h3>${besch}${fuss}</a>`;
 }
 
-// Kacheln gibt es nur auf der Startseite (Fächer) und der Fachseite (Kapitel). Innerhalb eines Kapitels
+// Kacheln gibt es nur auf der Startseite (Fächer), der Fachseite (Kapitel) und der Tool-Übersicht /werkzeuge/. Innerhalb eines Kapitels
 // stehen die Unterseiten immer als schlichte Liste – egal wie tief verschachtelt (siehe README).
 function unterseiten(knoten) {
   const kinder = (knoten.seiten ?? []).filter((k) => !k.entwurf);
@@ -501,9 +503,17 @@ ${blaettern(seite)}
 ${fuss(fach)}`;
 }
 
+// Fachspezifische Tools = Einträge der Toolsammlung (Kapitel "werkzeuge") jedes Fachs
+const fachTools = () => faecher.filter((f) => !f.global).flatMap((f) => (f.kapitel.find((k) => k.slug === 'werkzeuge' && !k.geplant)?.seiten ?? [])
+  .filter((k) => !k.entwurf).map((k) => [k, f]));
+
 function fachseite(fach) {
   const datei = join(CONTENT, fach.slug, 'index.html');
   const intro = existsSync(datei) ? wandle(leseFragment(datei).inhalt, datei) : '';
+  // Fächerübergreifende Tools (online-schulbuch.de/50): eigene Tools oben, darunter die Tools aller Fächer
+  const tools = fach.global ? fachTools() : [];
+  const unten = tools.length ? `<h2 class="kacheln-titel">Fachspezifische Tools</h2>
+<div class="kacheln">${tools.map(([k, f]) => kachel(k, f)).join('')}</div>` : '';
   return `${kopf({ titel: fach.titel, beschreibung: fach.beschreibung, url: fach.url })}
 <body class="fach-${fach.slug}">
 ${kopfleiste({ fach })}
@@ -513,7 +523,9 @@ ${kopfleiste({ fach })}
 <div><h1>${esc(fach.titel)}</h1><p>${esc(fach.beschreibung)}</p></div>
 </header>
 ${intro ? `<div class="text">${intro}</div>` : ''}
+${fach.global ? '<h2 class="kacheln-titel">Fächerübergreifende Tools</h2>' : ''}
 <div class="kacheln">${fach.kapitel.map((k) => kachel(k)).join('')}</div>
+${unten}
 </main>
 ${fuss(fach)}`;
 }
@@ -524,7 +536,10 @@ function startseite() {
   const fachKachel = (f) => {
     const offen = f.kapitel.filter((k) => !k.geplant);
     const n = offen.reduce((a, k) => a + zaehleSeiten(k), 0);
-    return `<a class="kachel fach-kachel fach-${f.slug}" href="${u(f.url)}"><span class="kachel-icon">${icon(f.icon)}</span><h2>${esc(f.titel)}</h2><p>${esc(f.beschreibung)}</p><p class="kachel-meta">${offen.length} ${offen.length === 1 ? 'Kapitel' : 'Kapitel'} · ${n} Seiten</p></a>`;
+    const meta = f.global
+      ? `${offen.length} ${offen.length === 1 ? 'Tool' : 'Tools'} fächerübergreifend · ${fachTools().length} aus den Fächern`
+      : `${offen.length} Kapitel · ${n} Seiten`;
+    return `<a class="kachel fach-kachel fach-${f.slug}" href="${u(f.url)}"><span class="kachel-icon">${icon(f.icon)}</span><h2>${esc(f.titel)}</h2><p>${esc(f.beschreibung)}</p><p class="kachel-meta">${meta}</p></a>`;
   };
   return `${kopf({ url: '/' })}
 <body class="start">
@@ -618,7 +633,7 @@ writeFileSync(join(ZIEL, '404.html'), einfacheSeite({
 
 // Suchindex
 const index = [
-  ...faecher.map((f) => ({ t: f.titel, u: u(f.url), f: f.titel, k: 'Fach', x: f.beschreibung })),
+  ...faecher.map((f) => ({ t: f.titel, u: u(f.url), f: f.titel, k: f.global ? 'Tools' : 'Fach', x: f.beschreibung })),
   ...seiten.filter((s) => !s.knoten.entwurf).map((s) => ({
     t: s.knoten.lang ?? s.knoten.titel,
     u: u(s.url),

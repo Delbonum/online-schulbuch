@@ -17,13 +17,15 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
   Schriften Raleway (Titel) und Sarabun (Text), lokal in `site/assets/fonts`; graue Kacheln mit
   farbigem Symbolquadrat; graue Hinweiskästen; dünne Titelschrift mit Linie darunter.
 - Jedes Fach hat ein Farbpaar (Kopfleiste / Akzent) in `site/assets/css/schulbuch.css`:
-  Deutsch `#eae23f` / `#4743c5`, Informatik `#8fd460` / `#0b6b72`, neutral (Startseite usw.) `#3d4a5c`.
+  Deutsch `#eae23f` / `#4743c5`, Informatik `#8fd460` / `#0b6b72`, neutral (Startseite usw.) `#3d4a5c`,
+  Tools (`/werkzeuge/`, fächerübergreifend) `#c5ccd6` / `#3d4a5c` (anthrazit).
 - Logo: Original `site/assets/img/logo-original.png`; Fachvarianten und Favicons erzeugt
   `python scripts/logo-varianten.py` (Pillow). Neue Fachfarbe dort eintragen.
 
 ## Inhalte
-- Werkzeuge liegen in `apps/` und stehen vorerst nur in der Toolsammlung
-  (`/informatik/werkzeuge/`); die Einbindung in Fachkapitel erfolgt später, wenn es dort Inhalte gibt.
+- Werkzeuge liegen in `apps/`. Fachspezifische stehen in der Toolsammlung ihres Fachs (z. B. `/informatik/werkzeuge/`,
+  9.50), fächerübergreifende (z. B. Umfragen) unter `/werkzeuge/` (Kurzlink 50, `content/werkzeuge/kapitel.json`).
+  Die Seite `/werkzeuge/` zeigt beide Gruppen als Kacheln (README „Kacheln und Listen“).
 - Das KryptoGAME ist eine eigenständige App (eigenes Design, eigener Build) und wird nur verlinkt (neuer Tab).
   `scripts/deploy.sh live` fasst `/informatik/kryptogame/` nie an; dafür gibt es `scripts/deploy.sh kryptogame`.
 - **Schulbuch-API** (`server/`, live unter `/api/`): gemeinsame Konten, Klassen und Anmeldung für die ganze Website
@@ -33,13 +35,16 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
   `config.basis.php`) nie überschreiben. Details: README „Schulbuch-API“.
 - `materialien/` ist unveröffentlichtes Unterrichtsmaterial und bleibt lokal (gitignored).
 - Externe Einbettungen (LearningApps) nur per Klick laden (Datenschutz).
-- **Kacheln nur für Fächer (Startseite) und Kapitel ersten Grades (Fachseite)**, nie innerhalb eines Kapitels –
+- **Kacheln nur für Fächer (Startseite), Kapitel ersten Grades (Fachseite) und die Tool-Übersicht**, nie innerhalb eines Kapitels –
   dort nur die automatische Liste „In diesem Kapitel“. Details: README „Kacheln und Listen“.
 - Lektüren (`content/deutsch/lektueren/`): Vorgehen und verbindliche Grundsätze stehen im README unter
   „Lektüren: Unterrichtsreihen anlegen“ – v. a. **kein Vorwissen voraussetzen** (Schüler:innen haben das Buch
   zu Beginn nicht gelesen, Leseseiten spoilerfrei) und **Seitenangaben = gedruckte Buchseiten**, nie PDF-Seiten.
   Reihen sind **flexibel planbar** (Kern- und Zusatzseiten, Kasten „Einsatz dieser Seite“, Kurzfassungen, Leseplan,
   Planungsmodelle) und bekommen passende Bilder (eigene SVG-Skizzen, Fotos nur frei lizenziert mit Nachweis).
+- **Live-Umfragen mitdenken** (alle Fächer, auch künftige Reihen): Meinungslinien und Lesechecks/Verständnisquizze
+  für die Klassendiagnose bekommen in einem `<lehrkraft>`-Kasten direkt dahinter den Knopf
+  „Als Live-Umfrage durchführen“ (`data-als-umfrage`, README „Live-Umfragen aus dem Schulbuch“).
 - Lösungen/Lehrerhinweise in `<lehrkraft>`, **abschnittsweise**: hinter jedem `<h2>`-Abschnitt ein Kasten mit den
   Lösungen zu dessen Aufgaben, nie alle gesammelt am Seitenende (README „Inhalte für Lehrkräfte“). Lehrkräfte melden sich mit eigenem Konto an; der
   Schlüssel steht in `.lehrkraft-schluessel` (lokal, nie committen) und gleich auf dem Server in `api/config.php`.

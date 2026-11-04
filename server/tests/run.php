@@ -116,7 +116,7 @@ function freshDatabase(): Database
         'password' => getenv('SCHULBUCH_TEST_PASSWORD') ?: null]);
     if ($db->driver() === 'mysql') {
         $db->pdo()->exec('SET FOREIGN_KEY_CHECKS = 0');
-        foreach (['login_attempts', 'progress_log', 'quiz_attempts', 'level_progress', 'users'] as $table) {
+        foreach (['poll_answers', 'poll_runs', 'poll_polls', 'login_attempts', 'progress_log', 'quiz_attempts', 'level_progress', 'users'] as $table) {
             $db->pdo()->exec("DROP TABLE IF EXISTS {$table}");
         }
         $db->pdo()->exec('SET FOREIGN_KEY_CHECKS = 1');
@@ -723,6 +723,169 @@ test('Löschen einer Lehrkraft löscht ihre Schüler/-innen', function () use ($
     $studentId = $users->create('kind', 'x', 'student', $teacherId);
     $users->delete($teacherId);
     check($users->findById($studentId) === null, 'Fremdschlüssel mit ON DELETE CASCADE');
+});
+
+// ------------------------------------------------------------------ Umfragen
+
+function beispielUmfrage(): array
+{
+    return [
+        'title' => 'Meinungsbild',
+        'mode' => 'single',
+        'countdown' => 0,
+        'questions' => [
+            ['id' => 'a1', 'text' => 'Wie gut hat dir die Stunde gefallen?', 'type' => 'scale', 'min' => 0, 'max' => 10, 'step' => 1, 'left' => 'gar nicht', 'right' => 'sehr'],
+            ['id' => 'b2', 'text' => 'Hast du alles verstanden?', 'type' => 'choice', 'options' => ['nein', 'eher nein', 'eher ja', 'ja'], 'correct' => null],
+            ['text' => 'Was ist 2 + 2?', 'type' => 'choice', 'options' => ['3', '4'], 'correct' => 1],
+        ],
+    ];
+}
+
+test('Umfragen anlegen, bearbeiten, löschen – nur eigene', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $users->create('lehrerin', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $users->create('kollege', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $client = new Client($db, $catalog);
+    check($client->call('GET', '/polls')->status() === 401, 'ohne Anmeldung keine Umfragen');
+    $client->login('lehrerin', 'geheim123');
+
+    $created = $client->call('POST', '/polls', beispielUmfrage() + ['source' => '/deutsch/seite/#x']);
+    check($created->status() === 201, 'Umfrage angelegt');
+    $poll = asArray($created)['poll'];
+    check(count($poll['questions']) === 3 && $poll['questions'][0]['id'] === 'a1', 'Fragen gespeichert, ids bleiben');
+    check(preg_match('/^[a-z0-9]{8}$/', $poll['questions'][2]['id']) === 1, 'fehlende id wird vergeben');
+    check($poll['source'] === '/deutsch/seite/#x', 'Herkunft gespeichert');
+    check(substr($poll['deletesAt'], 0, 10) === gmdate('Y-m-d', time() + 500 * 86400), 'Löschdatum nach 500 Tagen');
+
+    $bad = beispielUmfrage();
+    $bad['questions'][1]['options'] = ['nur eine'];
+    check($client->call('POST', '/polls', $bad)->status() === 400, 'Auswahl braucht mind. 2 Vorgaben');
+    $bad = beispielUmfrage();
+    $bad['questions'][0]['max'] = -5;
+    check($client->call('POST', '/polls', $bad)->status() === 400, 'Skala braucht min < max');
+
+    $changed = beispielUmfrage();
+    $changed['title'] = 'Neuer Titel';
+    $changed['mode'] = 'all';
+    check(asArray($client->call('PATCH', "/polls/{$poll['id']}", $changed))['poll']['title'] === 'Neuer Titel', 'bearbeitet');
+
+    $other = new Client($db, $catalog);
+    $other->login('kollege', 'geheim123');
+    check($other->call('GET', "/polls/{$poll['id']}")->status() === 404, 'fremde Umfrage unsichtbar');
+    check($other->call('DELETE', "/polls/{$poll['id']}")->status() === 404, 'fremde Umfrage nicht löschbar');
+    check(asArray($other->call('GET', '/polls'))['polls'] === [], 'Kollege sieht keine Umfragen');
+
+    check($client->call('DELETE', "/polls/{$poll['id']}")->status() === 204, 'gelöscht');
+    check(asArray($client->call('GET', '/polls'))['polls'] === [], 'Liste leer');
+});
+
+test('Umfragen ohne Aktivität werden nach 500 Tagen gelöscht', function () use ($catalog): void {
+    $db = freshDatabase();
+    (new UserRepository($db))->create('lehrerin', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $client = new Client($db, $catalog);
+    $client->login('lehrerin', 'geheim123');
+    $alt = asArray($client->call('POST', '/polls', beispielUmfrage()))['poll']['id'];
+    $neu = asArray($client->call('POST', '/polls', beispielUmfrage()))['poll']['id'];
+    $db->execute('UPDATE poll_polls SET active_at = ? WHERE id = ?', [gmdate('Y-m-d H:i:s', time() - 501 * 86400) . '.000', $alt]);
+    $db->execute('UPDATE poll_polls SET active_at = ? WHERE id = ?', [gmdate('Y-m-d H:i:s', time() - 499 * 86400) . '.000', $neu]);
+    $ids = array_column(asArray($client->call('GET', '/polls'))['polls'], 'id');
+    check($ids === [$neu], 'nur die alte Umfrage ist gelöscht');
+});
+
+test('Umfrage durchführen: Frage für Frage, Teilnahme mit Code', function () use ($catalog): void {
+    $db = freshDatabase();
+    (new UserRepository($db))->create('lehrerin', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $client = new Client($db, $catalog);
+    $client->login('lehrerin', 'geheim123');
+    $poll = asArray($client->call('POST', '/polls', beispielUmfrage()))['poll'];
+
+    $run = asArray($client->call('POST', "/polls/{$poll['id']}/runs", []))['run'];
+    check(preg_match('/^\d{6}$/', $run['code']) === 1, 'sechsstelliger Code');
+    check($run['current'] === 0 && $run['participants'] === 0, 'beginnt mit Frage 1');
+
+    $schueler = new Client($db, $catalog);
+    $p1 = str_repeat('a', 16);
+    $p2 = str_repeat('b', 16);
+    $join = asArray($schueler->callWithQuery('GET', "/join/{$run['code']}", ['participant' => $p1]));
+    check($join['title'] === 'Meinungsbild' && count($join['questions']) === 1 && $join['total'] === 3, 'nur die aktuelle Frage sichtbar');
+    check($schueler->call('GET', '/join/000000')->status() === 404, 'unbekannter Code');
+
+    check($schueler->call('POST', "/join/{$run['code']}/answers", ['participant' => $p1, 'answers' => ['a1' => 7]])->status() === 200, 'Antwort gespeichert');
+    $schueler->call('POST', "/join/{$run['code']}/answers", ['participant' => $p1, 'answers' => ['a1' => 8]]);
+    $schueler->call('POST', "/join/{$run['code']}/answers", ['participant' => $p2, 'answers' => ['a1' => 3.4]]);
+    check($schueler->call('POST', "/join/{$run['code']}/answers", ['participant' => $p1, 'answers' => ['a1' => 11]])->status() === 400, 'Wert außerhalb der Skala');
+    check($schueler->call('POST', "/join/{$run['code']}/answers", ['participant' => $p1, 'answers' => ['b2' => 1]])->status() === 409, 'nächste Frage noch nicht freigegeben');
+    check($schueler->call('POST', "/join/{$run['code']}/answers", ['participant' => 'kurz', 'answers' => ['a1' => 1]])->status() === 400, 'ungültige Kennung');
+
+    $stand = asArray($client->call('GET', "/poll-runs/{$run['id']}"));
+    check($stand['run']['participants'] === 2, 'zwei Teilnehmende');
+    $werte = $stand['run']['answers']['a1'];
+    sort($werte);
+    check($werte == [3, 8], 'Antwort geändert statt doppelt, auf Schrittweite gerundet');
+
+    $client->call('PATCH', "/poll-runs/{$run['id']}", ['current' => 2]);
+    $join = asArray($schueler->callWithQuery('GET', "/join/{$run['code']}", ['participant' => $p1]));
+    check($join['current'] === 2 && !array_key_exists('correct', $join['questions'][0]), 'Frage 3 ohne Lösung');
+    check($join['answers'] == ['a1' => 8], 'eigene Antworten kommen zurück');
+
+    check(asArray($client->call('PATCH', "/poll-runs/{$run['id']}", ['end' => true]))['run']['endedAt'] !== null, 'beendet');
+    check($schueler->call('GET', "/join/{$run['code']}")->status() === 404, 'Code nach dem Ende ungültig');
+    check($schueler->call('POST', "/join/{$run['code']}/answers", ['participant' => $p1, 'answers' => ['c' => 1]])->status() === 404, 'keine Antworten mehr');
+    $liste = asArray($client->call('GET', '/polls'))['polls'][0]['runs'];
+    check(count($liste) === 1 && $liste[0]['participants'] === 2 && $liste[0]['code'] === null, 'Durchführung in der Übersicht');
+});
+
+test('Umfrage durchführen: alle Fragen auf einmal und Countdown', function () use ($catalog): void {
+    $db = freshDatabase();
+    (new UserRepository($db))->create('lehrerin', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $client = new Client($db, $catalog);
+    $client->login('lehrerin', 'geheim123');
+    $poll = asArray($client->call('POST', '/polls', beispielUmfrage()))['poll'];
+
+    $run = asArray($client->call('POST', "/polls/{$poll['id']}/runs", ['mode' => 'all']))['run'];
+    $schueler = new Client($db, $catalog);
+    $p = str_repeat('c', 16);
+    check(count(asArray($schueler->call('GET', "/join/{$run['code']}"))['questions']) === 3, 'alle Fragen sichtbar');
+    $r = $schueler->call('POST', "/join/{$run['code']}/answers", ['participant' => $p, 'answers' => ['a1' => 5, 'b2' => 3]]);
+    check($r->status() === 200, 'mehrere Antworten auf einmal');
+
+    $run = asArray($client->call('POST', "/polls/{$poll['id']}/runs", ['mode' => 'single', 'countdown' => 30]))['run'];
+    check($run['remaining'] === 30, 'Countdown läuft');
+    // 65 Sekunden zurückdatieren: zwei Fragen weiter, auf der letzten bleibt sie stehen
+    $db->execute('UPDATE poll_runs SET question_since = ? WHERE id = ?', [gmdate('Y-m-d H:i:s', time() - 65) . '.000', $run['id']]);
+    $join = asArray($schueler->call('GET', "/join/{$run['code']}"));
+    check($join['current'] === 2, 'Countdown schaltet automatisch weiter');
+    check($join['remaining'] !== null && $join['remaining'] <= 30, 'Restzeit der letzten Frage');
+});
+
+test('Umfrage exportieren und vollständig wieder importieren', function () use ($catalog): void {
+    $db = freshDatabase();
+    (new UserRepository($db))->create('lehrerin', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $client = new Client($db, $catalog);
+    $client->login('lehrerin', 'geheim123');
+    $poll = asArray($client->call('POST', '/polls', beispielUmfrage()))['poll'];
+    $run = asArray($client->call('POST', "/polls/{$poll['id']}/runs", ['mode' => 'all']))['run'];
+    $schueler = new Client($db, $catalog);
+    foreach (['d', 'e'] as $i => $buchstabe) {
+        $schueler->call('POST', "/join/{$run['code']}/answers", ['participant' => str_repeat($buchstabe, 16), 'answers' => ['a1' => 4 + $i, 'b2' => $i]]);
+    }
+    $client->call('PATCH', "/poll-runs/{$run['id']}", ['end' => true]);
+
+    $export = asArray($client->call('GET', "/polls/{$poll['id']}/export"));
+    check($export['format'] === 'online-schulbuch-umfrage' && count($export['runs']) === 1, 'Export mit Durchführung');
+    check(count($export['runs'][0]['answers']) === 4 && $export['runs'][0]['answers'][0]['participant'] === 't1', 'Antworten mit neutralen Kennungen');
+
+    $client->call('DELETE', "/polls/{$poll['id']}");
+    // Wie eine gespeicherte Datei: einmal durch JSON
+    $import = $client->call('POST', '/polls/import', json_decode(json_encode($export), true));
+    check($import->status() === 201, 'importiert');
+    $neu = asArray($import)['poll'];
+    check($neu['title'] === 'Meinungsbild' && count($neu['questions']) === 3 && $neu['questions'][2]['correct'] === 1, 'Fragen wiederhergestellt');
+    check(count($neu['runs']) === 1 && $neu['runs'][0]['participants'] === 2 && $neu['runs'][0]['code'] === null, 'Durchführung wiederhergestellt');
+    $stand = asArray($client->call('GET', "/poll-runs/{$neu['runs'][0]['id']}"))['run'];
+    check($stand['answers']['a1'] == [4, 5] || $stand['answers']['a1'] == [5, 4], 'Antworten wiederhergestellt');
+    check($client->call('POST', '/polls/import', ['format' => 'etwas anderes'])->status() === 400, 'fremde Datei abgelehnt');
 });
 
 fwrite(STDOUT, "\n{$passes} Prüfungen bestanden, {$failures} fehlgeschlagen.\n");

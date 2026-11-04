@@ -337,6 +337,12 @@ document.querySelectorAll('.quiz').forEach((quiz) => {
       erklaerung: f.dataset.erklaerung,
     };
   });
+  // für „Als Live-Umfrage durchführen“ (unten) – das Quiz-Markup wird gleich ersetzt
+  // (Reihenfolge fest gemischt, denn im Quelltext steht die richtige Antwort oft vorn)
+  quiz.umfrageFragen = aufgaben.map((a) => {
+    const options = umfrageMischung(a.optionen, a.frage);
+    return { text: a.frage, type: 'choice', options, correct: options.indexOf(a.richtig) };
+  });
   quiz.classList.add('werkzeug');
   uebung(quiz, {
     anweisung: quiz.dataset.anweisung,
@@ -617,4 +623,68 @@ document.querySelectorAll('ul.abhaken[data-id]').forEach((liste) => {
     });
   });
   zeige();
+});
+
+// ---------------------------------------------------------------- Als Live-Umfrage durchführen
+//
+//   <button type="button" class="knopf" data-als-umfrage="id1 id2 …" data-titel="…" [data-modus="single|all"]>
+//
+// Steht in den Hinweisen für Lehrkräfte (<lehrkraft>). Die ids sind data-id von Meinungslinien (.position)
+// oder Quizzen (.quiz[data-id]); daraus wird eine Umfrage für das Werkzeug „Umfragen“ gebaut und in einem
+// neuen Tab geöffnet (Übergabe über localStorage, siehe apps/werkzeuge/umfragen/umfragen.js).
+// Mit data-umfrage-text an einer Meinungslinie lässt sich der Fragetext für die Umfrage ersetzen.
+
+// Feste, aber gut verteilte Reihenfolge der Antwortvorgaben (hängt nur vom Fragetext ab)
+function umfrageMischung(liste, text) {
+  let z = [...text].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 2654435761) >>> 0, 2166136261);
+  const a = [...liste];
+  for (let i = a.length - 1; i > 0; i--) {
+    z = Math.imul(z ^ (z >>> 15), 2246822519) >>> 0;
+    z = (z ^ (z >>> 13)) >>> 0;
+    const j = z % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function umfrageFragen(id) {
+  const position = document.querySelector(`.position[data-id="${CSS.escape(id)}"]`);
+  if (position) {
+    const text = position.dataset.umfrageText ?? (position.querySelector('.position-aussage') ?? position).textContent;
+    return [{
+      text: text.replace(/\s+/g, ' ').trim(),
+      type: 'scale', min: 0, max: 10, step: 1,
+      left: position.dataset.links ?? 'stimme gar nicht zu',
+      right: position.dataset.rechts ?? 'stimme voll zu',
+    }];
+  }
+  const quiz = document.querySelector(`.quiz[data-id="${CSS.escape(id)}"]`);
+  // umfrageFragen legt die Quiz-Initialisierung oben an
+  return (quiz?.umfrageFragen ?? []).map((f) => ({
+    ...f,
+    text: f.text.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim(),
+    correct: f.correct < 0 ? null : f.correct,
+  }));
+}
+
+document.addEventListener('click', (e) => {
+  const knopf = e.target.closest('[data-als-umfrage]');
+  if (!knopf) return;
+  const ids = knopf.dataset.alsUmfrage.split(/\s+/).filter(Boolean);
+  const questions = ids.flatMap(umfrageFragen).filter((f) => f.text);
+  if (!questions.length) return;
+  const umfrage = {
+    title: knopf.dataset.titel || document.querySelector('h1')?.textContent.trim() || 'Umfrage',
+    mode: knopf.dataset.modus || (questions.length > 1 ? 'all' : 'single'),
+    countdown: 0,
+    questions,
+    source: `${location.pathname}#${ids.join(',')}`,
+  };
+  try {
+    localStorage.setItem('umfragen:uebernahme', JSON.stringify(umfrage));
+  } catch {
+    knopf.after(Object.assign(document.createElement('p'), { className: 'klein', textContent: 'Der Browser erlaubt keine Übergabe (privates Fenster?).' }));
+    return;
+  }
+  window.open(`${window.SCHULBUCH_BASIS ?? '/'}werkzeuge/umfragen/?uebernehmen=1`, '_blank');
 });

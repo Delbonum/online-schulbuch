@@ -32,6 +32,8 @@
   /* Neutral: Startseite, Impressum usw. (auch Logo und Favicon) */
   --neutral-akzent: #3d4a5c;
   --neutral-soft: #e8ebef;
+  /* Fächerübergreifende Tools (/werkzeuge/): Akzent wie neutral, helles Schiefergrau als Kopfleiste */
+  --werkzeuge-band: #c5ccd6;
 
   --band: #ffffff;
   --fach: var(--neutral-akzent);
@@ -41,6 +43,7 @@
 
 .fach-deutsch { --band: var(--deutsch-band); --fach: var(--deutsch); --fach-soft: var(--deutsch-soft); }
 .fach-informatik { --band: var(--informatik-band); --fach: var(--informatik); --fach-soft: var(--informatik-soft); }
+.fach-werkzeuge { --band: var(--werkzeuge-band); --fach: var(--neutral-akzent); --fach-soft: var(--neutral-soft); }
 body { --accent: var(--fach); }
 
 /* ------------------------------------------------------------ Grundlagen */
@@ -663,6 +666,8 @@ a.kachel:hover { background: color-mix(in srgb, var(--fach) 9%, var(--surface-2)
 .fach-kachel .kachel-icon .icon { width: 46px; height: 46px; }
 
 .breit-seite > .text { margin: 40px 0 0; }
+/* Zwischenüberschriften der Tool-Übersicht */
+.kacheln-titel { margin: 56px 0 0; padding-bottom: 6px; border-bottom: 1px solid var(--border); font-size: 1.5rem; }
 
 /* ------------------------------------------------------------ Fußzeile */
 

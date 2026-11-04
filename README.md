@@ -13,13 +13,15 @@ content/                  Inhalte (das „Manuskript“ des Buchs)
   deutsch/<kapitel>/…     eine HTML-Datei pro Seite (Kapitelseite: index.html)
   deutsch/lektueren/…     Unterrichtsreihen zu Lektüren, verschachtelt: <autor>/<werk>/<seite>.html
   informatik/…            dasselbe für Informatik
+  werkzeuge/              fächerübergreifende Tools (online-schulbuch.de/50), z. B. Umfragen
   seiten/                 Impressum, Datenschutz, Lizenz
   weiterleitungen.json    zusätzliche Umleitungen und entfernte Adressen
 site/                     Design und Skripte (werden 1:1 übernommen)
 apps/
   ki-lernspiele/          Tic Tac Toe, NIM, Bauernschach (Spiellogik + Tests)
-  werkzeuge/              Zahlensysteme, QR-Code-Werkzeuge, Grammatik-Übungen,
-                          arbeitsblatt/ (Bausteine für digitale Arbeitsblätter)
+  werkzeuge/              Zahlensysteme, QR-Code-Werkzeuge (qr-encode.js erzeugt echte QR-Codes),
+                          Grammatik-Übungen, arbeitsblatt/ (Bausteine für digitale Arbeitsblätter),
+                          umfragen/ (Live-Umfragen, Daten über die Schulbuch-API)
   kryptogame/             KryptoGAME – eigenständige React-App mit eigenem Build (Backend: server/)
   autocell/               AutoCell – fertig gebaute Web-Version aus eigenem Repository (→ /informatik/autocell/,
                           aktualisieren mit scripts/autocell-holen.mjs, siehe apps/autocell/README.md)
@@ -61,6 +63,11 @@ für Kapitel ersten Grades.
 
 - **Kacheln gibt es nur auf zwei Ebenen:** auf der Startseite für die Fächer und auf der Fachseite für die
   Kapitel ersten Grades (z. B. Deutsch → Textgattungen, Literaturepochen, Grammatik, Lektüren).
+- **Ausnahme Tools** (`/werkzeuge/`, Kurzlink 50, Kachel „Tools“ auf der Startseite): Die Seite zeigt oben die
+  fächerübergreifenden Tools aus `content/werkzeuge/kapitel.json` (`"global": true`, Farbe anthrazit) und darunter
+  unter „Fachspezifische Tools“ automatisch alle Einträge der Toolsammlungen der Fächer (Kapitel `werkzeuge`) in
+  der jeweiligen Fachfarbe. Ein neues fächerübergreifendes Tool ist ein neues Kapitel in
+  `content/werkzeuge/kapitel.json`; ein neues Fach-Tool kommt in die Toolsammlung seines Fachs.
 - **Innerhalb eines Kapitels nie Kacheln** – auf keiner Ebene darunter (Unterkapitel, Autor, Werk, Reihe,
   Werkzeugsammlung …). Dort erzeugt der Build unten automatisch die schlichte nummerierte Liste
   „In diesem Kapitel“, wie bei den Literaturepochen. Navigiert wird über Menü, Liste und Zurück/Weiter.
@@ -113,6 +120,35 @@ aufklappbare Kästen ohne Antwortfelder entfallen (mit Lösungen: alles offen, p
 Die Mischung ist fest, damit Blatt und Lösungsfassung zusammenpassen. Die `data-notiz`-ids müssen im ganzen Schulbuch eindeutig
 sein – deshalb mit dem Kürzel der Reihe beginnen (`sezuan-…`). Gleiche id auf einer späteren Seite = Rückblick.
 
+### Live-Umfragen aus dem Schulbuch
+
+Das Tool **Umfragen** (`/werkzeuge/umfragen/`, Kurzadresse `online-schulbuch.de/umfrage`) führt Umfragen mit
+Schiebereglern (Skala) und Antwortvorgaben durch: Lehrkräfte legen sie an (eigenes Konto), wählen den Modus
+„Frage für Frage“ (ausführliche Auswertung, Weiterschalten oder Countdown) oder „Alle Fragen auf einmal“ (kompakte
+Auswertung), zeigen Code und QR-Code am Beamer und sehen die Ergebnisse live. Schülerinnen und Schüler nehmen ohne
+Konto teil. Umfragen lassen sich exportieren/importieren (JSON mit allen Durchführungen) und werden nach 500 Tagen
+ohne Bearbeitung oder Durchführung automatisch gelöscht.
+
+Meinungslinien und Quizze im Schulbuch lassen sich mit einem Knopf in den Hinweisen für Lehrkräfte direkt als
+Umfrage übernehmen – die Seite selbst funktioniert unverändert weiter:
+
+```html
+<div class="quiz" data-id="reihe-lesecheck-1" …> … </div>          <!-- Quiz braucht dafür eine data-id -->
+<lehrkraft titel="Als Live-Umfrage durchführen">
+<p>Kurz erklären, wofür sich die Umfrage hier eignet (Lehrkräfte werden gesiezt).</p>
+<p><button type="button" class="knopf primaer" data-als-umfrage="id-1 id-2" data-titel="Titel der Umfrage"
+  data-modus="single">Als Live-Umfrage durchführen</button></p>
+</lehrkraft>
+```
+
+`data-als-umfrage` nennt die `data-id` von Meinungslinien (`.position`, werden Skalenfragen 0–10 mit den Polen als
+Beschriftung) oder Quizzen (`.quiz`, werden Auswahlfragen mit Lösung, die Vorgaben fest gemischt). `data-modus`:
+`single` (Frage für Frage) oder `all`; ohne Angabe bei mehreren Fragen `all`. Passt der Text einer Meinungslinie
+nicht als Frage, ersetzt ihn `data-umfrage-text` an der `.position`. Den Kasten direkt hinter die Meinungslinie bzw.
+das Quiz setzen. **Bei neuen Inhalten mitdenken:** Jede Meinungslinie (Meinungsbild der Klasse, Vorher-nachher-
+Vergleich) und jeder Lesecheck bzw. jedes Verständnisquiz, das sich für eine gemeinsame Diagnose in der Klasse eignet,
+bekommt so einen Knopf. Selbstchecks zum eigenständigen Üben und Tests (z. B. Abschlusstest) nicht.
+
 ### Inhalte für Lehrkräfte
 
 Alles in `<lehrkraft titel="…">…</lehrkraft>` wird beim Bauen mit AES-GCM verschlüsselt und erst im Browser
@@ -164,7 +200,10 @@ Jede Lektüre bekommt eine Reihe unter `content/deutsch/lektueren/<autor>/<werk>
 7. **Rechte beachten:** Texte von Autorinnen und Autoren, die vor weniger als 70 Jahren gestorben sind, sind
    geschützt – nur kurze Zitate mit Beleg (Brecht: bis 31.12.2026). Keine Bilder aus Schulbüchern, Verlagen oder
    von Inszenierungen ohne Nutzungsrecht; Skizzen lieber selbst als SVG (`figure.skizze`) zeichnen.
-8. **Flexibel planbar.** Jede Reihe besteht aus Kernseiten und fakultativen Zusatzseiten. Zusatzseiten stehen in
+8. **Live-Umfragen:** Meinungslinien und Lesechecks bekommen in den Hinweisen für Lehrkräfte einen Knopf
+   „Als Live-Umfrage durchführen“ (siehe „Live-Umfragen aus dem Schulbuch“) – vor allem die Meinungslinie zu
+   Beginn und ihr Vorher-nachher-Vergleich am Ende der Reihe.
+9. **Flexibel planbar.** Jede Reihe besteht aus Kernseiten und fakultativen Zusatzseiten. Zusatzseiten stehen in
    `kapitel.json` direkt hinter der Leseseite, ab der sie nichts mehr vorwegnehmen. Jede Seite beginnt mit einem
    Kasten `<lehrkraft titel="Einsatz dieser Seite">` (Typ, frühestens nach, Dauer, verschiebbar/kürzbar; auf
    Leseseiten auch: welcher Lesestand welche Aufgabe voraussetzt und welche Schlüsselszenen sich zum gemeinsamen
@@ -172,10 +211,10 @@ Jede Lektüre bekommt eine Reihe unter `content/deutsch/lektueren/<autor>/<werk>
    (`<details class="aufklapp">`). Dazu gehören eine Seite „Leseplan“ (Termine, Abhakliste, Lesetagebuch) und auf
    der Lehrkräfte-Seite eine Bausteinübersicht mit mehreren Planungsmodellen (kompakt, gestreckte Lesezeit mit
    Zwischenbausteinen, Schlüsselszenen, Lektüre vorab). Vorbild: *Der gute Mensch von Sezuan*.
-9. **Bilder:** einfache Grafiken selbst als SVG zeichnen (`figure.skizze`); Fotos nur gemeinfrei oder frei
+10. **Bilder:** einfache Grafiken selbst als SVG zeichnen (`figure.skizze`); Fotos nur gemeinfrei oder frei
    lizenziert (z. B. Wikimedia Commons), verkleinert unter `site/assets/img/lektueren/`, als `figure.foto` mit
    Urheber, Quelle und Lizenz in der Bildunterschrift.
-10. **Das Buch selbst** (z. B. als PDF) gehört nach `materialien/` und wird nie committet. Text lässt sich mit
+11. **Das Buch selbst** (z. B. als PDF) gehört nach `materialien/` und wird nie committet. Text lässt sich mit
    `pdftotext` herausziehen; dabei die PDF-Seiten den gedruckten Seitenzahlen zuordnen (die Zahl steht meist
    unten auf der Seite) und jede Seitenangabe danach prüfen.
 
@@ -209,6 +248,13 @@ Es gibt keine Abhängigkeiten außer Node.js (ab Version 20).
   Eine Anmeldung gilt überall – im Schulbuch (Inhalte für Lehrkräfte) und in den Werkzeugen (z. B. KryptoGAME).
   Session-Cookie `SCHULBUCH_SESSION`, nur für `/api/`.
 - **Schlüssel für die Inhalte für Lehrkräfte:** `GET /api/teacher-content/key` (nur Lehrkräfte).
+- **Umfragen** (Tabellen `poll_*`): `/api/polls` (anlegen, bearbeiten, löschen, `…/export`, `/polls/import`),
+  `POST /api/polls/{id}/runs` (Durchführung mit sechsstelligem Code starten), `/api/poll-runs/{id}` (Stand mit allen
+  Antworten; `PATCH` mit `current`, `countdown` oder `end`), ohne Konto: `GET /api/join/{code}` und
+  `POST /api/join/{code}/answers`. Der Countdown rückt beim Abruf serverseitig weiter; Durchführungen enden nach
+  12 Stunden automatisch.
+- **Neue Tabellen** legt die API nach dem Hochladen beim ersten Aufruf selbst an (Markierung
+  `data/.schema-<Prüfsumme>`), denn auf dem Server gibt es kein PHP auf der Kommandozeile.
 - **KryptoGAME:** Fortschritt, Prüfungen (Bewertung auf dem Server), Statistik.
 
 Neue Werkzeuge mit Lehrkraft-Modus fragen `GET /api/auth/me` (`role: "teacher"`) ab, statt eine eigene Anmeldung

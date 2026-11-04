@@ -78,3 +78,42 @@ CREATE TABLE IF NOT EXISTS login_attempts (
 );
 CREATE INDEX IF NOT EXISTS idx_login_username ON login_attempts (username, created_at);
 CREATE INDEX IF NOT EXISTS idx_login_ip ON login_attempts (ip, created_at);
+
+-- Werkzeug „Umfragen“ (siehe schema.mysql.sql)
+CREATE TABLE IF NOT EXISTS poll_polls (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    teacher_id INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    title      TEXT    NOT NULL,
+    mode       TEXT    NOT NULL,
+    countdown  INTEGER NOT NULL DEFAULT 0,
+    questions  TEXT    NOT NULL,
+    source     TEXT    NULL,
+    created_at TEXT    NOT NULL,
+    updated_at TEXT    NOT NULL,
+    active_at  TEXT    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_poll_teacher ON poll_polls (teacher_id);
+CREATE INDEX IF NOT EXISTS idx_poll_active ON poll_polls (active_at);
+
+CREATE TABLE IF NOT EXISTS poll_runs (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    poll_id        INTEGER NOT NULL REFERENCES poll_polls (id) ON DELETE CASCADE,
+    code           TEXT    NULL UNIQUE,
+    mode           TEXT    NOT NULL,
+    countdown      INTEGER NOT NULL DEFAULT 0,
+    questions      TEXT    NOT NULL,
+    current_question INTEGER NOT NULL DEFAULT 0,
+    question_since TEXT    NOT NULL,
+    started_at     TEXT    NOT NULL,
+    ended_at       TEXT    NULL
+);
+CREATE INDEX IF NOT EXISTS idx_run_poll ON poll_runs (poll_id);
+
+CREATE TABLE IF NOT EXISTS poll_answers (
+    run_id      INTEGER NOT NULL REFERENCES poll_runs (id) ON DELETE CASCADE,
+    participant TEXT    NOT NULL,
+    question    TEXT    NOT NULL,
+    answer_value REAL    NOT NULL,
+    created_at  TEXT    NOT NULL,
+    PRIMARY KEY (run_id, participant, question)
+);

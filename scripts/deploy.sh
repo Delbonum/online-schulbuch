@@ -41,7 +41,7 @@ for teil in "$@"; do
       ;;
     api)
       mkdir -p "$web/api" "$paket/kryptogame-data/quizzes"
-      tar -C server --exclude='./config.php' --exclude='./config.*.php' --exclude='./data/*.sqlite*' \
+      tar -C server --exclude='./config.php' --exclude='./config.*.php' --exclude='./data/*.sqlite*' --exclude='./data/.schema-*' \
         --exclude='./users.json' --exclude='./tests' --exclude='./dev-server.php' --exclude='./quizzes' -cf - . | tar -C "$web/api" -xf -
       cp server/config.example.php "$web/api/"
       # Prüfungen mit Lösungen außerhalb des Webordners (nginx liefert .json sonst womöglich direkt aus)
