@@ -149,3 +149,70 @@ test('Datenaustausch: Zeilen je Schicht', () => {
   assert.deepEqual(zeilen.map((z) => z.schicht), ['Netzzugang', 'Vermittlung', 'Transport', 'Anwendung']);
   assert.equal(zeilen[3].protokoll, 'DNS');
 });
+
+function mailNetz() {
+  const n = new Netz();
+  const r = n.neuesGeraet('router');
+  r.nics[0].ip = '10.1.0.1'; r.nics[1].ip = '10.2.0.1';
+  const s1 = n.neuesGeraet('switch');
+  const s2 = n.neuesGeraet('switch');
+  n.verbinde(s1.id, r.id); n.verbinde(s2.id, r.id);
+  const dns = rechner(n, 'DNS', '10.1.0.53', { gateway: '10.1.0.1' });
+  dns.software.push('dnsserver');
+  dns.daten.dnsserver = { laeuft: true, eintraege: [
+    { name: 'mail.schule.test', typ: 'A', ip: '10.1.0.25' }, { name: 'schule.test', typ: 'MX', ip: 'mail.schule.test' },
+    { name: 'mail.verein.test', typ: 'A', ip: '10.2.0.25' }, { name: 'verein.test', typ: 'MX', ip: 'mail.verein.test' },
+  ] };
+  const server = (name, ip, gw, domain, konten) => {
+    const g = rechner(n, name, ip, { gateway: gw, dns: '10.1.0.53' });
+    g.software.push('emailserver');
+    g.daten.emailserver = { laeuft: true, domain, konten };
+    return g;
+  };
+  const m1 = server('Mail Schule', '10.1.0.25', '10.1.0.1', 'schule.test', [{ name: 'anna', passwort: 'a1' }, { name: 'carl', passwort: 'c1' }]);
+  const m2 = server('Mail Verein', '10.2.0.25', '10.2.0.1', 'verein.test', [{ name: 'ben', passwort: 'b1' }]);
+  const anna = rechner(n, 'Anna', '10.1.0.10', { gateway: '10.1.0.1', dns: '10.1.0.53' });
+  anna.daten.emailprogramm = { adresse: 'anna@schule.test', smtp: 'mail.schule.test', pop3: 'mail.schule.test', benutzer: 'anna', passwort: 'a1' };
+  const ben = rechner(n, 'Ben', '10.2.0.10', { gateway: '10.2.0.1', dns: '10.1.0.53' });
+  ben.daten.emailprogramm = { adresse: 'ben@verein.test', smtp: 'mail.verein.test', pop3: 'mail.verein.test', benutzer: 'ben', passwort: 'b1' };
+  [dns, m1, anna].forEach((g) => n.verbinde(g.id, s1.id));
+  [m2, ben].forEach((g) => n.verbinde(g.id, s2.id));
+  n.start();
+  return { n, m1, m2, anna, ben };
+}
+
+const warte = (n, aufruf) => {
+  let e = null;
+  aufruf((x) => { e = x ?? 'ok'; });
+  n.laufe(() => e !== null, 3000);
+  return e;
+};
+
+test('E-Mail: über zwei Domains senden (SMTP, MX, Weiterleitung) und abholen (POP3)', () => {
+  const { n, m1, m2, ben, anna } = mailNetz();
+  assert.equal(warte(n, (f) => n.mailSenden(anna, { an: ['ben@verein.test', 'carl@schule.test'], betreff: 'Hallo', text: 'Treffen um 3?\n.\nBis dann' }, f)), 'ok');
+  n.laufe(() => (n.zustand.get(m1.id).mailEreignisse ?? []).some((e) => e.text.includes('übergeben')), 3000);
+  assert.equal(m1.daten.emailserver.postfaecher.carl.length, 1, 'lokale Zustellung');
+  assert.equal(m2.daten.emailserver.postfaecher.ben.length, 1, 'weitergeleitet an die fremde Domain');
+  const ereignisse = n.zustand.get(m1.id).mailEreignisse.map((e) => e.text).join('\n');
+  assert.match(ereignisse, /MX/);
+  assert.match(ereignisse, /übergeben/);
+  assert.deepEqual(warte(n, (f) => n.mailAbholen(ben, f)), { neu: 1 });
+  const mail = ben.daten.emailprogramm.eingang[0];
+  assert.equal(mail.von, 'anna@schule.test');
+  assert.equal(mail.betreff, 'Hallo');
+  assert.equal(mail.text, 'Treffen um 3?\n.\nBis dann', 'Punkt-Zeile übersteht SMTP');
+  assert.equal(m2.daten.emailserver.postfaecher.ben.length, 0, 'POP3 löscht nach dem Abholen');
+  const log = n.zustand.get(ben.id).log;
+  assert.ok(['USER ben', 'RETR 1', 'DELE 1'].every((c) => log.some((z) => z.protokoll === 'POP3' && z.bemerkung === c)));
+  assert.ok(n.zustand.get(anna.id).log.some((z) => z.protokoll === 'SMTP' && z.bemerkung === 'MAIL FROM:<anna@schule.test>'));
+});
+
+test('E-Mail: Fehlerfälle', () => {
+  const { n, anna, ben } = mailNetz();
+  assert.match(warte(n, (f) => n.mailSenden(anna, { an: ['niemand@schule.test'], betreff: 'x', text: 'y' }, f)), /^550/);
+  ben.daten.emailprogramm.passwort = 'falsch';
+  assert.match(warte(n, (f) => n.mailAbholen(ben, f)).fehler, /Passwort falsch/);
+  anna.daten.emailprogramm.smtp = '';
+  assert.match(warte(n, (f) => n.mailSenden(anna, { an: ['ben@verein.test'], betreff: 'x', text: 'y' }, f)), /Postausgangsserver/);
+});

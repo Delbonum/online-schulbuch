@@ -497,7 +497,7 @@ function schliesseAlle() { for (const id of [...fensterListe.keys()]) schliesse(
 
 // ------------------------------------------------------------------ Desktop und Software
 
-const SYMBOLE = { befehlszeile: '⌨', webbrowser: '🌐', webserver: '🗄', dnsserver: '📖', installation: '🧩' };
+const SYMBOLE = { befehlszeile: '⌨', webbrowser: '🌐', webserver: '🗄', dnsserver: '📖', emailprogramm: '✉', emailserver: '📮', installation: '🧩' };
 
 function desktop(g) {
   const id = `desktop:${g.id}`;
@@ -515,7 +515,7 @@ function desktop(g) {
 }
 
 function oeffneApp(g, app_) {
-  ({ installation: installation, befehlszeile, webbrowser, webserver, dnsserver })[app_]?.(g);
+  ({ installation, befehlszeile, webbrowser, webserver, dnsserver, emailprogramm, emailserver })[app_]?.(g);
 }
 
 function installation(g) {
@@ -657,18 +657,155 @@ function dnsserver(g) {
   g.daten.dnsserver ??= { laeuft: false, eintraege: [] };
   const aufbauen = (f) => {
     const d = g.daten.dnsserver;
-    f.inhalt.innerHTML = `${serverKopf(g, 'dnsserver', 'DNS-Server', 'Beantwortet Anfragen „Welche IP-Adresse hat dieser Name?“ (UDP-Port 53). Die Rechner tragen dazu diese IP-Adresse als DNS-Server ein.')}
-<table class="nw-tabelle"><thead><tr><th>Domainname</th><th>IP-Adresse</th><th></th></tr></thead><tbody>
-${d.eintraege.map((e, i) => `<tr><td><input data-i="${i}" data-feld="name" value="${esc(e.name)}" placeholder="www.beispiel.de" aria-label="Domainname"></td>
-<td><input data-i="${i}" data-feld="ip" value="${esc(e.ip)}" data-pruef="ip" aria-label="IP-Adresse"></td><td><button type="button" class="uf-link" data-weg="${i}" aria-label="Eintrag löschen">✕</button></td></tr>`).join('')}
+    f.inhalt.innerHTML = `${serverKopf(g, 'dnsserver', 'DNS-Server', 'Beantwortet Anfragen „Welche IP-Adresse hat dieser Name?“ (Typ A) und „Welcher Rechner nimmt E-Mails für diese Domain an?“ (Typ MX), über UDP-Port 53. Die Rechner tragen diese IP-Adresse als DNS-Server ein.')}
+<table class="nw-tabelle"><thead><tr><th>Name</th><th>Typ</th><th>Wert (IP-Adresse bzw. Mailserver)</th><th></th></tr></thead><tbody>
+${d.eintraege.map((e, i) => `<tr><td><input data-i="${i}" data-feld="name" value="${esc(e.name)}" placeholder="${(e.typ ?? 'A') === 'MX' ? 'schule.test' : 'www.schule.test'}" aria-label="Name"></td>
+<td><select data-i="${i}" data-feld="typ" aria-label="Typ"><option${(e.typ ?? 'A') === 'A' ? ' selected' : ''}>A</option><option${e.typ === 'MX' ? ' selected' : ''}>MX</option></select></td>
+<td><input data-i="${i}" data-feld="ip" value="${esc(e.ip)}" ${(e.typ ?? 'A') === 'A' ? 'data-pruef="ip"' : 'placeholder="mail.schule.test"'} aria-label="Wert"></td><td><button type="button" class="uf-link" data-weg="${i}" aria-label="Eintrag löschen">✕</button></td></tr>`).join('')}
 </tbody></table><button type="button" class="knopf nw-dns-plus">+ Eintrag</button>`;
     startKnopf(g, 'dnsserver', f, aufbauen);
-    f.inhalt.querySelectorAll('input[data-i]').forEach((el) => el.addEventListener('input', () => { if (el.dataset.pruef) pruefe(el); d.eintraege[el.dataset.i][el.dataset.feld] = el.value.trim(); speichere(); }));
+    f.inhalt.querySelectorAll('[data-i]').forEach((el) => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
+      if (el.dataset.pruef) pruefe(el);
+      d.eintraege[el.dataset.i][el.dataset.feld] = el.value.trim();
+      speichere();
+      if (el.tagName === 'SELECT') aufbauen(f);
+    }));
     f.inhalt.querySelectorAll('[data-pruef]').forEach(pruefe);
     f.inhalt.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => { d.eintraege.splice(Number(b.dataset.weg), 1); speichere(); aufbauen(f); }));
-    f.inhalt.querySelector('.nw-dns-plus').addEventListener('click', () => { d.eintraege.push({ name: '', ip: '' }); speichere(); aufbauen(f); f.inhalt.querySelector('tbody tr:last-child input')?.focus(); });
+    f.inhalt.querySelector('.nw-dns-plus').addEventListener('click', () => { d.eintraege.push({ name: '', typ: 'A', ip: '' }); speichere(); aufbauen(f); f.inhalt.querySelector('tbody tr:last-child input')?.focus(); });
   };
   fenster(`dnsserver:${g.id}`, `DNS-Server – ${g.name}`, { breite: 520, hoehe: 380, aufbauen });
+}
+
+function emailserver(g) {
+  g.daten.emailserver ??= { laeuft: false, domain: '', konten: [], postfaecher: {} };
+  const aufbauen = (f) => {
+    const d = g.daten.emailserver;
+    d.konten ??= [];
+    d.postfaecher ??= {};
+    f.inhalt.innerHTML = `${serverKopf(g, 'emailserver', 'E-Mail-Server', 'Nimmt Nachrichten über SMTP an (TCP-Port 25) und liefert sie über POP3 aus (TCP-Port 110). Nachrichten an andere Domains leitet er weiter – dazu fragt er den DNS-Server nach deren Mailserver (MX-Eintrag). Trage deshalb auch hier einen DNS-Server ein.')}
+<label class="nw-feld nw-domain"><span>Domain dieses Servers</span><input data-domain value="${esc(d.domain)}" placeholder="schule.test"></label>
+<h4>Konten</h4>
+<table class="nw-tabelle"><thead><tr><th>Benutzername</th><th>Passwort</th><th>E-Mail-Adresse</th><th>im Postfach</th><th></th></tr></thead><tbody>
+${d.konten.map((k, i) => `<tr><td><input data-k="${i}" data-feld="name" value="${esc(k.name)}" placeholder="anna" aria-label="Benutzername"></td>
+<td><input data-k="${i}" data-feld="passwort" value="${esc(k.passwort)}" aria-label="Passwort"></td>
+<td class="klein">${esc(k.name || '…')}@${esc(d.domain || '…')}</td><td>${(d.postfaecher[k.name.toLowerCase()] ?? []).length}</td>
+<td><button type="button" class="uf-link" data-weg="${i}" aria-label="Konto löschen">✕</button></td></tr>`).join('')}
+</tbody></table>
+<button type="button" class="knopf nw-konto-plus">+ Konto</button>
+<h4>Ereignisse</h4><ul class="nw-ereignisse klein"></ul>`;
+    startKnopf(g, 'emailserver', f, aufbauen);
+    f.inhalt.querySelector('[data-domain]').addEventListener('input', (e) => { d.domain = e.target.value.trim().toLowerCase(); speichere(); });
+    f.inhalt.querySelectorAll('[data-k]').forEach((el) => el.addEventListener('input', () => {
+      d.konten[el.dataset.k][el.dataset.feld] = el.dataset.feld === 'name' ? el.value.trim().toLowerCase() : el.value;
+      speichere();
+    }));
+    f.inhalt.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => { d.konten.splice(Number(b.dataset.weg), 1); speichere(); aufbauen(f); }));
+    f.inhalt.querySelector('.nw-konto-plus').addEventListener('click', () => { d.konten.push({ name: '', passwort: '' }); speichere(); aufbauen(f); f.inhalt.querySelector('tbody tr:last-child input')?.focus(); });
+    f.letzte = null;
+    f.aktualisieren(f);
+  };
+  fenster(`emailserver:${g.id}`, `E-Mail-Server – ${g.name}`, {
+    breite: 600, hoehe: 460,
+    aufbauen,
+    aktualisieren(f) {
+      const liste = zustand.netz.zustand?.get(g.id)?.mailEreignisse ?? [];
+      const ul = f.inhalt.querySelector('.nw-ereignisse');
+      if (!ul || f.letzte === liste.length) return;
+      f.letzte = liste.length;
+      ul.innerHTML = liste.length ? liste.slice(-30).reverse().map((e) => `<li>Takt ${e.zeit}: ${esc(e.text)}</li>`).join('') : '<li>Noch nichts passiert.</li>';
+      // Zahl der Nachrichten in den Postfächern nachziehen
+      f.inhalt.querySelectorAll('tbody tr').forEach((tr, i) => {
+        const k = g.daten.emailserver.konten[i];
+        if (k) tr.children[3].textContent = (g.daten.emailserver.postfaecher[k.name.toLowerCase()] ?? []).length;
+      });
+    },
+  });
+}
+
+function emailprogramm(g) {
+  g.daten.emailprogramm ??= { adresse: '', smtp: '', pop3: '', benutzer: '', passwort: '', eingang: [], gesendet: [] };
+  const p = g.daten.emailprogramm;
+  p.eingang ??= [];
+  p.gesendet ??= [];
+  const aufbauen = (f) => {
+    f.reiter ??= p.adresse ? 'eingang' : 'konto';
+    const reiter = [['eingang', `Posteingang${p.eingang.some((m) => !m.gelesen) ? ` (${p.eingang.filter((m) => !m.gelesen).length})` : ''}`], ['verfassen', 'Verfassen'], ['gesendet', 'Gesendet'], ['konto', 'Konto']];
+    f.inhalt.innerHTML = `<div class="nw-reiter" role="tablist">${reiter.map(([k, t]) => `<button type="button" role="tab" aria-selected="${f.reiter === k}" data-reiter="${k}">${t}</button>`).join('')}</div>
+<div class="nw-reiter-inhalt"></div><p class="nw-mail-status klein" aria-live="polite">${esc(f.status ?? '')}</p>`;
+    f.inhalt.querySelectorAll('[data-reiter]').forEach((b) => b.addEventListener('click', () => { f.reiter = b.dataset.reiter; f.offen = null; aufbauen(f); }));
+    const ziel = f.inhalt.querySelector('.nw-reiter-inhalt');
+    const status = (t) => { f.status = t; f.inhalt.querySelector('.nw-mail-status').textContent = t; };
+    if (f.reiter === 'konto') {
+      ziel.innerHTML = `<div class="nw-felder nw-mail-konto">
+${feld('E-Mail-Adresse', p.adresse, 'data-p="adresse" placeholder="anna@schule.test"')}
+${feld('Postausgangsserver (SMTP)', p.smtp, 'data-p="smtp" placeholder="mail.schule.test"')}
+${feld('Posteingangsserver (POP3)', p.pop3, 'data-p="pop3" placeholder="mail.schule.test"')}
+${feld('Benutzername', p.benutzer, 'data-p="benutzer" placeholder="anna"')}
+${feld('Passwort', p.passwort, 'data-p="passwort" type="password"')}
+</div><p class="klein">Server lassen sich mit Namen (dann braucht der Rechner einen DNS-Server) oder mit IP-Adresse eintragen.</p>`;
+      ziel.querySelectorAll('[data-p]').forEach((el) => el.addEventListener('input', () => { p[el.dataset.p] = el.value.trim(); speichere(); }));
+      return;
+    }
+    if (f.reiter === 'verfassen') {
+      ziel.innerHTML = `<form class="nw-mail-form">
+<label class="nw-feld"><span>An (mehrere mit Komma trennen)</span><input name="an" value="${esc(f.entwurf?.an ?? '')}" placeholder="ben@verein.test"></label>
+<label class="nw-feld"><span>Betreff</span><input name="betreff" value="${esc(f.entwurf?.betreff ?? '')}"></label>
+<label class="nw-feld"><span>Nachricht</span><textarea name="text" rows="6">${esc(f.entwurf?.text ?? '')}</textarea></label>
+<div class="nw-zeile"><button type="submit" class="knopf primaer">Senden</button><span class="klein">Absender: ${esc(p.adresse || '(im Konto eintragen)')}</span></div></form>`;
+      const form = ziel.querySelector('form');
+      form.addEventListener('input', () => { f.entwurf = { an: form.an.value, betreff: form.betreff.value, text: form.text.value }; });
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!zustand.netz.laeuft) { status('Die Simulation läuft nicht.'); return; }
+        const an = form.an.value.split(/[,;\s]+/).map((x) => x.trim().toLowerCase()).filter(Boolean);
+        if (!p.adresse || !/@/.test(p.adresse)) { status('Bitte zuerst im Reiter „Konto“ die eigene E-Mail-Adresse eintragen.'); return; }
+        if (!an.length || an.some((x) => !/^[^@\s]+@[^@\s]+$/.test(x))) { status('Bitte gültige Empfängeradressen angeben (name@domain).'); return; }
+        const mail = { an, betreff: form.betreff.value, text: form.text.value };
+        status('Sende …');
+        form.querySelector('button').disabled = true;
+        zustand.netz.mailSenden(g, mail, (fehler) => {
+          if (fehler) { status(`Nicht gesendet: ${fehler}`); form.querySelector('button').disabled = false; return; }
+          p.gesendet.unshift({ ...mail, von: p.adresse, takt: zustand.netz.zeit });
+          f.entwurf = null;
+          speichere();
+          f.reiter = 'gesendet';
+          f.status = `Gesendet an ${an.join(', ')}.`;
+          aufbauen(f);
+        });
+      });
+      return;
+    }
+    const liste = f.reiter === 'gesendet' ? p.gesendet : p.eingang;
+    const offen = f.offen != null ? liste[f.offen] : null;
+    ziel.innerHTML = `${f.reiter === 'eingang' ? '<div class="nw-zeile"><button type="button" class="knopf primaer nw-abholen">Abholen</button><span class="klein">holt neue Nachrichten über POP3 vom Server</span></div>' : ''}
+<div class="nw-mail-liste">${liste.length ? liste.map((m, i) => `<button type="button" class="nw-mail${m.gelesen === false ? ' neu' : ''}${f.offen === i ? ' offen' : ''}" data-i="${i}"><span>${esc(f.reiter === 'gesendet' ? `An: ${(m.an ?? []).join(', ')}` : m.von)}</span><strong>${esc(m.betreff || '(ohne Betreff)')}</strong></button>`).join('') : `<p class="klein">${f.reiter === 'gesendet' ? 'Noch nichts gesendet.' : 'Keine Nachrichten. Mit „Abholen“ fragst du den Server.'}</p>`}</div>
+${offen ? `<article class="nw-mail-lesen"><p class="klein">Von: ${esc(offen.von)}<br>An: ${esc((offen.an ?? []).join(', '))}</p><h4>${esc(offen.betreff || '(ohne Betreff)')}</h4><pre>${esc(offen.text)}</pre>
+${f.reiter === 'eingang' ? '<div class="nw-zeile"><button type="button" class="knopf nw-antworten">Antworten</button><button type="button" class="knopf nw-mail-weg">Löschen</button></div>' : ''}</article>` : ''}`;
+    ziel.querySelectorAll('.nw-mail').forEach((b) => b.addEventListener('click', () => {
+      f.offen = Number(b.dataset.i);
+      if (liste[f.offen].gelesen === false) { liste[f.offen].gelesen = true; speichere(); }
+      aufbauen(f);
+    }));
+    ziel.querySelector('.nw-antworten')?.addEventListener('click', () => {
+      f.entwurf = { an: offen.von, betreff: /^re:/i.test(offen.betreff) ? offen.betreff : `Re: ${offen.betreff}`, text: `\n\n> ${offen.text.split('\n').join('\n> ')}` };
+      f.reiter = 'verfassen';
+      aufbauen(f);
+    });
+    ziel.querySelector('.nw-mail-weg')?.addEventListener('click', () => { p.eingang.splice(f.offen, 1); f.offen = null; speichere(); aufbauen(f); });
+    ziel.querySelector('.nw-abholen')?.addEventListener('click', (e) => {
+      if (!zustand.netz.laeuft) { status('Die Simulation läuft nicht.'); return; }
+      e.target.disabled = true;
+      status('Verbinde mit dem Posteingangsserver …');
+      zustand.netz.mailAbholen(g, (r) => {
+        f.status = r.fehler ? `Abholen fehlgeschlagen: ${r.fehler}` : r.neu ? `${r.neu} neue Nachricht(en).` : 'Keine neuen Nachrichten.';
+        f.offen = null;
+        speichere();
+        aufbauen(f);
+      });
+    });
+  };
+  fenster(`emailprogramm:${g.id}`, `E-Mail-Programm – ${g.name}`, { breite: 620, hoehe: 460, aufbauen });
 }
 
 // ------------------------------------------------------------------ Einblicke: Datenaustausch, SAT, Routen
@@ -882,6 +1019,35 @@ const BEISPIELE = {
     return n;
   },
 };
+BEISPIELE['E-Mail zwischen zwei Domains'] = () => {
+  const n = new Netz();
+  const r = n.neuesGeraet('router', { x: 560, y: 300, name: 'Router' });
+  const s1 = n.neuesGeraet('switch', { x: 300, y: 300, name: 'Switch Schule' });
+  const s2 = n.neuesGeraet('switch', { x: 820, y: 300, name: 'Switch Verein' });
+  n.verbinde(s1.id, r.id); n.verbinde(s2.id, r.id);
+  r.nics[0].ip = '10.1.0.1'; r.nics[1].ip = '10.2.0.1';
+  const host = (name, typ, x, y, ip, gw, software, s) => {
+    const g = n.neuesGeraet(typ, { x, y, name });
+    Object.assign(g.nics[0], { ip, maske: '255.255.255.0' });
+    Object.assign(g, { gateway: gw, dns: '10.1.0.53', software: ['befehlszeile', ...software] });
+    n.verbinde(g.id, s.id);
+    return g;
+  };
+  const dns = host('DNS-Server', 'rechner', 300, 520, '10.1.0.53', '10.1.0.1', ['dnsserver'], s1);
+  dns.daten.dnsserver = { laeuft: true, eintraege: [
+    { name: 'mail.schule.test', typ: 'A', ip: '10.1.0.25' }, { name: 'schule.test', typ: 'MX', ip: 'mail.schule.test' },
+    { name: 'mail.verein.test', typ: 'A', ip: '10.2.0.25' }, { name: 'verein.test', typ: 'MX', ip: 'mail.verein.test' },
+  ] };
+  const m1 = host('Mailserver Schule', 'rechner', 100, 520, '10.1.0.25', '10.1.0.1', ['emailserver'], s1);
+  m1.daten.emailserver = { laeuft: true, domain: 'schule.test', konten: [{ name: 'anna', passwort: 'anna' }, { name: 'carl', passwort: 'carl' }], postfaecher: {} };
+  const m2 = host('Mailserver Verein', 'rechner', 1020, 520, '10.2.0.25', '10.2.0.1', ['emailserver'], s2);
+  m2.daten.emailserver = { laeuft: true, domain: 'verein.test', konten: [{ name: 'ben', passwort: 'ben' }], postfaecher: {} };
+  const konto = (adresse, server) => ({ adresse, smtp: server, pop3: server, benutzer: adresse.split('@')[0], passwort: adresse.split('@')[0], eingang: [], gesendet: [] });
+  host('Anna', 'notebook', 100, 100, '10.1.0.10', '10.1.0.1', ['emailprogramm'], s1).daten.emailprogramm = konto('anna@schule.test', 'mail.schule.test');
+  host('Carl', 'notebook', 300, 80, '10.1.0.11', '10.1.0.1', ['emailprogramm'], s1).daten.emailprogramm = konto('carl@schule.test', 'mail.schule.test');
+  host('Ben', 'notebook', 1020, 100, '10.2.0.10', '10.2.0.1', ['emailprogramm'], s2).daten.emailprogramm = konto('ben@verein.test', 'mail.verein.test');
+  return n;
+};
 const auswahlBeispiel = app.querySelector('.nw-beispiel');
 auswahlBeispiel.insertAdjacentHTML('beforeend', Object.keys(BEISPIELE).map((k) => `<option>${esc(k)}</option>`).join(''));
 auswahlBeispiel.addEventListener('change', () => {
@@ -900,7 +1066,8 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
 <li>Ein angeklicktes Gerät stellst du unten ein (IP-Adresse, Netzmaske, Gateway, DNS-Server, DHCP). Beim Router: Anschlüsse und Weiterleitungstabelle.</li>
 <li>Gerät oder Kabel löschen: anklicken und Entf drücken.</li></ul>
 <h4>Simulation ▶</h4>
-<ul><li>Doppelklick auf einen Rechner öffnet den Desktop. Über <em>Software-Installation</em> kommen Programme dazu: Befehlszeile, Webbrowser, Webserver, DNS-Server.</li>
+<ul><li>Doppelklick auf einen Rechner öffnet den Desktop. Über <em>Software-Installation</em> kommen Programme dazu: Befehlszeile, Webbrowser, Webserver, DNS-Server, E-Mail-Programm, E-Mail-Server.</li>
+<li><strong>E-Mail:</strong> Der E-Mail-Server verwaltet eine Domain mit Konten. Das E-Mail-Programm verschickt über SMTP (Postausgangsserver) und holt über POP3 ab (Posteingangsserver). Für fremde Domains braucht der DNS-Server einen MX-Eintrag, der auf deren Mailserver zeigt.</li>
 <li>Befehlszeile: <code>ipconfig</code>, <code>ping</code>, <code>traceroute</code>, <code>host</code>, <code>arp</code>, <code>route</code>, <code>netstat</code> – <code>help</code> zeigt alle.</li>
 <li>Server müssen nach der Installation <strong>gestartet</strong> werden.</li>
 <li><em>Datenaustausch anzeigen</em> (Rechner/Router) listet jede Nachricht mit einer Zeile je Schicht: Netzzugang, Vermittlung, Transport, Anwendung. Beim Switch zeigt die <em>Lerntabelle</em>, welche MAC-Adresse an welchem Anschluss hängt.</li>

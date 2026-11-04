@@ -18,6 +18,8 @@ export const SOFTWARE = {
   webbrowser: 'Webbrowser',
   webserver: 'Webserver',
   dnsserver: 'DNS-Server',
+  emailprogramm: 'E-Mail-Programm',
+  emailserver: 'E-Mail-Server',
 };
 export const STANDARD_SEITE = '<html>\n<head><title>Willkommen</title></head>\n<body>\n<h1>Es funktioniert!</h1>\n<p>Diese Seite liefert der Webserver aus.</p>\n</body>\n</html>\n';
 
@@ -383,24 +385,59 @@ export class Netz {
 
   // ---------------------------------------------------------------- Transport: TCP (vereinfacht)
   //
-  // Ablauf je Anfrage: SYN – SYN,ACK – ACK – Daten (PSH,ACK) – ACK – Antwort (PSH,ACK) – ACK – FIN,ACK – FIN,ACK – ACK
+  // Verbindungsaufbau SYN – SYN,ACK – ACK, dann ein Dialog aus Datensegmenten (PSH,ACK), die jeweils mit ACK
+  // bestätigt werden, zum Schluss FIN,ACK – FIN,ACK – ACK. Ein Dienst auf dem Server bekommt je Verbindung eine
+  // eigene Sitzung; manche Dienste (SMTP, POP3) begrüßen zuerst.
 
+  /** Eine Anfrage, eine Antwort (HTTP) */
   tcpAnfrage(g, ziel, zielPort, text, fertig) {
+    let gesendet = false;
+    this.tcpDialog(g, ziel, zielPort, { naechste: () => (gesendet ? null : (gesendet = true, text)) }, (e) => {
+      fertig(e.fehler ? e : { antwort: e.antworten[0] ?? '' });
+    });
+  }
+
+  /**
+   * Dialog über eine TCP-Verbindung.
+   * ablauf.begruessung: true, wenn der Server zuerst etwas sendet (SMTP, POP3)
+   * ablauf.naechste(antwort): nächster Befehl (Text) oder null zum Abbauen der Verbindung
+   * fertig({antworten} | {fehler})
+   */
+  tcpDialog(g, ziel, zielPort, ablauf, fertig) {
     const z = this.zustand.get(g.id);
     const quellPort = this.freierPort();
-    const v = { ziel, zielPort, quellPort, zustand: 'syn-gesendet', seq: 1000, ack: 0, text, fertig, client: true };
-    z.tcp.set(`${ziel}:${zielPort}:${quellPort}`, v);
+    const schluessel = `${ziel}:${zielPort}:${quellPort}`;
+    const v = { ziel, zielPort, quellPort, zustand: 'syn-gesendet', seq: 1000, ack: 0, ablauf, fertig, client: true, antworten: [] };
+    z.tcp.set(schluessel, v);
     const fehler = this.tcpSende(g, v, ['SYN']);
-    if (fehler) { z.tcp.delete(`${ziel}:${zielPort}:${quellPort}`); fertig({ fehler }); return; }
-    this.nachTakten(120, () => {
-      if (v.zustand !== 'fertig') { z.tcp.delete(`${ziel}:${zielPort}:${quellPort}`); v.zustand = 'fertig'; fertig({ fehler: 'Zeitüberschreitung – keine Antwort vom Server' }); }
-    });
+    if (fehler) { z.tcp.delete(schluessel); fertig({ fehler }); return; }
+    const pruefe = () => {
+      if (v.zustand === 'fertig') return;
+      if (this.zeit - v.letzteAktivitaet < 120) { this.nachTakten(120, pruefe); return; }
+      z.tcp.delete(schluessel);
+      v.zustand = 'fertig';
+      fertig({ fehler: 'Zeitüberschreitung – keine Antwort vom Server' });
+    };
+    v.letzteAktivitaet = this.zeit;
+    this.nachTakten(120, pruefe);
   }
 
   tcpSende(g, v, flags, nutzdaten = '') {
     const segment = { quellPort: v.quellPort, zielPort: v.zielPort, flags, seq: v.seq, ack: v.ack, nutzdaten };
     v.seq += nutzdaten.length + (flags.includes('SYN') || flags.includes('FIN') ? 1 : 0);
     return this.sendeIp(g, { ziel: v.ziel, quelle: v.quelle, protokoll: 'TCP', daten: segment });
+  }
+
+  /** Client: nächsten Befehl schicken oder Verbindung abbauen */
+  tcpWeiter(g, v, antwort) {
+    const befehl = v.ablauf.naechste(antwort);
+    if (befehl === null || befehl === undefined) {
+      this.tcpSende(g, v, ['FIN', 'ACK']);
+      v.zustand = 'fin-gesendet';
+    } else {
+      this.tcpSende(g, v, ['PSH', 'ACK'], befehl);
+      v.zustand = 'wartet';
+    }
   }
 
   tcpEmpfang(g, p) {
@@ -415,12 +452,14 @@ export class Netz {
       v = { ziel: p.quelle, zielPort: s.quellPort, quellPort: s.zielPort, quelle: p.ziel, seq: 5000, ack: s.seq + 1, client: false };
       if (!dienst) { this.tcpSende(g, v, ['RST', 'ACK']); return; }
       v.dienst = dienst;
+      v.sitzung = dienst.sitzung?.(p.quelle) ?? {};
       v.zustand = 'syn-empfangen';
       z.tcp.set(schluessel, v);
       this.tcpSende(g, v, ['SYN', 'ACK']);
       return;
     }
     v.ack = s.seq + zaehlt;
+    v.letzteAktivitaet = this.zeit;
     if (s.flags.includes('RST')) {
       z.tcp.delete(schluessel);
       if (v.client && v.zustand !== 'fertig') { v.zustand = 'fertig'; v.fertig({ fehler: 'Verbindung abgelehnt (kein Server auf diesem Port)' }); }
@@ -428,31 +467,36 @@ export class Netz {
     }
     if (v.client) {
       if (v.zustand === 'syn-gesendet' && s.flags.includes('SYN')) {
-        v.zustand = 'verbunden';
         this.tcpSende(g, v, ['ACK']);
-        this.tcpSende(g, v, ['PSH', 'ACK'], v.text);
-        v.zustand = 'wartet';
+        if (v.ablauf.begruessung) v.zustand = 'wartet';
+        else this.tcpWeiter(g, v, null);
       } else if (v.zustand === 'wartet' && s.nutzdaten) {
-        v.antwort = s.nutzdaten;
+        v.antworten.push(s.nutzdaten);
         this.tcpSende(g, v, ['ACK']);
-        this.tcpSende(g, v, ['FIN', 'ACK']);
-        v.zustand = 'fin-gesendet';
+        this.tcpWeiter(g, v, s.nutzdaten);
       } else if (v.zustand === 'fin-gesendet' && s.flags.includes('FIN')) {
         this.tcpSende(g, v, ['ACK']);
         z.tcp.delete(schluessel);
         v.zustand = 'fertig';
-        v.fertig({ antwort: v.antwort });
+        v.fertig({ antworten: v.antworten });
       }
       return;
     }
     // Server
+    if (v.zustand === 'syn-empfangen' && !s.nutzdaten && !s.flags.includes('FIN')) {
+      v.zustand = 'verbunden';
+      const gruss = v.dienst.begruessung?.(v.sitzung);
+      if (gruss) this.tcpSende(g, v, ['PSH', 'ACK'], gruss);
+      return;
+    }
     if (s.nutzdaten) {
+      v.zustand = 'verbunden';
       this.tcpSende(g, v, ['ACK']);
-      const antwort = v.dienst(s.nutzdaten, p.quelle);
-      this.tcpSende(g, v, ['PSH', 'ACK'], antwort);
+      this.tcpSende(g, v, ['PSH', 'ACK'], v.dienst.antwort(s.nutzdaten, v.sitzung, p.quelle));
     } else if (s.flags.includes('FIN')) {
       this.tcpSende(g, v, ['FIN', 'ACK']);
       z.tcp.delete(schluessel);
+      v.dienst.ende?.(v.sitzung);
     }
   }
 
@@ -466,14 +510,20 @@ export class Netz {
     z.udp.delete(67);
     const d = g.daten;
     if (g.software.includes('webserver') && d.webserver?.laeuft) {
-      z.tcpDienste.set(80, (anfrage) => this.http(g, anfrage));
+      z.tcpDienste.set(80, { antwort: (anfrage) => this.http(g, anfrage) });
     }
     if (g.software.includes('dnsserver') && d.dnsserver?.laeuft) {
       z.udp.set(53, (p) => {
-        const name = String(p.daten.nutzdaten.name ?? '').toLowerCase().replace(/\.$/, '');
-        const eintrag = (d.dnsserver.eintraege ?? []).find((e) => e.name.toLowerCase().replace(/\.$/, '') === name);
-        this.sendeUdp(g, p.quelle, p.daten.quellPort, 53, { dns: 'antwort', name, ip: eintrag?.ip ?? null, id: p.daten.nutzdaten.id });
+        const anfrage = p.daten.nutzdaten;
+        const name = String(anfrage.name ?? '').toLowerCase().replace(/\.$/, '');
+        const typ = anfrage.typ === 'MX' ? 'MX' : 'A';
+        const eintrag = (d.dnsserver.eintraege ?? []).find((e) => (e.typ ?? 'A') === typ && e.name.toLowerCase().replace(/\.$/, '') === name);
+        this.sendeUdp(g, p.quelle, p.daten.quellPort, 53, { dns: 'antwort', typ, name, ip: eintrag?.ip?.trim() || null, id: anfrage.id });
       });
+    }
+    if (g.software.includes('emailserver') && d.emailserver?.laeuft) {
+      z.tcpDienste.set(25, this.smtpDienst(g));
+      z.tcpDienste.set(110, this.pop3Dienst(g));
     }
     if (g.dhcpServer?.aktiv) z.udp.set(67, (p) => this.dhcpServer(g, p));
   }
@@ -554,10 +604,10 @@ export class Netz {
     });
   }
 
-  /** Name → IP über den eingetragenen DNS-Server (IP-Adressen bleiben, wie sie sind). */
-  namensaufloesung(g, name, fertig) {
+  /** Name → IP über den eingetragenen DNS-Server (IP-Adressen bleiben, wie sie sind). typ "MX" liefert den Mailserver einer Domain. */
+  namensaufloesung(g, name, fertig, typ = 'A') {
     name = String(name ?? '').trim().replace(/^https?:\/\//, '').split('/')[0];
-    if (gueltigeIp(name)) { fertig(name); return; }
+    if (gueltigeIp(name) && typ === 'A') { fertig(name); return; }
     if (!name) { fertig(null, 'Kein Ziel angegeben.'); return; }
     if (!gueltigeIp(g.dns)) { fertig(null, `${name} kann nicht aufgelöst werden: Kein DNS-Server eingetragen.`); return; }
     const z = this.zustand.get(g.id);
@@ -569,9 +619,9 @@ export class Netz {
       erledigt = true;
       z.udp.delete(port);
       const ip = p.daten.nutzdaten.ip;
-      fertig(ip, ip ? null : `${name}: Name unbekannt (der DNS-Server kennt ihn nicht).`);
+      fertig(ip, ip ? null : typ === 'MX' ? `${name}: Kein Mailserver (MX-Eintrag) bekannt.` : `${name}: Name unbekannt (der DNS-Server kennt ihn nicht).`);
     });
-    const f = this.sendeUdp(g, g.dns, 53, port, { dns: 'anfrage', name, id });
+    const f = this.sendeUdp(g, g.dns, 53, port, { dns: 'anfrage', typ, name, id });
     if (f) { erledigt = true; z.udp.delete(port); fertig(null, f); return; }
     this.nachTakten(80, () => { if (!erledigt) { erledigt = true; z.udp.delete(port); fertig(null, `${name}: Keine Antwort vom DNS-Server ${g.dns}.`); } });
   }
@@ -587,6 +637,212 @@ export class Netz {
         if (e.fehler) { fertig(e); return; }
         const [kopf, ...rest] = e.antwort.split('\n\n');
         fertig({ status: kopf.split('\n')[0], html: rest.join('\n\n'), host, ip });
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------- E-Mail: SMTP (Port 25) und POP3 (Port 110)
+  //
+  // Der E-Mail-Server verwaltet eine Domain (z. B. schule.test) mit Konten. Über SMTP nimmt er Nachrichten an:
+  // für eigene Konten legt er sie ins Postfach, für fremde Domains fragt er per DNS nach deren Mailserver
+  // (MX-Eintrag) und leitet sie per SMTP weiter. Über POP3 holt das E-Mail-Programm die Nachrichten ab.
+
+  mailEreignis(g, text) {
+    const z = this.zustand.get(g.id);
+    z.mailEreignisse ??= [];
+    z.mailEreignisse.push({ zeit: this.zeit, text });
+    if (z.mailEreignisse.length > 100) z.mailEreignisse.shift();
+  }
+
+  smtpDienst(g) {
+    const server = () => g.daten.emailserver;
+    const domain = () => String(server().domain ?? '').toLowerCase().trim();
+    return {
+      sitzung: () => ({ von: null, an: [], daten: false }),
+      begruessung: () => `220 ${domain() || g.name} ESMTP – E-Mail-Server bereit`,
+      antwort: (zeile, s, absender) => {
+        if (s.daten) {
+          s.daten = false;
+          const mail = { ...mailAusText(zeile), von: s.von, an: s.an };
+          this.mailAnnehmen(g, mail, absender);
+          s.von = null;
+          s.an = [];
+          return '250 OK – Nachricht angenommen';
+        }
+        const [befehl = '', ...rest] = zeile.trim().split(/\s+/);
+        const arg = rest.join(' ');
+        switch (befehl.toUpperCase()) {
+          case 'HELO': case 'EHLO': return `250 ${domain() || g.name} grüßt ${arg || 'dich'}`;
+          case 'MAIL': {
+            const a = adresse(arg);
+            if (!a) return '501 Absenderadresse fehlt (MAIL FROM:<name@domain>)';
+            s.von = a;
+            s.an = [];
+            return '250 OK';
+          }
+          case 'RCPT': {
+            const a = adresse(arg);
+            if (!s.von) return '503 Bitte zuerst MAIL FROM';
+            if (!a) return '501 Empfängeradresse fehlt (RCPT TO:<name@domain>)';
+            const [name, dom] = a.split('@');
+            if (dom === domain()) {
+              if (!(server().konten ?? []).some((k) => k.name.toLowerCase() === name)) return `550 Postfach ${a} gibt es nicht`;
+              s.an.push(a);
+              return '250 OK';
+            }
+            s.an.push(a);
+            return `250 OK – wird an ${dom} weitergeleitet`;
+          }
+          case 'DATA':
+            if (!s.an.length) return '503 Bitte zuerst RCPT TO';
+            s.daten = true;
+            return '354 Nachricht senden, Ende mit einer Zeile „.“';
+          case 'RSET': s.von = null; s.an = []; return '250 OK';
+          case 'NOOP': return '250 OK';
+          case 'QUIT': return `221 ${domain() || g.name} beendet die Verbindung`;
+          default: return '500 Unbekannter Befehl';
+        }
+      },
+    };
+  }
+
+  mailAnnehmen(g, mail, absender) {
+    const server = g.daten.emailserver;
+    const domain = String(server.domain ?? '').toLowerCase().trim();
+    server.postfaecher ??= {};
+    const fremd = new Map();
+    for (const an of mail.an) {
+      const [name, dom] = an.split('@');
+      if (dom === domain) {
+        (server.postfaecher[name] ??= []).push({ ...mail, an: [an], id: `m${this.zeit}-${Math.floor(Math.random() * 1e6)}` });
+        this.mailEreignis(g, `Nachricht von ${mail.von} für ${an} ins Postfach gelegt (eingeliefert von ${absender})`);
+      } else {
+        if (!fremd.has(dom)) fremd.set(dom, []);
+        fremd.get(dom).push(an);
+      }
+    }
+    for (const [dom, liste] of fremd) this.mailWeiterleiten(g, { ...mail, an: liste }, dom);
+  }
+
+  /** Server leitet an eine fremde Domain weiter: DNS (MX) → DNS (A) → SMTP */
+  mailWeiterleiten(g, mail, domain) {
+    this.mailEreignis(g, `Frage DNS nach dem Mailserver von ${domain} (MX)`);
+    this.namensaufloesung(g, domain, (mx, fehler) => {
+      if (!mx) { this.mailEreignis(g, `Nicht zustellbar an ${mail.an.join(', ')}: ${fehler}`); return; }
+      this.namensaufloesung(g, mx, (ip, fehler2) => {
+        if (!ip) { this.mailEreignis(g, `Nicht zustellbar an ${mail.an.join(', ')}: ${fehler2}`); return; }
+        this.mailEreignis(g, `Leite Nachricht an ${mx} (${ip}) weiter`);
+        this.smtpSenden(g, ip, mail, (f) => this.mailEreignis(g, f ? `Weiterleitung an ${domain} fehlgeschlagen: ${f}` : `Nachricht an ${domain} übergeben`));
+      });
+    }, 'MX');
+  }
+
+  /** SMTP-Dialog als Client: HELO, MAIL FROM, RCPT TO, DATA, Nachricht, QUIT. fertig(fehler | null) */
+  smtpSenden(g, ip, mail, fertig) {
+    const schritte = [
+      () => `HELO ${g.name}`,
+      () => `MAIL FROM:<${mail.von}>`,
+      ...mail.an.map((an) => () => `RCPT TO:<${an}>`),
+      () => 'DATA',
+      () => `${mailText(mail)}\n.`,
+      () => 'QUIT',
+    ];
+    let i = 0;
+    let fehler = null;
+    this.tcpDialog(g, ip, 25, {
+      begruessung: true,
+      naechste: (antwort) => {
+        if (fehler) return null;
+        if (antwort && /^[45]/.test(antwort)) { fehler = antwort; return 'QUIT'; }
+        return i < schritte.length ? schritte[i++]() : null;
+      },
+    }, (e) => fertig(e.fehler ?? fehler));
+  }
+
+  /** E-Mail-Programm: Nachricht über den eingetragenen Postausgangsserver (SMTP) verschicken */
+  mailSenden(g, mail, fertig) {
+    const p = g.daten.emailprogramm ?? {};
+    if (!p.smtp) { fertig('Im Konto ist kein Postausgangsserver (SMTP) eingetragen.'); return; }
+    this.namensaufloesung(g, p.smtp, (ip, fehler) => {
+      if (!ip) { fertig(fehler); return; }
+      this.smtpSenden(g, ip, { ...mail, von: p.adresse }, fertig);
+    });
+  }
+
+  pop3Dienst(g) {
+    const server = () => g.daten.emailserver;
+    const postfach = (s) => (server().postfaecher ??= {})[s.benutzer] ??= [];
+    return {
+      sitzung: () => ({ benutzer: null, angemeldet: false, loeschen: new Set() }),
+      begruessung: () => '+OK POP3-Server bereit',
+      antwort: (zeile, s) => {
+        const [befehl = '', arg = ''] = zeile.trim().split(/\s+/);
+        const b = befehl.toUpperCase();
+        if (b === 'USER') { s.benutzer = arg.toLowerCase(); s.angemeldet = false; return '+OK'; }
+        if (b === 'PASS') {
+          const konto = (server().konten ?? []).find((k) => k.name.toLowerCase() === s.benutzer);
+          if (!konto || konto.passwort !== arg) return '-ERR Benutzername oder Passwort falsch';
+          s.angemeldet = true;
+          return `+OK angemeldet, ${postfach(s).length} Nachricht(en)`;
+        }
+        if (b === 'QUIT') {
+          if (s.angemeldet && s.loeschen.size) server().postfaecher[s.benutzer] = postfach(s).filter((_, j) => !s.loeschen.has(j + 1));
+          return '+OK Tschüss';
+        }
+        if (!s.angemeldet) return '-ERR Bitte zuerst anmelden (USER, PASS)';
+        const liste = postfach(s);
+        const nr = Number(arg);
+        if (b === 'STAT') return `+OK ${liste.length} ${liste.reduce((a, m) => a + mailText(m).length, 0)}`;
+        if (b === 'LIST') return `+OK ${liste.length} Nachricht(en)\n${liste.map((m, j) => `${j + 1} ${mailText(m).length}`).join('\n')}${liste.length ? '\n' : ''}.`;
+        if (b === 'RETR') return liste[nr - 1] ? `+OK\n${mailText(liste[nr - 1])}\n.` : '-ERR Diese Nachricht gibt es nicht';
+        if (b === 'DELE') { if (!liste[nr - 1]) return '-ERR Diese Nachricht gibt es nicht'; s.loeschen.add(nr); return '+OK gelöscht'; }
+        return '-ERR Unbekannter Befehl';
+      },
+    };
+  }
+
+  /** E-Mail-Programm: neue Nachrichten per POP3 abholen (und auf dem Server löschen). fertig({neu} | {fehler}) */
+  mailAbholen(g, fertig) {
+    const p = g.daten.emailprogramm ?? {};
+    if (!p.pop3) { fertig({ fehler: 'Im Konto ist kein Posteingangsserver (POP3) eingetragen.' }); return; }
+    this.namensaufloesung(g, p.pop3, (ip, fehler) => {
+      if (!ip) { fertig({ fehler }); return; }
+      let schritt = 'gruss';
+      let anzahl = 0;
+      let nr = 0;
+      let problem = null;
+      const neu = [];
+      this.tcpDialog(g, ip, 110, {
+        begruessung: true,
+        naechste: (antwort) => {
+          if (antwort?.startsWith('-ERR') && schritt !== 'quit') { problem = antwort.replace(/^-ERR\s*/, ''); schritt = 'quit'; return 'QUIT'; }
+          switch (schritt) {
+            case 'gruss': schritt = 'user'; return `USER ${p.benutzer ?? ''}`;
+            case 'user': schritt = 'pass'; return `PASS ${p.passwort ?? ''}`;
+            case 'pass': schritt = 'stat'; return 'STAT';
+            case 'stat':
+              anzahl = Number(antwort.split(/\s+/)[1]) || 0;
+              schritt = anzahl ? 'retr' : 'quit';
+              nr = 1;
+              return anzahl ? `RETR ${nr}` : 'QUIT';
+            case 'retr':
+              neu.push(mailAusText(antwort.replace(/^\+OK\n/, '').replace(/\n\.$/, '')));
+              if (nr < anzahl) { nr++; return `RETR ${nr}`; }
+              schritt = 'dele';
+              nr = 1;
+              return `DELE ${nr}`;
+            case 'dele':
+              if (nr < anzahl) { nr++; return `DELE ${nr}`; }
+              schritt = 'quit';
+              return 'QUIT';
+            default: return null;
+          }
+        },
+      }, (e) => {
+        if (e.fehler || problem) { fertig({ fehler: e.fehler ?? problem }); return; }
+        p.eingang ??= [];
+        p.eingang.unshift(...neu.reverse().map((m) => ({ ...m, gelesen: false, id: `e${this.zeit}-${Math.floor(Math.random() * 1e6)}` })));
+        fertig({ neu: neu.length });
       });
     });
   }
@@ -678,10 +934,37 @@ function anwendungText(p) {
   const d = p.daten;
   const n = d.nutzdaten;
   if (p.protokoll === 'UDP' && n?.dhcp) return { protokoll: 'DHCP', bemerkung: `${n.dhcp}${n.ip ? ` ${n.ip}` : ''}${n.dhcp === 'ACK' ? ` (Gateway ${n.gateway || '–'}, DNS ${n.dns || '–'})` : ''}` };
-  if (p.protokoll === 'UDP' && n?.dns) return { protokoll: 'DNS', bemerkung: n.dns === 'anfrage' ? `Anfrage: Adresse von ${n.name}?` : `Antwort: ${n.name} = ${n.ip ?? 'unbekannt'}` };
+  if (p.protokoll === 'UDP' && n?.dns) return { protokoll: 'DNS', bemerkung: n.dns === 'anfrage' ? (n.typ === 'MX' ? `Anfrage: Mailserver (MX) von ${n.name}?` : `Anfrage: Adresse von ${n.name}?`) : `Antwort: ${n.name}${n.typ === 'MX' ? ' (MX)' : ''} = ${n.ip ?? 'unbekannt'}` };
   if (p.protokoll === 'TCP' && n) {
     const erste = String(n).split('\n')[0];
-    return { protokoll: 'HTTP', bemerkung: erste.length > 80 ? `${erste.slice(0, 80)} …` : erste };
+    const port = Math.min(d.quellPort, d.zielPort);
+    const protokoll = { 25: 'SMTP', 110: 'POP3', 80: 'HTTP' }[port] ?? 'Daten';
+    return { protokoll, bemerkung: erste.length > 80 ? `${erste.slice(0, 80)} …` : erste };
   }
   return null;
+}
+
+// ------------------------------------------------------------------ E-Mail-Hilfen
+
+/** name@domain aus „FROM:<name@domain>“ o. Ä. (klein geschrieben) */
+export function adresse(text) {
+  const m = /<?([^<>\s:]+@[^<>\s]+?)>?$/.exec(String(text ?? '').trim());
+  return m ? m[1].toLowerCase() : null;
+}
+
+/** Nachricht als Text (Kopfzeilen, Leerzeile, Inhalt) – so geht sie bei SMTP DATA und POP3 RETR über die Leitung */
+export function mailText(m) {
+  const inhalt = String(m.text ?? '').replace(/\r/g, '').replace(/^\.$/gm, '..');
+  return [`From: ${m.von ?? ''}`, `To: ${(m.an ?? []).join(', ')}`, `Subject: ${m.betreff ?? ''}`, '', inhalt].join('\n');
+}
+
+export function mailAusText(text) {
+  const [kopf, ...rumpf] = String(text).replace(/\n\.$/, '').split('\n\n');
+  const feld = (n) => (new RegExp(`^${n}:\\s*(.*)$`, 'mi').exec(kopf) ?? [])[1]?.trim() ?? '';
+  return {
+    von: feld('From'),
+    an: feld('To').split(/,\s*/).filter(Boolean),
+    betreff: feld('Subject'),
+    text: rumpf.join('\n\n').replace(/^\.\./gm, '.'),
+  };
 }

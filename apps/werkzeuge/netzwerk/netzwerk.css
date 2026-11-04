@@ -127,3 +127,24 @@
   .nw-bauteil { width: 64px; font-size: .7rem; }
   .nw-bauteil img, .nw-bauteil svg { width: 34px; height: 34px; }
 }
+
+/* E-Mail */
+.nw-reiter { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 8px; }
+.nw-reiter button { font: 600 .88rem var(--schrift-text); padding: 6px 12px; border: 0; border-radius: 8px 8px 0 0; background: transparent; color: var(--muted); cursor: pointer; }
+.nw-reiter button[aria-selected="true"] { background: var(--fach); color: #fff; }
+.nw-mail-liste { display: flex; flex-direction: column; gap: 2px; max-height: 150px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+.nw-mail { display: grid; grid-template-columns: minmax(8em, 14em) 1fr; gap: 10px; text-align: left; font: inherit; font-size: .85rem; padding: 5px 8px; border: 0; background: var(--surface); cursor: pointer; }
+.nw-mail.neu strong { color: var(--fach); }
+.nw-mail.neu span::before { content: "● "; color: var(--fach); }
+.nw-mail.offen { background: var(--fach-soft); }
+.nw-mail span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nw-mail strong { font-weight: 600; }
+.nw-mail-lesen { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 6px; }
+.nw-mail-lesen h4 { margin: 4px 0; }
+.nw-mail-lesen pre { white-space: pre-wrap; font: inherit; margin: 0 0 6px; }
+.nw-mail-form { display: flex; flex-direction: column; gap: 6px; }
+.nw-mail-form .nw-feld input, .nw-mail-form textarea, .nw-mail-konto .nw-feld input { width: 100%; }
+.nw-mail-konto .nw-feld { flex: 1 1 220px; }
+.nw-mail-status { margin: 6px 0 0; color: var(--muted); min-height: 1.2em; }
+.nw-domain input { width: 220px; }
+.nw-ereignisse { margin: 0; padding-left: 1.1em; max-height: 120px; overflow-y: auto; }

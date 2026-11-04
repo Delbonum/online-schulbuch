@@ -8,6 +8,7 @@ export const HILFE = [
   '  ping ZIEL             Erreichbarkeit prüfen (IP-Adresse oder Name)',
   '  traceroute ZIEL       Weg zum Ziel über die Router anzeigen (auch: tracert)',
   '  host NAME             Namen über den DNS-Server auflösen (auch: nslookup)',
+  '  host -t mx DOMAIN     Mailserver einer Domain erfragen (MX-Eintrag)',
   '  arp                   ARP-Tabelle anzeigen (IP-Adresse → MAC-Adresse)',
   '  route                 Weiterleitungstabelle anzeigen',
   '  netstat               offene TCP-Verbindungen anzeigen',
@@ -60,7 +61,13 @@ export function fuehreAus(netz, g, zeile, ausgabe, fertig) {
       if (!arg) { ausgabe('Aufruf: traceroute ZIEL'); fertig(); return undefined; }
       netz.traceroute(g, arg, ausgabe, fertig);
       return undefined;
-    case 'host': case 'nslookup':
+    case 'host': case 'nslookup': {
+      const mx = /-t\s*mx|type=mx/i.test(zeile);
+      const name = argumente.filter((a) => !a.startsWith('-') && !/^(mx|a)$/i.test(a) && !/^type=/i.test(a))[0];
+      if (mx && name) {
+        netz.namensaufloesung(g, name, (wert, fehler) => { ausgabe(wert ? `${name}: Mailserver (MX) ist ${wert}` : fehler); fertig(); }, 'MX');
+        return undefined;
+      }
       if (!arg) { ausgabe('Aufruf: host NAME   (z. B. host www.schule.de)'); fertig(); return undefined; }
       if (gueltigeIp(arg)) { ausgabe(`${arg} ist schon eine IP-Adresse.`); fertig(); return undefined; }
       netz.namensaufloesung(g, arg, (ip, fehler) => {
@@ -68,6 +75,7 @@ export function fuehreAus(netz, g, zeile, ausgabe, fertig) {
         fertig();
       });
       return undefined;
+    }
     case 'arp': {
       const eintraege = [...(z?.arp ?? new Map())];
       if (!eintraege.length) ausgabe('Die ARP-Tabelle ist leer.');
@@ -92,6 +100,7 @@ export function fuehreAus(netz, g, zeile, ausgabe, fertig) {
       for (const c of v) ausgabe(`TCP  lokal Port ${c.quellPort}  ↔  ${c.ziel}:${c.zielPort}  (${c.zustand})`);
       if (g.daten.webserver?.laeuft && g.software.includes('webserver')) ausgabe('TCP  Port 80 wartet auf Verbindungen (Webserver)');
       if (g.daten.dnsserver?.laeuft && g.software.includes('dnsserver')) ausgabe('UDP  Port 53 wartet auf Anfragen (DNS-Server)');
+      if (g.daten.emailserver?.laeuft && g.software.includes('emailserver')) { ausgabe('TCP  Port 25 wartet auf Verbindungen (SMTP)'); ausgabe('TCP  Port 110 wartet auf Verbindungen (POP3)'); }
       fertig();
       return undefined;
     }
