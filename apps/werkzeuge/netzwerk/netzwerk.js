@@ -5,7 +5,7 @@
 // Bilder der Geräte: bilder/<typ>.svg – Platzhalter, die sich durch eigene Bilder gleichen Namens ersetzen lassen
 // (andere Endung: BILDER unten anpassen).
 
-import { Netz, SOFTWARE, STANDARD_SEITE, gueltigeIp, gueltigeMaske, imSelbenNetz } from './netz.js';
+import { Netz, SOFTWARE, STANDARD_SEITE, gueltigeIp, gueltigeMaske, imSelbenNetz, adressbereich } from './netz.js';
 import { fuehreAus } from './befehle.js';
 
 const wurzel = document.getElementById('netzwerk');
@@ -201,7 +201,7 @@ svg.addEventListener('pointerdown', (e) => {
       const g = zustand.netz.geraete.get(geraetEl.dataset.geraet);
       const p = svgPunkt(e);
       ziehen = { g, dx: p.x - g.x, dy: p.y - g.y, el: geraetEl, bewegt: false };
-      svg.setPointerCapture(e.pointerId);
+      try { svg.setPointerCapture(e.pointerId); } catch { /* z. B. ohne echten Zeiger */ }
     }
     zeichneAuswahl();
     return;
@@ -405,6 +405,7 @@ ${belegt.length ? `Verbunden mit: ${belegt.map((x) => esc(x.name)).join(', ')}.`
 function panelRouter(g) {
   const n = zustand.netz;
   panel.innerHTML = `<div class="nw-panel-kopf"><img src="${bild('router')}" alt="" width="32" height="32"><strong>Router (Vermittlungsrechner)</strong>
+<button type="button" class="knopf nw-firewall">Firewall …</button>
 <button type="button" class="knopf nw-loeschen">Gerät löschen</button></div>
 <div class="nw-felder">${feld('Name', g.name, 'data-f="name" maxlength="30"')}</div>
 <div class="nw-spalten">
@@ -433,6 +434,7 @@ ${g.routen.map((r, i) => `<tr><td><input data-route="${i}" data-feld="ziel" valu
   panel.querySelectorAll('.nw-route-weg').forEach((el) => el.addEventListener('click', () => { g.routen.splice(Number(el.dataset.route), 1); speichere(); panelFuer = null; zeichnePanel(); }));
   panel.querySelector('.nw-route-plus').addEventListener('click', () => { g.routen.push({ ziel: '', maske: '255.255.255.0', gateway: '' }); speichere(); panelFuer = null; zeichnePanel(); });
   panel.querySelector('.nw-auto').addEventListener('change', (e) => { g.routenAuto = e.target.checked; speichere(); });
+  panel.querySelector('.nw-firewall').addEventListener('click', () => firewall(g));
   panel.querySelector('.nw-nic-plus').addEventListener('click', () => { g.nics.push(n.neueNic()); speichere(); panelFuer = null; zeichnePanel(); });
   panel.querySelector('.nw-nic-minus').addEventListener('click', () => { g.nics.pop(); speichere(); panelFuer = null; zeichnePanel(); });
   panel.querySelectorAll('[data-pruef]').forEach(pruefe);
@@ -447,11 +449,13 @@ ${istHost(g) ? '<button type="button" class="knopf primaer" data-tat="desktop">D
 ${g.typ !== 'switch' ? '<button type="button" class="knopf" data-tat="log">Datenaustausch anzeigen</button>' : ''}
 ${g.typ === 'switch' ? '<button type="button" class="knopf" data-tat="sat">Lerntabelle (SAT) anzeigen</button>' : ''}
 ${g.typ !== 'switch' ? '<button type="button" class="knopf" data-tat="route">Weiterleitungstabelle</button>' : ''}
+${g.typ === 'router' ? '<button type="button" class="knopf" data-tat="firewall">Firewall</button>' : ''}
 </span></div>`;
   panel.querySelector('[data-tat="desktop"]')?.addEventListener('click', () => desktop(g));
   panel.querySelector('[data-tat="log"]')?.addEventListener('click', () => datenaustausch(g));
   panel.querySelector('[data-tat="sat"]')?.addEventListener('click', () => satFenster(g));
   panel.querySelector('[data-tat="route"]')?.addEventListener('click', () => routenFenster(g));
+  panel.querySelector('[data-tat="firewall"]')?.addEventListener('click', () => firewall(g));
 }
 
 // ------------------------------------------------------------------ Fenster
@@ -497,7 +501,7 @@ function schliesseAlle() { for (const id of [...fensterListe.keys()]) schliesse(
 
 // ------------------------------------------------------------------ Desktop und Software
 
-const SYMBOLE = { befehlszeile: '⌨', webbrowser: '🌐', webserver: '🗄', dnsserver: '📖', emailprogramm: '✉', emailserver: '📮', installation: '🧩' };
+const SYMBOLE = { befehlszeile: '⌨', webbrowser: '🌐', webserver: '🗄', dnsserver: '📖', emailprogramm: '✉', emailserver: '📮', firewall: '🧱', installation: '🧩' };
 
 function desktop(g) {
   const id = `desktop:${g.id}`;
@@ -515,12 +519,12 @@ function desktop(g) {
 }
 
 function oeffneApp(g, app_) {
-  ({ installation, befehlszeile, webbrowser, webserver, dnsserver, emailprogramm, emailserver })[app_]?.(g);
+  ({ installation, befehlszeile, webbrowser, webserver, dnsserver, emailprogramm, emailserver, firewall })[app_]?.(g);
 }
 
 function installation(g) {
   fenster(`installation:${g.id}`, `Software-Installation – ${g.name}`, {
-    breite: 400, hoehe: 330,
+    breite: 400, hoehe: 400,
     aufbauen(f) {
       f.inhalt.innerHTML = `<p class="klein">Wähle aus, welche Programme auf ${esc(g.name)} installiert sein sollen.</p>
 ${Object.entries(SOFTWARE).map(([k, name]) => `<label class="nw-check"><input type="checkbox" value="${k}"${g.software.includes(k) ? ' checked' : ''}> ${SYMBOLE[k]} ${name}</label>`).join('')}
@@ -529,6 +533,8 @@ ${Object.entries(SOFTWARE).map(([k, name]) => `<label class="nw-check"><input ty
         g.software = [...f.inhalt.querySelectorAll('input:checked')].map((c) => c.value);
         g.daten.webserver ??= { laeuft: false, dateien: { 'index.html': STANDARD_SEITE } };
         g.daten.dnsserver ??= { laeuft: false, eintraege: [] };
+        // Eine frisch installierte Firewall ist eingeschaltet und lässt nur Antworten herein
+        if (g.software.includes('firewall')) g.firewall ??= { aktiv: true, standard: 'verwerfen', antworten: true, regeln: [] };
         if (zustand.netz.laeuft) zustand.netz.dienste(g);
         speichere();
         schliesse(`installation:${g.id}`);
@@ -808,6 +814,77 @@ ${f.reiter === 'eingang' ? '<div class="nw-zeile"><button type="button" class="k
   fenster(`emailprogramm:${g.id}`, `E-Mail-Programm – ${g.name}`, { breite: 620, hoehe: 460, aufbauen });
 }
 
+function firewall(g) {
+  g.firewall ??= { aktiv: false, standard: 'verwerfen', antworten: true, regeln: [] };
+  const fw = g.firewall;
+  fw.regeln ??= [];
+  const aufbauen = (f) => {
+    f.inhalt.innerHTML = `<p class="klein">${g.typ === 'router'
+      ? 'Die Firewall des Routers prüft jedes Paket, das er weiterleitet oder selbst empfängt.'
+      : 'Die Firewall prüft jedes Paket, das bei diesem Rechner ankommt. Was er selbst verschickt, lässt sie durch.'}
+Die Regeln gelten von oben nach unten – die erste passende entscheidet, sonst die Standardregel.</p>
+<label class="nw-check"><input type="checkbox" data-fw="aktiv"${fw.aktiv ? ' checked' : ''}> <strong>Firewall eingeschaltet</strong></label>
+<div class="nw-zeile"><label>Wenn keine Regel passt: <select data-fw="standard"><option value="verwerfen"${fw.standard !== 'zulassen' ? ' selected' : ''}>verwerfen</option><option value="zulassen"${fw.standard === 'zulassen' ? ' selected' : ''}>zulassen</option></select></label></div>
+<label class="nw-check"><input type="checkbox" data-fw="antworten"${fw.antworten !== false ? ' checked' : ''}> Antworten immer zulassen – also Pakete, die zu einer schon begonnenen Verbindung gehören (z. B. die Webseite, die ein Browser angefordert hat). Neue Anfragen von außen prüfen die Regeln.</label>
+<table class="nw-tabelle nw-regeln"><thead><tr><th>#</th><th>Aktion</th><th>Protokoll</th><th>Absender</th><th>Empfänger</th><th>Ziel-Port</th><th></th></tr></thead><tbody>
+${fw.regeln.map((r, i) => `<tr><td>${i + 1}</td>
+<td><select data-r="${i}" data-feld="aktion" aria-label="Aktion"><option value="zulassen"${r.aktion === 'zulassen' ? ' selected' : ''}>zulassen</option><option value="verwerfen"${r.aktion !== 'zulassen' ? ' selected' : ''}>verwerfen</option></select></td>
+<td><select data-r="${i}" data-feld="protokoll" aria-label="Protokoll">${['alle', 'TCP', 'UDP', 'ICMP'].map((x) => `<option${(r.protokoll ?? 'alle') === x ? ' selected' : ''}>${x}</option>`).join('')}</select></td>
+<td><input data-r="${i}" data-feld="quelle" value="${esc(r.quelle)}" placeholder="beliebig" data-bereich aria-label="Absender"></td>
+<td><input data-r="${i}" data-feld="ziel" value="${esc(r.ziel)}" placeholder="beliebig" data-bereich aria-label="Empfänger"></td>
+<td><input data-r="${i}" data-feld="port" value="${esc(r.port)}" placeholder="alle" inputmode="numeric" aria-label="Ziel-Port" class="nw-port"${r.protokoll === 'ICMP' ? ' disabled' : ''}></td>
+<td class="nw-regel-knoepfe"><button type="button" class="uf-link" data-hoch="${i}"${i === 0 ? ' disabled' : ''} aria-label="nach oben">↑</button><button type="button" class="uf-link" data-weg="${i}" aria-label="Regel löschen">✕</button></td></tr>`).join('')}
+</tbody></table>
+<div class="nw-zeile"><button type="button" class="knopf nw-regel-plus">+ Regel</button>
+<span class="klein">Adressen: einzelne IP-Adresse, Netz wie 192.168.1.0/24 oder 192.168.1.0/255.255.255.0, leer = beliebig. Ports: 80 HTTP, 25 SMTP, 110 POP3, 53 DNS.</span></div>
+${g.typ !== 'router' && !g.software.includes('firewall') ? '<p class="nw-hinweis">Die Firewall wirkt erst, wenn sie über die Software-Installation installiert ist.</p>' : ''}
+<h4>Verworfene Pakete <span class="nw-fw-zahl"></span></h4><ul class="nw-ereignisse klein nw-fw-liste"></ul>`;
+    f.inhalt.querySelectorAll('[data-fw]').forEach((el) => el.addEventListener('change', () => {
+      fw[el.dataset.fw] = el.type === 'checkbox' ? el.checked : el.value;
+      speichere();
+    }));
+    const pruefeBereich = (el) => el.classList.toggle('falsch', adressbereich(el.value) === null);
+    f.inhalt.querySelectorAll('[data-r]').forEach((el) => {
+      if (el.hasAttribute('data-bereich')) pruefeBereich(el);
+      el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
+        if (el.hasAttribute('data-bereich')) pruefeBereich(el);
+        if (el.dataset.feld === 'port') el.classList.toggle('falsch', el.value.trim() !== '' && !/^\d{1,5}$/.test(el.value.trim()));
+        fw.regeln[el.dataset.r][el.dataset.feld] = el.value.trim();
+        speichere();
+        if (el.dataset.feld === 'protokoll') aufbauen(f);
+      });
+    });
+    f.inhalt.querySelectorAll('[data-weg]').forEach((b) => b.addEventListener('click', () => { fw.regeln.splice(Number(b.dataset.weg), 1); speichere(); aufbauen(f); }));
+    f.inhalt.querySelectorAll('[data-hoch]').forEach((b) => b.addEventListener('click', () => {
+      const i = Number(b.dataset.hoch);
+      [fw.regeln[i - 1], fw.regeln[i]] = [fw.regeln[i], fw.regeln[i - 1]];
+      speichere();
+      aufbauen(f);
+    }));
+    f.inhalt.querySelector('.nw-regel-plus').addEventListener('click', () => {
+      fw.regeln.push({ aktion: 'zulassen', protokoll: 'TCP', quelle: '', ziel: '', port: '' });
+      speichere();
+      aufbauen(f);
+    });
+    f.letzte = null;
+    f.aktualisieren(f);
+  };
+  fenster(`firewall:${g.id}`, `Firewall – ${g.name}`, {
+    breite: 760, hoehe: 480,
+    aufbauen,
+    aktualisieren(f) {
+      const z = zustand.netz.zustand?.get(g.id);
+      const liste = z?.fwEreignisse ?? [];
+      if (f.letzte === liste.length) return;
+      f.letzte = liste.length;
+      f.inhalt.querySelector('.nw-fw-zahl').textContent = zustand.netz.laeuft ? `(${z?.fwVerworfen ?? 0})` : '';
+      f.inhalt.querySelector('.nw-fw-liste').innerHTML = !zustand.netz.laeuft
+        ? '<li>Wird während der Simulation angezeigt.</li>'
+        : liste.length ? liste.slice(-30).reverse().map((e) => `<li>Takt ${e.zeit}: ${esc(e.text)}</li>`).join('') : '<li>Noch nichts verworfen.</li>';
+    },
+  });
+}
+
 // ------------------------------------------------------------------ Einblicke: Datenaustausch, SAT, Routen
 
 function datenaustausch(g) {
@@ -831,7 +908,7 @@ function datenaustausch(g) {
       const rahmen = f.inhalt.querySelector('.nw-log-rahmen');
       const unten = rahmen.scrollTop + rahmen.clientHeight >= rahmen.scrollHeight - 30;
       const zeilen = log.slice(f.gezeigt).filter((z) => !(ohneArp && z.protokoll === 'ARP'));
-      f.inhalt.querySelector('tbody').insertAdjacentHTML('beforeend', zeilen.map((z) => `<tr class="nw-schicht-${z.schicht.toLowerCase()}${z.nr % 2 ? ' ungerade' : ''}"><td>${z.nr}</td><td>${z.zeit}</td><td>${z.richtung === 'aus' ? '↑' : '↓'}</td><td>${esc(z.quelle)}</td><td>${esc(z.ziel)}</td><td>${esc(z.protokoll)}</td><td>${z.schicht}</td><td>${esc(z.bemerkung)}</td></tr>`).join(''));
+      f.inhalt.querySelector('tbody').insertAdjacentHTML('beforeend', zeilen.map((z) => `<tr class="nw-schicht-${z.schicht.toLowerCase()}${z.nr % 2 ? ' ungerade' : ''}${z.protokoll === 'Firewall' ? ' nw-fw' : ''}"><td>${z.nr}</td><td>${z.zeit}</td><td>${z.richtung === 'aus' ? '↑' : '↓'}</td><td>${esc(z.quelle)}</td><td>${esc(z.ziel)}</td><td>${esc(z.protokoll)}</td><td>${z.schicht}</td><td>${esc(z.bemerkung)}</td></tr>`).join(''));
       f.gezeigt = log.length;
       if (unten) rahmen.scrollTop = rahmen.scrollHeight;
     },
@@ -1067,6 +1144,7 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
 <li>Gerät oder Kabel löschen: anklicken und Entf drücken.</li></ul>
 <h4>Simulation ▶</h4>
 <ul><li>Doppelklick auf einen Rechner öffnet den Desktop. Über <em>Software-Installation</em> kommen Programme dazu: Befehlszeile, Webbrowser, Webserver, DNS-Server, E-Mail-Programm, E-Mail-Server.</li>
+<li><strong>Firewall:</strong> auf Rechnern als Software (prüft ankommende Pakete), auf Routern über „Firewall“ (prüft alles, was durchläuft). Verworfene Pakete erscheinen im Datenaustausch.</li>
 <li><strong>E-Mail:</strong> Der E-Mail-Server verwaltet eine Domain mit Konten. Das E-Mail-Programm verschickt über SMTP (Postausgangsserver) und holt über POP3 ab (Posteingangsserver). Für fremde Domains braucht der DNS-Server einen MX-Eintrag, der auf deren Mailserver zeigt.</li>
 <li>Befehlszeile: <code>ipconfig</code>, <code>ping</code>, <code>traceroute</code>, <code>host</code>, <code>arp</code>, <code>route</code>, <code>netstat</code> – <code>help</code> zeigt alle.</li>
 <li>Server müssen nach der Installation <strong>gestartet</strong> werden.</li>

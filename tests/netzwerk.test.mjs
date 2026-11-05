@@ -216,3 +216,64 @@ test('E-Mail: Fehlerfälle', () => {
   anna.daten.emailprogramm.smtp = '';
   assert.match(warte(n, (f) => n.mailSenden(anna, { an: ['ben@verein.test'], betreff: 'x', text: 'y' }, f)), /Postausgangsserver/);
 });
+
+test('Firewall auf einem Rechner: Ping und Webserver sperren bzw. freigeben, Antworten kommen durch', () => {
+  const n = new Netz();
+  const s = n.neuesGeraet('switch');
+  const a = rechner(n, 'A', '192.168.0.1');
+  const srv = rechner(n, 'Server', '192.168.0.2');
+  srv.software.push('webserver', 'firewall');
+  srv.daten.webserver = { laeuft: true, dateien: { 'index.html': 'ok' } };
+  srv.firewall = { aktiv: true, standard: 'verwerfen', antworten: true, regeln: [] };
+  n.verbinde(a.id, s.id); n.verbinde(srv.id, s.id);
+  n.start();
+  assert.match(ping(n, a, '192.168.0.2').at(-1), /0 empfangen/, 'Ping wird verworfen');
+  assert.match(ping(n, srv, '192.168.0.1').at(-1), /4 empfangen/, 'eigene Pings: Antworten kommen durch');
+  let seite = null;
+  n.ladeSeite(a, 'http://192.168.0.2/', (e) => { seite = e; });
+  n.laufe(() => seite, 500);
+  assert.match(seite.fehler, /Zeitüberschreitung/, 'Webserver gesperrt');
+  srv.firewall.regeln.push({ aktion: 'zulassen', protokoll: 'TCP', quelle: '192.168.0.0/24', ziel: '', port: '80' });
+  seite = null;
+  n.ladeSeite(a, 'http://192.168.0.2/', (e) => { seite = e; });
+  n.laufe(() => seite, 500);
+  assert.equal(seite.html, 'ok', 'mit Regel für Port 80 erreichbar');
+  const z = n.zustand.get(srv.id);
+  assert.ok(z.fwVerworfen >= 4 && z.log.some((x) => x.protokoll === 'Firewall' && /Ping-Anfrage/.test(x.bemerkung)));
+  srv.software = srv.software.filter((x) => x !== 'firewall');
+  assert.match(ping(n, a, '192.168.0.2').at(-1), /4 empfangen/, 'ohne installierte Software wirkt die Firewall nicht');
+});
+
+test('Firewall auf dem Router: Regeln zwischen zwei Netzen', () => {
+  const n = new Netz();
+  const a = rechner(n, 'A', '10.1.0.10', { gateway: '10.1.0.1' });
+  const b = rechner(n, 'B', '10.2.0.10', { gateway: '10.2.0.1' });
+  b.software.push('webserver');
+  b.daten.webserver = { laeuft: true, dateien: { 'index.html': 'ok' } };
+  const r = n.neuesGeraet('router');
+  r.nics[0].ip = '10.1.0.1'; r.nics[1].ip = '10.2.0.1';
+  n.verbinde(a.id, r.id); n.verbinde(b.id, r.id);
+  r.firewall = { aktiv: true, standard: 'zulassen', antworten: true, regeln: [{ aktion: 'verwerfen', protokoll: 'TCP', quelle: '10.1.0.0/255.255.255.0', ziel: '10.2.0.10', port: '80' }] };
+  n.start();
+  assert.match(ping(n, a, '10.2.0.10').at(-1), /4 empfangen/, 'Ping darf durch');
+  let seite = null;
+  n.ladeSeite(a, 'http://10.2.0.10/', (e) => { seite = e; });
+  n.laufe(() => seite, 500);
+  assert.ok(seite.fehler, 'HTTP von Netz 1 zu B gesperrt');
+  r.firewall.regeln[0].aktion = 'zulassen';
+  seite = null;
+  n.ladeSeite(a, 'http://10.2.0.10/', (e) => { seite = e; });
+  n.laufe(() => seite, 500);
+  assert.equal(seite.html, 'ok');
+});
+
+test('Firewall-Hilfen: Adressbereiche', async () => {
+  const { adressbereich, regelPasst } = await import('../apps/werkzeuge/netzwerk/netz.js');
+  assert.deepEqual(adressbereich(''), { netz: 0, maske: 0 });
+  assert.equal(adressbereich('192.168.1.7/24').netz, adressbereich('192.168.1.0/255.255.255.0').netz);
+  assert.equal(adressbereich('300.1.1.1'), null);
+  const p = { protokoll: 'UDP', quelle: '10.0.0.5', ziel: '10.0.0.53', daten: { zielPort: 53 } };
+  assert.ok(regelPasst({ protokoll: 'UDP', quelle: '10.0.0.0/8', ziel: '', port: '53' }, p));
+  assert.ok(!regelPasst({ protokoll: 'TCP', quelle: '', ziel: '', port: '' }, p));
+  assert.ok(!regelPasst({ protokoll: 'alle', quelle: '10.0.0.6', ziel: '', port: '' }, p));
+});

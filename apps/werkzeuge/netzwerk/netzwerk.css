@@ -148,3 +148,10 @@
 .nw-mail-status { margin: 6px 0 0; color: var(--muted); min-height: 1.2em; }
 .nw-domain input { width: 220px; }
 .nw-ereignisse { margin: 0; padding-left: 1.1em; max-height: 120px; overflow-y: auto; }
+
+/* Firewall */
+.nw-regeln select { font-size: .85rem !important; padding: 3px 4px !important; }
+.nw-regeln input.nw-port { min-width: 4.5em; width: 5em; }
+.nw-regel-knoepfe { white-space: nowrap; }
+.nw-regel-knoepfe .uf-link { margin: 0 3px; }
+.nw-log .nw-fw td { color: var(--bad); }

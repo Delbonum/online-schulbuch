@@ -20,6 +20,7 @@ export const SOFTWARE = {
   dnsserver: 'DNS-Server',
   emailprogramm: 'E-Mail-Programm',
   emailserver: 'E-Mail-Server',
+  firewall: 'Firewall',
 };
 export const STANDARD_SEITE = '<html>\n<head><title>Willkommen</title></head>\n<body>\n<h1>Es funktioniert!</h1>\n<p>Diese Seite liefert der Webserver aus.</p>\n</body>\n</html>\n';
 
@@ -347,8 +348,10 @@ export class Netz {
 
   ipEmpfang(g, nic, p) {
     const fuerMich = g.nics.some((n) => n.ip === p.ziel) || istBroadcastIp(p.ziel, g.nics[nic]);
+    if (!fuerMich && g.typ !== 'router') return; // Rechner leiten nicht weiter
+    const fw = this.firewallPruefen(g, p);
+    if (!fw.erlaubt) { this.firewallVerwirft(g, p, fw.grund); return; }
     if (fuerMich) { this.zustellen(g, nic, p); return; }
-    if (g.typ !== 'router') return; // Rechner leiten nicht weiter
     if (p.ttl <= 1) {
       this.sendeIp(g, { ziel: p.quelle, quelle: g.nics[nic].ip, protokoll: 'ICMP', daten: { typ: 'zeit', bemerkung: 'TTL abgelaufen', id: p.daten?.id, seq: p.daten?.seq } });
       return;
@@ -357,6 +360,39 @@ export class Netz {
     if (fehler && (p.protokoll !== 'ICMP' || p.daten?.typ === 'anfrage')) {
       this.sendeIp(g, { ziel: p.quelle, quelle: g.nics[nic].ip, protokoll: 'ICMP', daten: { typ: 'unerreichbar', bemerkung: 'Ziel nicht erreichbar', id: p.daten?.id, seq: p.daten?.seq } });
     }
+  }
+
+  // ---------------------------------------------------------------- Firewall
+  //
+  // Auf Rechnern (Software „Firewall“) prüft sie ankommende Pakete, auf Routern alle Pakete, die sie weiterleiten
+  // oder selbst empfangen. Regeln werden von oben nach unten geprüft, die erste passende entscheidet; passt keine,
+  // gilt die Standardregel. Antworten auf selbst aufgebaute Verbindungen lassen sich pauschal zulassen
+  // (TCP ohne reines SYN, UDP an Antwort-Ports, ICMP außer Echo-Anfragen) – sonst käme z. B. keine Webseite zurück.
+
+  firewallAktiv(g) {
+    return Boolean(g.firewall?.aktiv) && (g.typ === 'router' || g.software.includes('firewall'));
+  }
+
+  firewallPruefen(g, p) {
+    if (!this.firewallAktiv(g)) return { erlaubt: true };
+    const fw = g.firewall;
+    if (fw.antworten !== false && istAntwort(p)) return { erlaubt: true };
+    const regeln = fw.regeln ?? [];
+    for (let i = 0; i < regeln.length; i++) {
+      if (regelPasst(regeln[i], p)) return { erlaubt: regeln[i].aktion === 'zulassen', grund: `Regel ${i + 1}` };
+    }
+    return { erlaubt: fw.standard === 'zulassen', grund: 'Standardregel' };
+  }
+
+  firewallVerwirft(g, p, grund) {
+    const z = this.zustand.get(g.id);
+    z.fwVerworfen = (z.fwVerworfen ?? 0) + 1;
+    const was = paketKurz(p);
+    z.fwEreignisse ??= [];
+    z.fwEreignisse.push({ zeit: this.zeit, text: `${was} von ${p.quelle} an ${p.ziel} verworfen (${grund})` });
+    if (z.fwEreignisse.length > 100) z.fwEreignisse.shift();
+    z.logNr++;
+    z.log.push({ nr: z.logNr, zeit: this.zeit, richtung: 'ein', schicht: 'Vermittlung', protokoll: 'Firewall', quelle: p.quelle, ziel: p.ziel, bemerkung: `verworfen (${grund}): ${was}` });
   }
 
   zustellen(g, nic, p) {
@@ -967,4 +1003,46 @@ export function mailAusText(text) {
     betreff: feld('Subject'),
     text: rumpf.join('\n\n').replace(/^\.\./gm, '.'),
   };
+}
+
+// ------------------------------------------------------------------ Firewall-Hilfen
+
+/** „192.168.1.0/24“, „192.168.1.0/255.255.255.0“, „192.168.1.5“ oder leer (= beliebig) → {netz, maske} | null bei Fehler */
+export function adressbereich(text) {
+  const t = String(text ?? '').trim();
+  if (t === '' || t === '*' || t.toLowerCase() === 'beliebig') return { netz: 0, maske: 0 };
+  const [ip, m = '32'] = t.split('/');
+  const z = ipZahl(ip);
+  if (z === null) return null;
+  let maske;
+  if (/^\d{1,2}$/.test(m) && Number(m) <= 32) maske = Number(m) === 0 ? 0 : (~0 << (32 - Number(m))) >>> 0;
+  else if (gueltigeMaske(m)) maske = ipZahl(m);
+  else return null;
+  return { netz: (z & maske) >>> 0, maske };
+}
+
+const imBereich = (ip, b) => b && ((ipZahl(ip) ?? -1) & b.maske) >>> 0 === b.netz;
+
+export function regelPasst(regel, p) {
+  if (regel.protokoll && regel.protokoll !== 'alle' && regel.protokoll !== p.protokoll) return false;
+  if (!imBereich(p.quelle, adressbereich(regel.quelle))) return false;
+  if (!imBereich(p.ziel, adressbereich(regel.ziel))) return false;
+  const port = String(regel.port ?? '').trim();
+  if (port !== '' && (p.protokoll === 'TCP' || p.protokoll === 'UDP')) return Number(port) === p.daten.zielPort;
+  if (port !== '' && p.protokoll === 'ICMP') return false;
+  return true;
+}
+
+/** Ist das Paket eine Antwort, die zu einer schon begonnenen Verbindung gehört (statt einer neuen Anfrage)? */
+export function istAntwort(p) {
+  if (p.protokoll === 'TCP') return !(p.daten.flags.includes('SYN') && !p.daten.flags.includes('ACK'));
+  if (p.protokoll === 'UDP') return p.daten.zielPort >= 49152 || p.daten.zielPort === 68;
+  if (p.protokoll === 'ICMP') return p.daten.typ !== 'anfrage';
+  return false;
+}
+
+function paketKurz(p) {
+  if (p.protokoll === 'ICMP') return p.daten.typ === 'anfrage' ? 'Ping-Anfrage (ICMP)' : 'ICMP';
+  const dienst = { 25: 'SMTP', 53: 'DNS', 67: 'DHCP', 80: 'HTTP', 110: 'POP3' }[p.daten.zielPort];
+  return `${p.protokoll} an Port ${p.daten.zielPort}${dienst ? ` (${dienst})` : ''}`;
 }
