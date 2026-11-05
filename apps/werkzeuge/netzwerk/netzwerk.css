@@ -155,3 +155,15 @@
 .nw-regel-knoepfe { white-space: nowrap; }
 .nw-regel-knoepfe .uf-link { margin: 0 3px; }
 .nw-log .nw-fw td { color: var(--bad); }
+
+/* Echo-Server und einfacher Client */
+.nw-client { display: flex; flex-direction: column; }
+.nw-feld-port input { width: 6em; }
+.nw-verlauf { flex: 1; min-height: 140px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; margin: 6px 0; background: #fafbfa; }
+.nw-verlauf p { margin: 3px 0; }
+.nw-verlauf .nw-ich { text-align: right; }
+.nw-verlauf .nw-ich::before { content: "Du: "; color: var(--muted); }
+.nw-verlauf .nw-server::before { content: "Server: "; color: var(--muted); }
+.nw-verlauf .nw-server { color: var(--fach); font-weight: 600; }
+.nw-verlauf .nw-status { color: var(--muted); font-size: .82rem; font-style: italic; }
+.nw-nachricht input { flex: 1; }

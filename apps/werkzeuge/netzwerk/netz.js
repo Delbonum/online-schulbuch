@@ -21,7 +21,12 @@ export const SOFTWARE = {
   emailprogramm: 'E-Mail-Programm',
   emailserver: 'E-Mail-Server',
   firewall: 'Firewall',
+  echoserver: 'Echo-Server',
+  client: 'Einfacher Client',
 };
+export const ECHO_PORT = 55555;
+/** Rückgabe von ablauf.naechste(): Verbindung offen halten, ohne etwas zu senden (z. B. einfacher Client) */
+export const WARTEN = Symbol('warten');
 export const STANDARD_SEITE = '<html>\n<head><title>Willkommen</title></head>\n<body>\n<h1>Es funktioniert!</h1>\n<p>Diese Seite liefert der Webserver aus.</p>\n</body>\n</html>\n';
 
 const ARP_ZEIT = 40; // Takte, bis eine unbeantwortete ARP-Anfrage aufgegeben wird
@@ -446,16 +451,54 @@ export class Netz {
     const v = { ziel, zielPort, quellPort, zustand: 'syn-gesendet', seq: 1000, ack: 0, ablauf, fertig, client: true, antworten: [] };
     z.tcp.set(schluessel, v);
     const fehler = this.tcpSende(g, v, ['SYN']);
-    if (fehler) { z.tcp.delete(schluessel); fertig({ fehler }); return; }
+    if (fehler) { z.tcp.delete(schluessel); fertig({ fehler }); return null; }
     const pruefe = () => {
       if (v.zustand === 'fertig') return;
-      if (this.zeit - v.letzteAktivitaet < 120) { this.nachTakten(120, pruefe); return; }
+      if (v.zustand === 'bereit' || this.zeit - v.letzteAktivitaet < 120) { this.nachTakten(120, pruefe); return; }
       z.tcp.delete(schluessel);
       v.zustand = 'fertig';
       fertig({ fehler: 'Zeitüberschreitung – keine Antwort vom Server' });
     };
     v.letzteAktivitaet = this.zeit;
     this.nachTakten(120, pruefe);
+    return v;
+  }
+
+  /**
+   * Offene Verbindung für Programme, bei denen der Mensch entscheidet, wann etwas gesendet wird (einfacher Client).
+   * ereignisse.verbunden(verbindung), ereignisse.daten(text), ereignisse.ende({fehler?}).
+   * verbindung.senden(text) schickt eine Nachricht (weitere warten, bis die Antwort da ist), verbindung.trennen() baut ab.
+   */
+  tcpVerbindung(g, ziel, zielPort, ereignisse) {
+    const warteschlange = [];
+    let trennen = false;
+    let v = null;
+    const verbindung = {
+      senden: (text) => {
+        if (!v || v.zustand === 'fertig') return false;
+        if (v.zustand === 'bereit') { this.tcpSende(g, v, ['PSH', 'ACK'], text); v.zustand = 'wartet'; } else warteschlange.push(text);
+        return true;
+      },
+      trennen: () => {
+        trennen = true;
+        if (v?.zustand === 'bereit') { this.tcpSende(g, v, ['FIN', 'ACK']); v.zustand = 'fin-gesendet'; }
+      },
+      get zustand() { return v?.zustand ?? 'getrennt'; },
+    };
+    let erstesMal = true;
+    v = this.tcpDialog(g, ziel, zielPort, {
+      naechste: (antwort) => {
+        if (erstesMal) {
+          erstesMal = false;
+          ereignisse.verbunden?.(verbindung);
+        } else if (antwort !== null) {
+          ereignisse.daten?.(antwort);
+        }
+        if (trennen) return null;
+        return warteschlange.length ? warteschlange.shift() : WARTEN;
+      },
+    }, (e) => ereignisse.ende?.(e));
+    return verbindung;
   }
 
   tcpSende(g, v, flags, nutzdaten = '') {
@@ -467,6 +510,7 @@ export class Netz {
   /** Client: nächsten Befehl schicken oder Verbindung abbauen */
   tcpWeiter(g, v, antwort) {
     const befehl = v.ablauf.naechste(antwort);
+    if (befehl === WARTEN) { v.zustand = 'bereit'; return; }
     if (befehl === null || befehl === undefined) {
       this.tcpSende(g, v, ['FIN', 'ACK']);
       v.zustand = 'fin-gesendet';
@@ -555,6 +599,14 @@ export class Netz {
         const typ = anfrage.typ === 'MX' ? 'MX' : 'A';
         const eintrag = (d.dnsserver.eintraege ?? []).find((e) => (e.typ ?? 'A') === typ && e.name.toLowerCase().replace(/\.$/, '') === name);
         this.sendeUdp(g, p.quelle, p.daten.quellPort, 53, { dns: 'antwort', typ, name, ip: eintrag?.ip?.trim() || null, id: anfrage.id });
+      });
+    }
+    if (g.software.includes('echoserver') && d.echoserver?.laeuft) {
+      const port = Number(d.echoserver.port) || ECHO_PORT;
+      z.tcpDienste.set(port, {
+        sitzung: (absender) => { this.echoEreignis(g, `Verbindung von ${absender}`); return { absender }; },
+        antwort: (text, sitzung) => { this.echoEreignis(g, `${sitzung.absender}: „${text}“ – zurückgeschickt`); return text; },
+        ende: (sitzung) => this.echoEreignis(g, `Verbindung von ${sitzung.absender} beendet`),
       });
     }
     if (g.software.includes('emailserver') && d.emailserver?.laeuft) {
@@ -682,6 +734,13 @@ export class Netz {
   // Der E-Mail-Server verwaltet eine Domain (z. B. schule.test) mit Konten. Über SMTP nimmt er Nachrichten an:
   // für eigene Konten legt er sie ins Postfach, für fremde Domains fragt er per DNS nach deren Mailserver
   // (MX-Eintrag) und leitet sie per SMTP weiter. Über POP3 holt das E-Mail-Programm die Nachrichten ab.
+
+  echoEreignis(g, text) {
+    const z = this.zustand.get(g.id);
+    z.echoEreignisse ??= [];
+    z.echoEreignisse.push({ zeit: this.zeit, text });
+    if (z.echoEreignisse.length > 100) z.echoEreignisse.shift();
+  }
 
   mailEreignis(g, text) {
     const z = this.zustand.get(g.id);
@@ -973,8 +1032,8 @@ function anwendungText(p) {
   if (p.protokoll === 'UDP' && n?.dns) return { protokoll: 'DNS', bemerkung: n.dns === 'anfrage' ? (n.typ === 'MX' ? `Anfrage: Mailserver (MX) von ${n.name}?` : `Anfrage: Adresse von ${n.name}?`) : `Antwort: ${n.name}${n.typ === 'MX' ? ' (MX)' : ''} = ${n.ip ?? 'unbekannt'}` };
   if (p.protokoll === 'TCP' && n) {
     const erste = String(n).split('\n')[0];
-    const port = Math.min(d.quellPort, d.zielPort);
-    const protokoll = { 25: 'SMTP', 110: 'POP3', 80: 'HTTP' }[port] ?? 'Daten';
+    const bekannt = { 25: 'SMTP', 110: 'POP3', 80: 'HTTP', 55555: 'Echo' };
+    const protokoll = bekannt[d.zielPort] ?? bekannt[d.quellPort] ?? 'Daten';
     return { protokoll, bemerkung: erste.length > 80 ? `${erste.slice(0, 80)} …` : erste };
   }
   return null;

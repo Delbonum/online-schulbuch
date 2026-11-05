@@ -100,6 +100,7 @@ export function fuehreAus(netz, g, zeile, ausgabe, fertig) {
       for (const c of v) ausgabe(`TCP  lokal Port ${c.quellPort}  ↔  ${c.ziel}:${c.zielPort}  (${c.zustand})`);
       if (g.daten.webserver?.laeuft && g.software.includes('webserver')) ausgabe('TCP  Port 80 wartet auf Verbindungen (Webserver)');
       if (g.daten.dnsserver?.laeuft && g.software.includes('dnsserver')) ausgabe('UDP  Port 53 wartet auf Anfragen (DNS-Server)');
+      if (g.daten.echoserver?.laeuft && g.software.includes('echoserver')) ausgabe(`TCP  Port ${g.daten.echoserver.port || 55555} wartet auf Verbindungen (Echo-Server)`);
       if (g.daten.emailserver?.laeuft && g.software.includes('emailserver')) { ausgabe('TCP  Port 25 wartet auf Verbindungen (SMTP)'); ausgabe('TCP  Port 110 wartet auf Verbindungen (POP3)'); }
       fertig();
       return undefined;

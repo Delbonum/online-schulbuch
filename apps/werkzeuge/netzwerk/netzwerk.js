@@ -5,7 +5,7 @@
 // Bilder der Geräte: bilder/<typ>.svg – Platzhalter, die sich durch eigene Bilder gleichen Namens ersetzen lassen
 // (andere Endung: BILDER unten anpassen).
 
-import { Netz, SOFTWARE, STANDARD_SEITE, gueltigeIp, gueltigeMaske, imSelbenNetz, adressbereich } from './netz.js';
+import { Netz, SOFTWARE, STANDARD_SEITE, gueltigeIp, gueltigeMaske, imSelbenNetz, adressbereich, ECHO_PORT } from './netz.js';
 import { fuehreAus } from './befehle.js';
 
 const wurzel = document.getElementById('netzwerk');
@@ -501,7 +501,7 @@ function schliesseAlle() { for (const id of [...fensterListe.keys()]) schliesse(
 
 // ------------------------------------------------------------------ Desktop und Software
 
-const SYMBOLE = { befehlszeile: '⌨', webbrowser: '🌐', webserver: '🗄', dnsserver: '📖', emailprogramm: '✉', emailserver: '📮', firewall: '🧱', installation: '🧩' };
+const SYMBOLE = { befehlszeile: '⌨', webbrowser: '🌐', webserver: '🗄', dnsserver: '📖', emailprogramm: '✉', emailserver: '📮', firewall: '🧱', echoserver: '🔁', client: '💬', installation: '🧩' };
 
 function desktop(g) {
   const id = `desktop:${g.id}`;
@@ -519,12 +519,12 @@ function desktop(g) {
 }
 
 function oeffneApp(g, app_) {
-  ({ installation, befehlszeile, webbrowser, webserver, dnsserver, emailprogramm, emailserver, firewall })[app_]?.(g);
+  ({ installation, befehlszeile, webbrowser, webserver, dnsserver, emailprogramm, emailserver, firewall, echoserver, client })[app_]?.(g);
 }
 
 function installation(g) {
   fenster(`installation:${g.id}`, `Software-Installation – ${g.name}`, {
-    breite: 400, hoehe: 400,
+    breite: 400, hoehe: 470,
     aufbauen(f) {
       f.inhalt.innerHTML = `<p class="klein">Wähle aus, welche Programme auf ${esc(g.name)} installiert sein sollen.</p>
 ${Object.entries(SOFTWARE).map(([k, name]) => `<label class="nw-check"><input type="checkbox" value="${k}"${g.software.includes(k) ? ' checked' : ''}> ${SYMBOLE[k]} ${name}</label>`).join('')}
@@ -885,6 +885,97 @@ ${g.typ !== 'router' && !g.software.includes('firewall') ? '<p class="nw-hinweis
   });
 }
 
+function echoserver(g) {
+  g.daten.echoserver ??= { laeuft: false, port: ECHO_PORT };
+  const aufbauen = (f) => {
+    const d = g.daten.echoserver;
+    f.inhalt.innerHTML = `${serverKopf(g, 'echoserver', 'Echo-Server', 'Wartet auf TCP-Verbindungen und schickt jede Nachricht unverändert zurück – so lässt sich das Client-Server-Prinzip beobachten.')}
+<label class="nw-feld nw-domain"><span>Port</span><input data-port value="${esc(d.port)}" inputmode="numeric"${d.laeuft ? ' disabled' : ''}></label>
+<p class="klein">${d.laeuft ? 'Zum Ändern des Ports den Server erst stoppen.' : `Üblich ist ${ECHO_PORT}. Der Client muss denselben Port verwenden.`}</p>
+<h4>Ereignisse</h4><ul class="nw-ereignisse klein"></ul>`;
+    startKnopf(g, 'echoserver', f, aufbauen);
+    const feldPort = f.inhalt.querySelector('[data-port]');
+    feldPort.addEventListener('input', () => {
+      const p = Number(feldPort.value.trim());
+      const ok = Number.isInteger(p) && p >= 1 && p <= 65535;
+      feldPort.classList.toggle('falsch', !ok);
+      if (ok) { d.port = p; speichere(); }
+    });
+    f.letzte = null;
+    f.aktualisieren(f);
+  };
+  fenster(`echoserver:${g.id}`, `Echo-Server – ${g.name}`, {
+    breite: 520, hoehe: 400,
+    aufbauen,
+    aktualisieren(f) {
+      const liste = zustand.netz.zustand?.get(g.id)?.echoEreignisse ?? [];
+      const ul = f.inhalt.querySelector('.nw-ereignisse');
+      if (!ul || f.letzte === liste.length) return;
+      f.letzte = liste.length;
+      ul.innerHTML = liste.length ? liste.slice(-40).reverse().map((e) => `<li>Takt ${e.zeit}: ${esc(e.text)}</li>`).join('') : '<li>Noch keine Verbindung.</li>';
+    },
+  });
+}
+
+function client(g) {
+  g.daten.client ??= { adresse: '', port: ECHO_PORT };
+  const d = g.daten.client;
+  fenster(`client:${g.id}`, `Einfacher Client – ${g.name}`, {
+    breite: 560, hoehe: 440,
+    aufbauen(f) {
+      f.inhalt.classList.add('nw-client');
+      f.inhalt.innerHTML = `<div class="nw-zeile">
+<label class="nw-feld"><span>Server (IP-Adresse oder Name)</span><input data-c="adresse" value="${esc(d.adresse)}" placeholder="192.168.0.2"></label>
+<label class="nw-feld nw-feld-port"><span>Port</span><input data-c="port" value="${esc(d.port)}" inputmode="numeric"></label>
+<button type="button" class="knopf primaer nw-verbinden">Verbinden</button></div>
+<div class="nw-verlauf" aria-live="polite"></div>
+<form class="nw-zeile nw-nachricht"><input aria-label="Nachricht" placeholder="Nachricht" disabled><button type="submit" class="knopf" disabled>Senden</button></form>`;
+      const verlauf = f.inhalt.querySelector('.nw-verlauf');
+      const knopf = f.inhalt.querySelector('.nw-verbinden');
+      const eingabe = f.inhalt.querySelector('.nw-nachricht input');
+      const senden = f.inhalt.querySelector('.nw-nachricht button');
+      const zeile = (text, art) => { verlauf.insertAdjacentHTML('beforeend', `<p class="nw-${art}">${esc(text)}</p>`); verlauf.scrollTop = verlauf.scrollHeight; };
+      const verbunden = (an) => {
+        eingabe.disabled = !an;
+        senden.disabled = !an;
+        knopf.textContent = an ? 'Trennen' : 'Verbinden';
+        f.inhalt.querySelectorAll('[data-c]').forEach((el) => { el.disabled = an; });
+        if (an) eingabe.focus();
+      };
+      f.inhalt.querySelectorAll('[data-c]').forEach((el) => el.addEventListener('input', () => { d[el.dataset.c] = el.value.trim(); speichere(); }));
+      knopf.addEventListener('click', () => {
+        if (f.verbindung) { f.verbindung.trennen(); knopf.disabled = true; return; }
+        if (!zustand.netz.laeuft) { zeile('Die Simulation läuft nicht.', 'status'); return; }
+        const port = Number(d.port);
+        if (!Number.isInteger(port) || port < 1 || port > 65535) { zeile('Bitte einen gültigen Port angeben (1 bis 65535).', 'status'); return; }
+        knopf.disabled = true;
+        zeile(`Verbinde mit ${d.adresse}, Port ${port} …`, 'status');
+        zustand.netz.namensaufloesung(g, d.adresse, (ip, fehler) => {
+          if (!ip) { zeile(fehler, 'status'); knopf.disabled = false; return; }
+          f.verbindung = zustand.netz.tcpVerbindung(g, ip, port, {
+            verbunden: () => { knopf.disabled = false; zeile(`Verbunden mit ${ip}:${port}.`, 'status'); verbunden(true); },
+            daten: (text) => zeile(text, 'server'),
+            ende: (e) => {
+              f.verbindung = null;
+              knopf.disabled = false;
+              zeile(e?.fehler ? `Keine Verbindung: ${e.fehler}` : 'Verbindung getrennt.', 'status');
+              verbunden(false);
+            },
+          });
+        });
+      });
+      f.inhalt.querySelector('form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = eingabe.value;
+        if (!text || !f.verbindung) return;
+        eingabe.value = '';
+        zeile(text, 'ich');
+        f.verbindung.senden(text);
+      });
+    },
+  });
+}
+
 // ------------------------------------------------------------------ Einblicke: Datenaustausch, SAT, Routen
 
 function datenaustausch(g) {
@@ -1144,6 +1235,7 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
 <li>Gerät oder Kabel löschen: anklicken und Entf drücken.</li></ul>
 <h4>Simulation ▶</h4>
 <ul><li>Doppelklick auf einen Rechner öffnet den Desktop. Über <em>Software-Installation</em> kommen Programme dazu: Befehlszeile, Webbrowser, Webserver, DNS-Server, E-Mail-Programm, E-Mail-Server.</li>
+<li><strong>Echo-Server und einfacher Client:</strong> Der Echo-Server (Port 55555) schickt jede Nachricht zurück; mit dem einfachen Client baust du eine TCP-Verbindung auf, schickst Nachrichten und trennst wieder – im Datenaustausch sieht man Verbindungsaufbau, Daten und Abbau.</li>
 <li><strong>Firewall:</strong> auf Rechnern als Software (prüft ankommende Pakete), auf Routern über „Firewall“ (prüft alles, was durchläuft). Verworfene Pakete erscheinen im Datenaustausch.</li>
 <li><strong>E-Mail:</strong> Der E-Mail-Server verwaltet eine Domain mit Konten. Das E-Mail-Programm verschickt über SMTP (Postausgangsserver) und holt über POP3 ab (Posteingangsserver). Für fremde Domains braucht der DNS-Server einen MX-Eintrag, der auf deren Mailserver zeigt.</li>
 <li>Befehlszeile: <code>ipconfig</code>, <code>ping</code>, <code>traceroute</code>, <code>host</code>, <code>arp</code>, <code>route</code>, <code>netstat</code> – <code>help</code> zeigt alle.</li>

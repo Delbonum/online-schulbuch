@@ -277,3 +277,37 @@ test('Firewall-Hilfen: Adressbereiche', async () => {
   assert.ok(!regelPasst({ protokoll: 'TCP', quelle: '', ziel: '', port: '' }, p));
   assert.ok(!regelPasst({ protokoll: 'alle', quelle: '10.0.0.6', ziel: '', port: '' }, p));
 });
+
+test('Echo-Server und einfacher Client: Verbindung, Nachrichten, Trennen', async () => {
+  const { ECHO_PORT } = await import('../apps/werkzeuge/netzwerk/netz.js');
+  const n = new Netz();
+  const s = n.neuesGeraet('switch');
+  const a = rechner(n, 'A', '192.168.0.1');
+  const srv = rechner(n, 'Server', '192.168.0.2');
+  srv.software.push('echoserver');
+  srv.daten.echoserver = { laeuft: true, port: ECHO_PORT };
+  n.verbinde(a.id, s.id); n.verbinde(srv.id, s.id);
+  n.start();
+  const empfangen = [];
+  let verbunden = null;
+  let ende = null;
+  n.tcpVerbindung(a, '192.168.0.2', ECHO_PORT, { verbunden: (v) => { verbunden = v; }, daten: (t) => empfangen.push(t), ende: (e) => { ende = e; } });
+  n.laufe(() => verbunden, 200);
+  assert.ok(verbunden, 'verbunden');
+  n.laufe(() => false, 300); // lange Pause: die Verbindung bleibt offen
+  assert.equal(verbunden.zustand, 'bereit');
+  verbunden.senden('Hallo');
+  verbunden.senden('Welt');
+  n.laufe(() => empfangen.length === 2, 200);
+  assert.deepEqual(empfangen, ['Hallo', 'Welt']);
+  verbunden.trennen();
+  n.laufe(() => ende, 200);
+  assert.ok(ende && !ende.fehler, 'sauber getrennt');
+  const ereignisse = n.zustand.get(srv.id).echoEreignisse.map((e) => e.text);
+  assert.ok(ereignisse[0].startsWith('Verbindung von 192.168.0.1') && ereignisse.at(-1).includes('beendet'));
+  assert.ok(n.zustand.get(a.id).log.some((z) => z.protokoll === 'Echo' && z.bemerkung === 'Hallo'));
+  ende = null;
+  n.tcpVerbindung(a, '192.168.0.2', 4711, { ende: (e) => { ende = e; } });
+  n.laufe(() => ende, 200);
+  assert.match(ende.fehler, /abgelehnt/);
+});
