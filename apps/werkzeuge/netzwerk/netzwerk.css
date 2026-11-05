@@ -196,3 +196,23 @@
 .nw-dateiliste .nw-eintrag:hover { color: var(--fach); text-decoration: underline; }
 .nw-aktionen { white-space: nowrap; text-align: right !important; }
 .nw-aktionen .uf-link { padding: 0 5px; }
+
+/* Dokumentationsmodus */
+.nw-doku-werkzeug { display: none; cursor: pointer; }
+.nw.doku .nw-doku-werkzeug { display: flex; }
+.nw.doku .nw-bauteil[data-typ], .nw.doku .nw-kabel-werkzeug { display: none; }
+.nw.doku .nw-tempo, .nw.doku .nw-zeit { display: none; }
+.nw:not(.doku) .nw-notiz { pointer-events: none; }
+.nw.doku .nw-geraet { cursor: default; pointer-events: none; }
+.nw.doku .nw-kabel-treffer { pointer-events: none; }
+.nw-notiz { cursor: move; }
+.nw-notiz-rand { fill: transparent; stroke: transparent; stroke-width: 2; }
+.nw-notiz:hover .nw-notiz-rand { stroke: #c5ccd6; stroke-dasharray: 4 3; }
+.nw-notiz.gewaehlt .nw-notiz-rand { stroke: var(--fach); stroke-dasharray: none; fill: rgb(11 107 114 / 5%); }
+.nw-bereich.gewaehlt .nw-bereich-flaeche { stroke: var(--fach); stroke-width: 3.5; }
+.nw-griff { display: none; fill: #fff; stroke: var(--fach); stroke-width: 2; cursor: nwse-resize; }
+.nw-bereich.gewaehlt .nw-griff { display: block; }
+.nw-notiz-felder textarea { width: min(420px, 70vw); font-family: inherit; resize: vertical; }
+.nw-farben { display: flex; gap: 6px; padding-top: 3px; }
+.nw-farbe { width: 28px; height: 28px; border-radius: 50%; border: 3px solid; cursor: pointer; padding: 0; }
+.nw-farbe[aria-pressed="true"] { outline: 3px solid var(--text); outline-offset: 2px; }

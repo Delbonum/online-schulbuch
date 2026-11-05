@@ -415,3 +415,22 @@ test('Peer-to-Peer: beitreten, Suche über mehrere Peers (TTL), herunterladen, v
   n.laufe(() => false, 100);
   assert.deepEqual(n.p2p(b).nachbarn, ['192.168.0.3']);
 });
+
+test('Dokumentation: Notizen werden gespeichert, geladen und geprüft', () => {
+  const n = new Netz();
+  const t = n.neueNotiz('text', { x: 50, y: 60 });
+  t.text = 'Schulnetz\nRaum 12';
+  const b = n.neueNotiz('bereich', { x: 10, y: 20 });
+  assert.throws(() => n.neueNotiz('kreis'), /Unbekannte/);
+  const daten = JSON.parse(JSON.stringify(n));
+  daten.notizen.push({ id: 'x', art: 'bereich', x: -50, y: 'quatsch', b: 99999, h: 5 }, { art: 'text' }, null);
+  const geladen = Netz.ausJSON(daten);
+  assert.equal(geladen.notizen.length, 3);
+  assert.equal(geladen.notizen[0].text, 'Schulnetz\nRaum 12');
+  assert.deepEqual([geladen.notizen[2].x, geladen.notizen[2].y, geladen.notizen[2].b, geladen.notizen[2].h], [0, 100, 2000, 30]);
+  geladen.entferneNotiz(b.id);
+  assert.equal(geladen.notizen.length, 2);
+  // ältere Dateien ohne Notizen
+  delete daten.notizen;
+  assert.deepEqual(Netz.ausJSON(daten).notizen, []);
+});

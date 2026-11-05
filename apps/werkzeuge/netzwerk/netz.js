@@ -11,6 +11,8 @@
 // Jeder Rechner hat ein kleines Dateisystem (Ordner und Textdateien, g.daten.dateisystem) für Text-Editor und
 // Datei-Explorer; der Webserver liefert die Dateien im Ordner /webserver aus.
 //
+// Zum Entwurf gehören auch die Notizen des Dokumentationsmodus (Textfelder und farbige Bereiche, this.notizen).
+//
 // Gespeichert wird nur der Entwurf (Geräte, Einstellungen, installierte Software, Daten der Server); der Zustand
 // während der Simulation (ARP-Tabellen, Verbindungen, Protokolle) entsteht bei start() neu.
 
@@ -30,6 +32,7 @@ export const SOFTWARE = {
   dateiexplorer: 'Datei-Explorer',
   peertopeer: 'Peer-to-Peer',
 };
+export const NOTIZ_ARTEN = ['text', 'bereich'];
 export const ECHO_PORT = 55555;
 export const P2P_PORT = 6346; // wie Gnutella
 export const P2P_ORDNER = '/peer2peer';
@@ -212,6 +215,7 @@ export class Netz {
   constructor() {
     this.geraete = new Map();
     this.kabel = [];
+    this.notizen = [];
     this.zaehler = 1;
     this.laeuft = false;
     this.zeit = 0;
@@ -292,8 +296,20 @@ export class Netz {
 
   entferneKabel(id) { this.kabel = this.kabel.filter((k) => k.id !== id); }
 
+  /** Dokumentation: Textfeld (art 'text') oder farbiger Bereich mit Überschrift (art 'bereich') */
+  neueNotiz(art, { x = 100, y = 100 } = {}) {
+    if (!NOTIZ_ARTEN.includes(art)) throw new Error(`Unbekannte Notiz: ${art}`);
+    const n = art === 'text'
+      ? { id: `n${this.zaehler++}`, art, x, y, text: 'Text', groesse: 18, farbe: 'dunkel' }
+      : { id: `n${this.zaehler++}`, art, x, y, b: 320, h: 220, text: 'Bereich', farbe: 'blau' };
+    this.notizen.push(n);
+    return n;
+  }
+
+  entferneNotiz(id) { this.notizen = this.notizen.filter((n) => n.id !== id); }
+
   toJSON() {
-    return { format: 'online-schulbuch-netzwerk', version: 1, zaehler: this.zaehler, geraete: [...this.geraete.values()], kabel: this.kabel };
+    return { format: 'online-schulbuch-netzwerk', version: 1, zaehler: this.zaehler, geraete: [...this.geraete.values()], kabel: this.kabel, notizen: this.notizen };
   }
 
   static ausJSON(daten) {
@@ -309,6 +325,12 @@ export class Netz {
       if (g.typ === 'rechner' || g.typ === 'notebook') dateisystem(n.geraete.get(g.id));
     }
     n.kabel = (daten.kabel ?? []).filter((k) => n.geraete.has(k.a?.g) && n.geraete.has(k.b?.g));
+    const zahl = (w, std, min, max) => (Number.isFinite(Number(w)) ? Math.max(min, Math.min(max, Math.round(Number(w)))) : std);
+    n.notizen = (Array.isArray(daten.notizen) ? daten.notizen : []).filter((x) => NOTIZ_ARTEN.includes(x?.art) && typeof x.id === 'string').map((x) => ({
+      id: x.id, art: x.art, x: zahl(x.x, 100, 0, 1990), y: zahl(x.y, 100, 0, 1190), text: String(x.text ?? '').slice(0, 2000),
+      farbe: typeof x.farbe === 'string' ? x.farbe : '',
+      ...(x.art === 'text' ? { groesse: zahl(x.groesse, 18, 10, 60) } : { b: zahl(x.b, 320, 40, 2000), h: zahl(x.h, 220, 30, 1200) }),
+    }));
     return n;
   }
 

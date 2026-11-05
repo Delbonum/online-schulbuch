@@ -1,6 +1,6 @@
 // Netzwerk-Simulation (Oberfläche): Netze im Entwurfsmodus zusammenstecken und einstellen, im Simulationsmodus
 // Software installieren und ausprobieren (Befehlszeile, Webbrowser, Webserver, DNS-Server) und den Datenaustausch
-// Schicht für Schicht verfolgen. Die Simulation selbst steckt in netz.js, die Befehlszeile in befehle.js.
+// Schicht für Schicht verfolgen, im Dokumentationsmodus mit Textfeldern und Bereichen beschriften und als Bild speichern. Die Simulation selbst steckt in netz.js, die Befehlszeile in befehle.js.
 //
 // Das Modem verbindet zwei Simulationen in verschiedenen Browsern; die Rahmen reicht die Schulbuch-API weiter
 // (/api/modem, ohne Konto, Verbindung über einen sechsstelligen Code).
@@ -21,6 +21,11 @@ const bild = (typ) => `${BASIS_BILDER}${BILDER[typ]}`;
 const NAMEN = { rechner: 'Rechner', notebook: 'Notebook', switch: 'Switch', router: 'Router', modem: 'Modem' };
 const API = '/api';
 const SPEICHER = 'netzwerk-simulation:entwurf';
+// Dokumentation: Bereiche [Füllung, Rand/Schrift], Textfarben
+const BEREICH_FARBEN = { blau: ['#dbe8ff', '#4a6fb5'], gruen: ['#dcf5d0', '#4b8a3a'], gelb: ['#fff3b0', '#9c7d00'], rot: ['#ffd9d6', '#c0504d'], lila: ['#eadcff', '#7a55b5'], grau: ['#eceff3', '#6b7785'] };
+const TEXT_FARBEN = { dunkel: '#1f2a37', blau: '#2f5aa8', gruen: '#3a7a2c', rot: '#b23a36', lila: '#6a46a8' };
+const FARB_NAMEN = { dunkel: 'dunkel', blau: 'blau', gruen: 'grün', gelb: 'gelb', rot: 'rot', lila: 'lila', grau: 'grau' };
+const SCHRIFT = 'Sarabun, Arial, sans-serif';
 const TEMPO = [800, 400, 200, 100, 40];
 const BREITE = 2000;
 const HOEHE = 1200;
@@ -47,6 +52,7 @@ wurzel.innerHTML = `<div class="nw" tabindex="-1">
 <div class="nw-modi" role="group" aria-label="Modus">
 <button type="button" class="nw-modus" data-modus="entwurf">✎ Entwurf</button>
 <button type="button" class="nw-modus" data-modus="simulation">▶ Simulation</button>
+<button type="button" class="nw-modus" data-modus="dokumentation">✍ Dokumentation</button>
 </div>
 <span class="nw-trenner"></span>
 <button type="button" class="knopf nw-neu">Neu</button>
@@ -61,7 +67,7 @@ wurzel.innerHTML = `<div class="nw" tabindex="-1">
 </div>
 <div class="nw-haupt">
 <aside class="nw-palette" aria-label="Bauteile"></aside>
-<div class="nw-flaeche-rahmen"><svg class="nw-flaeche" viewBox="0 0 ${BREITE} ${HOEHE}" width="${BREITE}" height="${HOEHE}" role="application" aria-label="Netzwerk"><g class="nw-kabel"></g><line class="nw-kabel-vorschau" hidden/><g class="nw-geraete"></g></svg></div>
+<div class="nw-flaeche-rahmen"><svg class="nw-flaeche" viewBox="0 0 ${BREITE} ${HOEHE}" width="${BREITE}" height="${HOEHE}" role="application" aria-label="Netzwerk"><g class="nw-doku-unten"></g><g class="nw-kabel"></g><line class="nw-kabel-vorschau" hidden/><g class="nw-geraete"></g><g class="nw-doku-oben"></g></svg></div>
 </div>
 <div class="nw-panel"></div>
 <div class="nw-meldung" role="status" aria-live="polite"></div>
@@ -73,6 +79,8 @@ const svg = app.querySelector('.nw-flaeche');
 const gKabel = svg.querySelector('.nw-kabel');
 const gGeraete = svg.querySelector('.nw-geraete');
 const vorschau = svg.querySelector('.nw-kabel-vorschau');
+const gDokuUnten = svg.querySelector('.nw-doku-unten');
+const gDokuOben = svg.querySelector('.nw-doku-oben');
 const panel = app.querySelector('.nw-panel');
 const ebene = app.querySelector('.nw-fenster-ebene');
 
@@ -99,6 +107,9 @@ function speichere() {
 const palette = app.querySelector('.nw-palette');
 palette.innerHTML = `${Object.keys(BILDER).map((typ) => `<button type="button" class="nw-bauteil" data-typ="${typ}" draggable="true" title="${NAMEN[typ]} hinzufügen (klicken oder auf die Fläche ziehen)"><img src="${bild(typ)}" alt=""><span>${NAMEN[typ]}</span></button>`).join('')}
 <button type="button" class="nw-bauteil nw-kabel-werkzeug" title="Kabel: erst ein Gerät, dann das andere anklicken"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40C18 40 14 8 30 8h12" fill="none" stroke="#3d4a5c" stroke-width="4" stroke-linecap="round"/><circle cx="6" cy="40" r="4" fill="#0b6b72"/><circle cx="42" cy="8" r="4" fill="#0b6b72"/></svg><span>Kabel</span></button>
+<button type="button" class="nw-bauteil nw-doku-werkzeug" data-neu="text" title="Textfeld hinzufügen"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 10h28M24 10v30M17 40h14" fill="none" stroke="#3d4a5c" stroke-width="4" stroke-linecap="round"/></svg><span>Textfeld</span></button>
+<button type="button" class="nw-bauteil nw-doku-werkzeug" data-neu="bereich" title="Farbigen Bereich hinzufügen (z. B. für ein Teilnetz)"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="10" width="36" height="28" rx="5" fill="#dbe8ff" stroke="#4a6fb5" stroke-width="3"/><path d="M11 17h14" stroke="#4a6fb5" stroke-width="3" stroke-linecap="round"/></svg><span>Bereich</span></button>
+<button type="button" class="nw-bauteil nw-doku-werkzeug nw-bild-export" title="Netz mit Beschriftung als PNG-Bild herunterladen"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="8" width="36" height="28" rx="4" fill="none" stroke="#3d4a5c" stroke-width="3"/><path d="M10 32l9-10 7 7 5-5 7 8" fill="none" stroke="#0b6b72" stroke-width="3" stroke-linejoin="round"/><path d="M24 38v6M19 40l5 5 5-5" fill="none" stroke="#3d4a5c" stroke-width="3" stroke-linecap="round"/></svg><span>Als Bild speichern</span></button>
 <button type="button" class="nw-bauteil nw-papierkorb" title="Papierkorb: Gerät hierher ziehen – oder Gerät bzw. Kabel anklicken und dann hier klicken"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 13h28M19 13V8h10v5M13 13l2 28h18l2-28" fill="none" stroke="#3d4a5c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 19v16M28 19v16" stroke="#3d4a5c" stroke-width="3" stroke-linecap="round"/></svg><span>Papierkorb</span></button>`;
 const papierkorb = palette.querySelector('.nw-papierkorb');
 
@@ -111,12 +122,30 @@ function neuesGeraet(typ, x, y) {
 
 palette.addEventListener('click', (e) => {
   const knopf = e.target.closest('.nw-bauteil');
-  if (!knopf || zustand.modus !== 'entwurf') return;
+  if (!knopf || zustand.modus === 'simulation') return;
   if (knopf === papierkorb) {
     if (zustand.auswahl) loescheAuswahl();
-    else melde('Ziehe ein Gerät in den Papierkorb – oder klicke erst ein Gerät oder Kabel an und dann den Papierkorb.');
+    else melde(zustand.modus === 'dokumentation' ? 'Ziehe ein Textfeld oder einen Bereich in den Papierkorb – oder klicke es erst an und dann den Papierkorb.' : 'Ziehe ein Gerät in den Papierkorb – oder klicke erst ein Gerät oder Kabel an und dann den Papierkorb.');
     return;
   }
+  if (zustand.modus === 'dokumentation') {
+    if (knopf.classList.contains('nw-bild-export')) { bildExport(); return; }
+    if (!knopf.dataset.neu) return;
+    const rahmen = app.querySelector('.nw-flaeche-rahmen');
+    const versatz = (zustand.netz.notizen.length % 6) * 30;
+    const n = zustand.netz.neueNotiz(knopf.dataset.neu, {
+      x: Math.round(rahmen.scrollLeft + rahmen.clientWidth / 2 - (knopf.dataset.neu === 'bereich' ? 160 : 40) + versatz),
+      y: Math.round(rahmen.scrollTop + rahmen.clientHeight / 2 - (knopf.dataset.neu === 'bereich' ? 110 : 20) + versatz),
+    });
+    zustand.auswahl = { art: 'notiz', id: n.id };
+    speichere();
+    zeichne();
+    const feld = panel.querySelector('textarea');
+    feld?.focus();
+    feld?.select();
+    return;
+  }
+  if (zustand.modus !== 'entwurf') return;
   if (knopf.classList.contains('nw-kabel-werkzeug')) { setzeWerkzeug(zustand.werkzeug === 'kabel' ? 'auswahl' : 'kabel'); return; }
   // in die Mitte des sichtbaren Bereichs, leicht versetzt
   const rahmen = app.querySelector('.nw-flaeche-rahmen');
@@ -175,8 +204,88 @@ function zeichne() {
 ${ips ? `<text x="36" y="96" text-anchor="middle" class="nw-ip">${esc(ips.length > 34 ? `${ips.slice(0, 32)} …` : ips)}</text>` : ''}
 </g>`;
   }).join('');
+  zeichneNotizen();
   markiereKabel();
   zeichnePanel();
+}
+
+/** Ungefähre Ausmaße einer Notiz (SVG-Text bricht nicht um; Breite nach der längsten Zeile geschätzt) */
+function notizKiste(n) {
+  if (n.art === 'bereich') return { x: n.x, y: n.y, b: n.b, h: n.h };
+  const zeilen = String(n.text || ' ').split('\n');
+  return { x: n.x - 6, y: n.y - 4, b: Math.max(30, Math.max(...zeilen.map((z) => z.length)) * n.groesse * 0.56) + 12, h: zeilen.length * n.groesse * 1.25 + 10 };
+}
+
+const zeilenSvg = (text, x) => String(text).split('\n').map((z, i) => `<tspan x="${x}"${i ? ' dy="1.25em"' : ''}>${esc(z) || ' '}</tspan>`).join('');
+
+/** SVG einer Notiz – für die Fläche (interaktiv: mit Trefferfläche und Griff) und für den Bildexport */
+function notizSvg(n, interaktiv) {
+  const gewaehlt = interaktiv && zustand.auswahl?.art === 'notiz' && zustand.auswahl.id === n.id ? ' gewaehlt' : '';
+  if (n.art === 'bereich') {
+    const [hell, dunkel] = BEREICH_FARBEN[n.farbe] ?? BEREICH_FARBEN.blau;
+    return `<g class="nw-notiz nw-bereich${gewaehlt}"${interaktiv ? ` data-notiz="${n.id}"` : ''}><rect class="nw-bereich-flaeche" x="${n.x}" y="${n.y}" width="${n.b}" height="${n.h}" rx="12" fill="${hell}" fill-opacity="0.65" stroke="${dunkel}" stroke-width="2"/>
+${n.text ? `<text x="${n.x + 14}" y="${n.y + 28}" font-family="${SCHRIFT}" font-size="18" font-weight="700" fill="${dunkel}">${zeilenSvg(n.text, n.x + 14)}</text>` : ''}
+${interaktiv ? `<rect class="nw-griff" data-griff="1" x="${n.x + n.b - 16}" y="${n.y + n.h - 16}" width="16" height="16" rx="3"/>` : ''}</g>`;
+  }
+  const k = notizKiste(n);
+  return `<g class="nw-notiz nw-textfeld${gewaehlt}"${interaktiv ? ` data-notiz="${n.id}"` : ''}>${interaktiv ? `<rect class="nw-notiz-rand" x="${k.x}" y="${k.y}" width="${k.b}" height="${k.h}" rx="5"/>` : ''}
+<text x="${n.x}" y="${n.y + n.groesse}" font-family="${SCHRIFT}" font-size="${n.groesse}" font-weight="600" fill="${TEXT_FARBEN[n.farbe] ?? TEXT_FARBEN.dunkel}">${zeilenSvg(n.text, n.x)}</text></g>`;
+}
+
+function zeichneNotizen() {
+  const interaktiv = zustand.modus === 'dokumentation';
+  gDokuUnten.innerHTML = zustand.netz.notizen.filter((n) => n.art === 'bereich').map((n) => notizSvg(n, interaktiv)).join('');
+  gDokuOben.innerHTML = zustand.netz.notizen.filter((n) => n.art === 'text').map((n) => notizSvg(n, interaktiv)).join('');
+}
+
+/** Netz samt Beschriftung als PNG herunterladen (eigenes SVG mit eingebetteten Gerätebildern, auf ein Canvas gezeichnet) */
+async function bildExport() {
+  const n = zustand.netz;
+  const geraete = [...n.geraete.values()];
+  if (!geraete.length && !n.notizen.length) { melde('Es gibt noch nichts, was sich speichern ließe.', 'fehler'); return; }
+  const kisten = [...geraete.map((g) => ({ x: g.x - 10, y: g.y - 10, b: 100, h: 115 })), ...n.notizen.map(notizKiste)];
+  const rand = 30;
+  const x0 = Math.max(0, Math.floor(Math.min(...kisten.map((k) => k.x)) - rand));
+  const y0 = Math.max(0, Math.floor(Math.min(...kisten.map((k) => k.y)) - rand));
+  const breite = Math.ceil(Math.max(...kisten.map((k) => k.x + k.b)) + rand - x0);
+  const hoehe = Math.ceil(Math.max(...kisten.map((k) => k.y + k.h)) + rand - y0);
+  try {
+    const bilder = {};
+    for (const typ of new Set(geraete.map((g) => g.typ))) {
+      const text = await (await fetch(bild(typ))).text();
+      bilder[typ] = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(text)))}`;
+    }
+    const kabel = n.kabel.map((k) => {
+      const [a, b] = [mitte(n.geraete.get(k.a.g)), mitte(n.geraete.get(k.b.g))];
+      return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#3d4a5c" stroke-width="3"/>`;
+    }).join('');
+    const geraeteSvg = geraete.map((g) => {
+      const ips = g.typ === 'switch' || g.typ === 'modem' ? '' : g.nics.map((x) => x.ip).filter(Boolean).join(', ');
+      return `<image href="${bilder[g.typ]}" x="${g.x + 4}" y="${g.y}" width="64" height="64"/>
+<text x="${g.x + 36}" y="${g.y + 80}" text-anchor="middle" font-family="${SCHRIFT}" font-size="14" font-weight="700" fill="#1f2a37" stroke="#fff" stroke-width="4" paint-order="stroke">${esc(g.name)}</text>
+${ips ? `<text x="${g.x + 36}" y="${g.y + 96}" text-anchor="middle" font-family="${SCHRIFT}" font-size="12" fill="#5b6778" stroke="#fff" stroke-width="4" paint-order="stroke">${esc(ips)}</text>` : ''}`;
+    }).join('');
+    const svgText = `<svg xmlns="http://www.w3.org/2000/svg" width="${breite}" height="${hoehe}" viewBox="${x0} ${y0} ${breite} ${hoehe}">
+<rect x="${x0}" y="${y0}" width="${breite}" height="${hoehe}" fill="#fff"/>
+${n.notizen.filter((x) => x.art === 'bereich').map((x) => notizSvg(x, false)).join('')}${kabel}${geraeteSvg}${n.notizen.filter((x) => x.art === 'text').map((x) => notizSvg(x, false)).join('')}</svg>`;
+    const img = new Image();
+    await new Promise((fertig, fehler) => { img.onload = fertig; img.onerror = fehler; img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`; });
+    const faktor = 2; // schärfer, z. B. für Arbeitsblätter
+    const canvas = Object.assign(document.createElement('canvas'), { width: breite * faktor, height: hoehe * faktor });
+    const ctx = canvas.getContext('2d');
+    ctx.scale(faktor, faktor);
+    ctx.drawImage(img, 0, 0, breite, hoehe);
+    const blob = await new Promise((fertig) => canvas.toBlob(fertig, 'image/png'));
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), { href: url, download: `netzwerk-${new Date().toISOString().slice(0, 10)}.png` });
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    melde('Als Bild (PNG) gespeichert.');
+  } catch {
+    melde('Das Bild ließ sich nicht erzeugen.', 'fehler');
+  }
 }
 
 function markiereKabel() {
@@ -187,8 +296,23 @@ function markiereKabel() {
 // ------------------------------------------------------------------ Maus: auswählen, verschieben, Kabel
 
 let ziehen = null;
+let ziehenNotiz = null; // Dokumentation: Notiz verschieben oder (am Griff) Bereich vergrößern
 
 svg.addEventListener('pointerdown', (e) => {
+  if (zustand.modus === 'dokumentation') {
+    const notizEl = e.target.closest('[data-notiz]');
+    const n = notizEl && zustand.netz.notizen.find((x) => x.id === notizEl.dataset.notiz);
+    if (!n) { zustand.auswahl = null; zeichneNotizen(); zeichneAuswahl(); return; }
+    zustand.auswahl = { art: 'notiz', id: n.id };
+    const p = svgPunkt(e);
+    const griff = Boolean(e.target.closest('[data-griff]'));
+    // Abstand zum Ankerpunkt (Ecke oben links bzw. beim Griff unten rechts), damit nichts springt
+    ziehenNotiz = griff ? { n, dx: p.x - n.x - n.b, dy: p.y - n.y - n.h, griff, bewegt: false } : { n, dx: p.x - n.x, dy: p.y - n.y, griff, bewegt: false, start: [n.x, n.y] };
+    try { svg.setPointerCapture(e.pointerId); } catch { /* z. B. ohne echten Zeiger */ }
+    zeichneNotizen();
+    zeichneAuswahl();
+    return;
+  }
   const geraetEl = e.target.closest('[data-geraet]');
   const kabelEl = e.target.closest('[data-kabel]');
   if (zustand.werkzeug === 'kabel' && zustand.modus === 'entwurf') {
@@ -220,7 +344,7 @@ svg.addEventListener('pointerdown', (e) => {
     if (zustand.modus === 'entwurf') {
       const g = zustand.netz.geraete.get(geraetEl.dataset.geraet);
       const p = svgPunkt(e);
-      ziehen = { g, dx: p.x - g.x, dy: p.y - g.y, el: geraetEl, bewegt: false };
+      ziehen = { g, dx: p.x - g.x, dy: p.y - g.y, el: geraetEl, bewegt: false, start: [g.x, g.y] };
       try { svg.setPointerCapture(e.pointerId); } catch { /* z. B. ohne echten Zeiger */ }
     }
     zeichneAuswahl();
@@ -241,6 +365,21 @@ const ueberPapierkorb = (e) => {
 };
 
 svg.addEventListener('pointermove', (e) => {
+  if (ziehenNotiz) {
+    const p = svgPunkt(e);
+    const n = ziehenNotiz.n;
+    if (ziehenNotiz.griff) {
+      n.b = Math.max(60, Math.min(BREITE - n.x, Math.round(p.x - ziehenNotiz.dx - n.x)));
+      n.h = Math.max(40, Math.min(HOEHE - n.y, Math.round(p.y - ziehenNotiz.dy - n.y)));
+    } else {
+      n.x = Math.max(0, Math.min(BREITE - 40, Math.round(p.x - ziehenNotiz.dx)));
+      n.y = Math.max(0, Math.min(HOEHE - 30, Math.round(p.y - ziehenNotiz.dy)));
+      papierkorb.classList.toggle('bereit', ueberPapierkorb(e));
+    }
+    ziehenNotiz.bewegt = true;
+    zeichneNotizen();
+    return;
+  }
   if (zustand.kabelStart && !vorschau.hidden) {
     const p = svgPunkt(e);
     vorschau.setAttribute('x2', p.x);
@@ -264,7 +403,15 @@ svg.addEventListener('pointermove', (e) => {
 
 svg.addEventListener('pointerup', (e) => {
   papierkorb.classList.remove('bereit');
+  if (ziehenNotiz) {
+    const z = ziehenNotiz;
+    ziehenNotiz = null;
+    if (z.bewegt && !z.griff && ueberPapierkorb(e)) { [z.n.x, z.n.y] = z.start; zustand.auswahl = { art: 'notiz', id: z.n.id }; loescheAuswahl(); return; }
+    if (z.bewegt) speichere();
+    return;
+  }
   if (ziehen?.bewegt && ueberPapierkorb(e)) {
+    [ziehen.g.x, ziehen.g.y] = ziehen.start; // „Rückgängig“ stellt es dort wieder hin, wo es vorher stand
     zustand.auswahl = { art: 'geraet', id: ziehen.g.id };
     ziehen = null;
     loescheAuswahl();
@@ -305,7 +452,7 @@ app.addEventListener('keydown', (e) => {
     r();
     return;
   }
-  if ((e.key === 'Delete' || e.key === 'Backspace') && zustand.modus === 'entwurf' && zustand.auswahl && !e.target.closest('input, textarea, select')) {
+  if ((e.key === 'Delete' || e.key === 'Backspace') && zustand.modus !== 'simulation' && zustand.auswahl && !e.target.closest('input, textarea, select')) {
     e.preventDefault();
     loescheAuswahl();
   }
@@ -314,15 +461,19 @@ app.addEventListener('keydown', (e) => {
 /** Löscht das gewählte Gerät oder Kabel; die Meldung bietet „Rückgängig“ an (statt einer Sicherheitsfrage). */
 function loescheAuswahl() {
   const a = zustand.auswahl;
-  if (!a || zustand.modus !== 'entwurf') return;
+  const modus = zustand.modus;
+  if (!a || (a.art === 'notiz' ? modus !== 'dokumentation' : modus !== 'entwurf')) return;
   const vorher = JSON.parse(JSON.stringify(zustand.netz));
-  const name = a.art === 'geraet' ? zustand.netz.geraete.get(a.id)?.name : 'Kabel';
-  if (a.art === 'geraet') zustand.netz.entferneGeraet(a.id); else zustand.netz.entferneKabel(a.id);
+  const notiz = a.art === 'notiz' ? zustand.netz.notizen.find((x) => x.id === a.id) : null;
+  const name = a.art === 'geraet' ? zustand.netz.geraete.get(a.id)?.name : a.art === 'kabel' ? 'Kabel' : notiz?.art === 'text' ? 'Textfeld' : 'Bereich';
+  if (a.art === 'geraet') zustand.netz.entferneGeraet(a.id);
+  else if (a.art === 'kabel') zustand.netz.entferneKabel(a.id);
+  else zustand.netz.entferneNotiz(a.id);
   zustand.auswahl = null;
   speichere();
   zeichne();
   melde(`„${name}“ gelöscht.`, 'info', () => {
-    if (zustand.modus !== 'entwurf') return;
+    if (zustand.modus !== modus) return;
     zustand.netz = Netz.ausJSON(vorher);
     zustand.auswahl = a;
     speichere();
@@ -341,9 +492,17 @@ function zeichnePanel() {
   panelFuer = schluessel;
   const n = zustand.netz;
   if (!a) {
-    panel.innerHTML = zustand.modus === 'entwurf'
+    panel.innerHTML = zustand.modus === 'dokumentation'
+      ? '<p class="nw-tipp">Dokumentation: Beschrifte dein Netz mit Textfeldern und farbigen Bereichen (z. B. „Netz der Schule“, „Internet“). Ziehen verschiebt, die Ecke unten rechts ändert die Größe eines Bereichs. „Als Bild speichern“ lädt das Netz als PNG herunter, etwa für ein Arbeitsblatt.</p>'
+      : zustand.modus === 'entwurf'
       ? '<p class="nw-tipp">Füge links Geräte hinzu (anklicken oder auf die Fläche ziehen) und verbinde sie mit dem Kabel. Ein angeklicktes Gerät stellst du hier unten ein. Dann oben auf <strong>▶ Simulation</strong>.</p>'
       : '<p class="nw-tipp">Simulation läuft. Doppelklick auf einen Rechner öffnet seinen Desktop (Software installieren, Befehlszeile, Browser …); Doppelklick auf Switch oder Router zeigt, was dort passiert. Grün leuchtende Kabel übertragen gerade Daten.</p>';
+    return;
+  }
+  if (a.art === 'notiz') {
+    const notiz = n.notizen.find((x) => x.id === a.id);
+    if (!notiz) { zustand.auswahl = null; zeichnePanel(); return; }
+    panelNotiz(notiz);
     return;
   }
   if (a.art === 'kabel') {
@@ -361,6 +520,27 @@ function zeichnePanel() {
   else if (g.typ === 'switch') panelSwitch(g);
   else if (g.typ === 'modem') panelModem(g);
   else panelRouter(g);
+}
+
+function panelNotiz(n) {
+  const text = n.art === 'text';
+  const farben = text ? TEXT_FARBEN : BEREICH_FARBEN;
+  panel.innerHTML = `<div class="nw-panel-kopf"><strong>${text ? 'Textfeld' : 'Bereich'}</strong>
+<button type="button" class="knopf nw-loeschen">${text ? 'Textfeld' : 'Bereich'} löschen</button></div>
+<div class="nw-felder nw-notiz-felder">
+<label class="nw-feld nw-notiz-text"><span>${text ? 'Text (Enter: neue Zeile)' : 'Überschrift'}</span><textarea rows="${text ? 3 : 1}" maxlength="2000">${esc(n.text)}</textarea></label>
+${text ? `<label class="nw-feld"><span>Größe</span><select data-groesse>${[[14, 'klein'], [18, 'mittel'], [26, 'groß'], [36, 'sehr groß']].map(([g, t]) => `<option value="${g}"${n.groesse === g ? ' selected' : ''}>${t}</option>`).join('')}</select></label>` : ''}
+<div class="nw-feld"><span>Farbe</span><span class="nw-farben">${Object.entries(farben).map(([k, f]) => `<button type="button" class="nw-farbe" data-farbe="${k}" aria-pressed="${n.farbe === k}" title="${FARB_NAMEN[k]}" aria-label="${FARB_NAMEN[k]}" style="background:${Array.isArray(f) ? f[0] : f};border-color:${Array.isArray(f) ? f[1] : f}"></button>`).join('')}</span></div>
+</div>`;
+  panel.querySelector('textarea').addEventListener('input', (e) => { n.text = e.target.value; speichere(); zeichneNotizen(); });
+  panel.querySelector('[data-groesse]')?.addEventListener('change', (e) => { n.groesse = Number(e.target.value); speichere(); zeichneNotizen(); });
+  panel.querySelectorAll('[data-farbe]').forEach((b) => b.addEventListener('click', () => {
+    n.farbe = b.dataset.farbe;
+    panel.querySelectorAll('[data-farbe]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    speichere();
+    zeichneNotizen();
+  }));
+  panel.querySelector('.nw-loeschen').addEventListener('click', loescheAuswahl);
 }
 
 function feld(label, wert, attrs = '') {
@@ -1586,6 +1766,8 @@ ${v.fehler ? `<p class="nw-hinweis klein">${esc(v.fehler)}</p>` : ''}
 function setzeModus(modus) {
   if (modus === zustand.modus) return;
   zustand.modus = modus;
+  // Notizen lassen sich nur in der Dokumentation auswählen, Geräte und Kabel nur außerhalb
+  if (zustand.auswahl && (modus === 'dokumentation') !== (zustand.auswahl.art === 'notiz')) zustand.auswahl = null;
   setzeWerkzeug('auswahl');
   schliesseAlle();
   clearInterval(zustand.timer);
@@ -1600,6 +1782,8 @@ function setzeModus(modus) {
     zustand.aktivBis.clear();
   }
   app.classList.toggle('simulation', modus === 'simulation');
+  app.classList.toggle('doku', modus === 'dokumentation');
+  if (modus === 'dokumentation') melde('Dokumentation: Links Textfelder und Bereiche hinzufügen; „Als Bild speichern“ lädt ein PNG herunter.');
   app.querySelectorAll('.nw-modus').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.modus === modus)));
   panelFuer = null;
   speichere();
@@ -1796,7 +1980,11 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
 <li><em>Datenaustausch anzeigen</em> (Rechner/Router) listet jede Nachricht mit einer Zeile je Schicht: Netzzugang, Vermittlung, Transport, Anwendung. Beim Switch zeigt die <em>Lerntabelle</em>, welche MAC-Adresse an welchem Anschluss hängt.</li>
 <li><strong>Modem:</strong> verbindet zwei Simulationen auf verschiedenen Geräten. Doppelklick auf das Modem: Eine Gruppe erzeugt einen Code, die andere wählt sich damit ein. Danach verhalten sich beide Netze wie mit einem langen Kabel verbunden – z. B. Modem → Router auf beiden Seiten, verschiedene Netze, passende Weiterleitungstabellen. Beim Wechsel in den Entwurf wird aufgelegt.</li>
 <li>Grün leuchtende Kabel übertragen gerade Daten; das Tempo stellst du oben ein.</li></ul>
-<h4>Speichern</h4><p>Der Entwurf bleibt in diesem Browser erhalten. Mit „Speichern“ lädst du ihn als Datei herunter, mit „Öffnen …“ lädst du sie wieder.</p>`;
+<h4>Dokumentation ✍</h4>
+<ul><li>Links <em>Textfeld</em> oder <em>Bereich</em> anklicken: Es erscheint in der Mitte. Ziehen verschiebt es; die Ecke unten rechts ändert die Größe eines Bereichs. Text, Größe und Farbe stellst du unten ein.</li>
+<li>Löschen wie bei Geräten: in den Papierkorb ziehen, oder auswählen und Entf drücken bzw. den Papierkorb anklicken.</li>
+<li><em>Als Bild speichern</em> lädt das Netz mit allen Beschriftungen als PNG-Bild herunter.</li></ul>
+<h4>Speichern</h4><p>Der Entwurf bleibt in diesem Browser erhalten (samt Beschriftungen). Mit „Speichern“ lädst du ihn als Datei herunter, mit „Öffnen …“ lädst du sie wieder.</p>`;
   },
 }));
 
