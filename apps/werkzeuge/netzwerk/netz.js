@@ -28,8 +28,12 @@ export const SOFTWARE = {
   client: 'Einfacher Client',
   texteditor: 'Text-Editor',
   dateiexplorer: 'Datei-Explorer',
+  peertopeer: 'Peer-to-Peer',
 };
 export const ECHO_PORT = 55555;
+export const P2P_PORT = 6346; // wie Gnutella
+export const P2P_ORDNER = '/peer2peer';
+const P2P_TTL = 3;
 /** Rückgabe von ablauf.naechste(): Verbindung offen halten, ohne etwas zu senden (z. B. einfacher Client) */
 export const WARTEN = Symbol('warten');
 export const STANDARD_SEITE = '<html>\n<head><title>Willkommen</title></head>\n<body>\n<h1>Es funktioniert!</h1>\n<p>Diese Seite liefert der Webserver aus.</p>\n</body>\n</html>\n';
@@ -769,6 +773,138 @@ export class Netz {
       z.tcpDienste.set(110, this.pop3Dienst(g));
     }
     if (g.dhcpServer?.aktiv) z.udp.set(67, (p) => this.dhcpServer(g, p));
+    if (g.software.includes('peertopeer')) {
+      z.p2p ??= { nachbarn: [], gesehen: new Set(), suchen: new Map(), ereignisse: [], nr: 0 };
+      z.tcpDienste.set(P2P_PORT, { antwort: (text, sitzung, absender) => this.p2pAntwort(g, text, absender) });
+    }
+  }
+
+  // ---------------------------------------------------------------- Peer-to-Peer (vereinfachtes Gnutella)
+  //
+  // Jede Nachricht ist eine eigene TCP-Verbindung zu Port 6346 mit genau einer Anfrage und einer Antwort:
+  //   CONNECT                       → OK          beide Seiten werden Nachbarn
+  //   LEAVE                         → OK          Nachbarschaft beenden
+  //   QUERY id ttl ursprung begriff → OK          Suche; wird an die Nachbarn weitergereicht, solange ttl > 1
+  //   HIT id ip\ndatei\ndatei …     → OK          Treffer, direkt an den Rechner, der gesucht hat
+  //   GET datei                     → DATEI name\ninhalt | FEHLT name
+  // Geteilt werden die Dateien im Ordner /peer2peer; heruntergeladene Dateien landen ebenfalls dort.
+
+  p2p(g) { return this.zustand?.get(g.id)?.p2p ?? null; }
+
+  p2pEreignis(g, text) {
+    const p = this.p2p(g);
+    if (!p) return;
+    p.ereignisse.push({ zeit: this.zeit, text });
+    if (p.ereignisse.length > 100) p.ereignisse.shift();
+  }
+
+  p2pFreigaben(g) {
+    const fs = dateisystem(g);
+    if (!fs.ordner.includes(P2P_ORDNER)) fs.ordner.push(P2P_ORDNER);
+    return Object.keys(fs.dateien).filter((x) => x.startsWith(`${P2P_ORDNER}/`) && !x.slice(P2P_ORDNER.length + 1).includes('/'))
+      .map((x) => x.slice(P2P_ORDNER.length + 1)).sort((a, b) => a.localeCompare(b, 'de'));
+  }
+
+  /** Server-Seite: eine Nachricht eines anderen Peers beantworten */
+  p2pAntwort(g, text, absender) {
+    const p = this.p2p(g);
+    const [kopf, ...rest] = String(text).split('\n');
+    const [befehl, ...teile] = kopf.trim().split(' ');
+    switch (befehl) {
+      case 'CONNECT':
+        if (!p.nachbarn.includes(absender)) p.nachbarn.push(absender);
+        this.p2pEreignis(g, `${absender} ist jetzt Nachbar`);
+        return 'OK';
+      case 'LEAVE':
+        p.nachbarn = p.nachbarn.filter((x) => x !== absender);
+        this.p2pEreignis(g, `${absender} hat das Peer-to-Peer-Netz verlassen`);
+        return 'OK';
+      case 'QUERY': {
+        const [id, ttl, ursprung, ...begriff] = teile;
+        // erst antworten, im nächsten Takt suchen und weiterreichen
+        this.nachTakten(1, () => this.p2pSucheBearbeiten(g, id, Number(ttl), ursprung, begriff.join(' '), absender));
+        return 'OK';
+      }
+      case 'HIT': {
+        const [id, ip] = teile;
+        const suche = p.suchen.get(id);
+        if (suche) {
+          for (const name of rest.filter(Boolean)) if (!suche.treffer.some((t) => t.ip === ip && t.name === name)) suche.treffer.push({ ip, name });
+          this.p2pEreignis(g, `Treffer von ${ip}: ${rest.filter(Boolean).join(', ')}`);
+        }
+        return 'OK';
+      }
+      case 'GET': {
+        const name = teile.join(' ');
+        const fs = dateisystem(g);
+        const inhalt = this.p2pFreigaben(g).includes(name) ? fs.dateien[`${P2P_ORDNER}/${name}`] : undefined;
+        this.p2pEreignis(g, inhalt === undefined ? `${absender} wollte „${name}“ – gibt es nicht` : `${absender} lädt „${name}“ herunter`);
+        return inhalt === undefined ? `FEHLT ${name}` : `DATEI ${name}\n${inhalt}`;
+      }
+      default:
+        return 'FEHLER unbekannte Nachricht';
+    }
+  }
+
+  /** Eine Suche, die hier ankommt: eigene Freigaben prüfen, Treffer zum Ursprung, sonst weiterreichen */
+  p2pSucheBearbeiten(g, id, ttl, ursprung, begriff, von) {
+    const p = this.p2p(g);
+    if (!p || !id || p.gesehen.has(id)) return; // schon gesehen: nicht doppelt bearbeiten (sonst kreist die Suche)
+    p.gesehen.add(id);
+    const treffer = this.p2pFreigaben(g).filter((n) => p2pPasst(n, begriff));
+    this.p2pEreignis(g, `Suche „${begriff}“ von ${ursprung} (über ${von}, TTL ${ttl})${treffer.length ? ` – ${treffer.length} Treffer` : ''}`);
+    if (treffer.length) this.tcpAnfrage(g, ursprung, P2P_PORT, `HIT ${id} ${g.nics[0].ip}\n${treffer.join('\n')}`, () => {});
+    if (ttl > 1) {
+      for (const n of p.nachbarn) if (n !== von && n !== ursprung) this.tcpAnfrage(g, n, P2P_PORT, `QUERY ${id} ${ttl - 1} ${ursprung} ${begriff}`, () => {});
+    }
+  }
+
+  /** Einem Peer-to-Peer-Netz beitreten: Verbindung zu einem bekannten Peer. fertig(fehler | null) */
+  p2pBeitreten(g, ip, fertig) {
+    const p = this.p2p(g);
+    if (!p) { fertig('Peer-to-Peer ist nicht installiert.'); return; }
+    if (ip === g.nics[0].ip) { fertig('Das ist die eigene IP-Adresse.'); return; }
+    this.tcpAnfrage(g, ip, P2P_PORT, 'CONNECT', (e) => {
+      if (e.fehler || e.antwort !== 'OK') { fertig(e.fehler ?? 'Keine gültige Antwort.'); return; }
+      if (!p.nachbarn.includes(ip)) p.nachbarn.push(ip);
+      this.p2pEreignis(g, `Mit ${ip} verbunden – jetzt Nachbarn`);
+      fertig(null);
+    });
+  }
+
+  p2pVerlassen(g) {
+    const p = this.p2p(g);
+    if (!p) return;
+    for (const n of p.nachbarn) this.tcpAnfrage(g, n, P2P_PORT, 'LEAVE', () => {});
+    p.nachbarn = [];
+    this.p2pEreignis(g, 'Peer-to-Peer-Netz verlassen');
+  }
+
+  /** Startet eine Suche bei allen Nachbarn; die Treffer sammeln sich in p2p(g).suchen.get(id).treffer */
+  p2pSuche(g, begriff) {
+    const p = this.p2p(g);
+    if (!p) return null;
+    const id = `${(g.nics[0].ip || g.id).replace(/\./g, '')}x${++p.nr}`;
+    p.gesehen.add(id);
+    p.suchen.set(id, { begriff, treffer: [], zeit: this.zeit });
+    this.p2pEreignis(g, `Suche „${begriff}“ an ${p.nachbarn.length} Nachbarn geschickt`);
+    for (const n of p.nachbarn) this.tcpAnfrage(g, n, P2P_PORT, `QUERY ${id} ${P2P_TTL} ${g.nics[0].ip} ${begriff}`, () => {});
+    return id;
+  }
+
+  /** Datei von einem Peer holen und in /peer2peer speichern. fertig(fehler | null, pfad) */
+  p2pHerunterladen(g, ip, name, fertig) {
+    this.tcpAnfrage(g, ip, P2P_PORT, `GET ${name}`, (e) => {
+      if (e.fehler) { fertig(e.fehler); return; }
+      const [kopf, ...inhalt] = String(e.antwort).split('\n');
+      if (!kopf.startsWith('DATEI ')) { fertig(`${ip} hat die Datei „${name}“ nicht (mehr).`); return; }
+      this.p2pFreigaben(g);
+      try {
+        const pfad = schreibeDatei(g, `${P2P_ORDNER}/${name}`, inhalt.join('\n'));
+        this.p2pEreignis(g, `„${name}“ von ${ip} heruntergeladen`);
+        fertig(null, pfad);
+      } catch (err) { fertig(err.message); }
+    });
   }
 
   http(g, anfrage) {
@@ -1189,11 +1325,17 @@ function anwendungText(p) {
   if (p.protokoll === 'UDP' && n?.dns) return { protokoll: 'DNS', bemerkung: n.dns === 'anfrage' ? (n.typ === 'MX' ? `Anfrage: Mailserver (MX) von ${n.name}?` : `Anfrage: Adresse von ${n.name}?`) : `Antwort: ${n.name}${n.typ === 'MX' ? ' (MX)' : ''} = ${n.ip ?? 'unbekannt'}` };
   if (p.protokoll === 'TCP' && n) {
     const erste = String(n).split('\n')[0];
-    const bekannt = { 25: 'SMTP', 110: 'POP3', 80: 'HTTP', 55555: 'Echo' };
+    const bekannt = { 25: 'SMTP', 110: 'POP3', 80: 'HTTP', 55555: 'Echo', [P2P_PORT]: 'P2P' };
     const protokoll = bekannt[d.zielPort] ?? bekannt[d.quellPort] ?? 'Daten';
     return { protokoll, bemerkung: erste.length > 80 ? `${erste.slice(0, 80)} …` : erste };
   }
   return null;
+}
+
+/** Passt ein Dateiname zum Suchbegriff? (Teil des Namens, Groß-/Kleinschreibung egal; leer oder * = alles) */
+export function p2pPasst(name, begriff) {
+  const b = String(begriff ?? '').trim().toLowerCase();
+  return b === '' || b === '*' || name.toLowerCase().includes(b);
 }
 
 // ------------------------------------------------------------------ E-Mail-Hilfen

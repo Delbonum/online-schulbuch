@@ -10,7 +10,7 @@
 
 import {
   Netz, SOFTWARE, STANDARD_SEITE, gueltigeIp, gueltigeMaske, imSelbenNetz, adressbereich, ECHO_PORT,
-  dateisystem, ordnerInhalt, alleDateien, existiert, leseDatei, schreibeDatei, neuerOrdner, loesche, benenneUm, normalerPfad, MAX_DATEI,
+  P2P_PORT, P2P_ORDNER, dateisystem, ordnerInhalt, alleDateien, existiert, leseDatei, schreibeDatei, neuerOrdner, loesche, benenneUm, normalerPfad, MAX_DATEI,
 } from './netz.js';
 import { fuehreAus } from './befehle.js';
 
@@ -576,7 +576,7 @@ function schliesseAlle() { for (const id of [...fensterListe.keys()]) schliesse(
 
 // ------------------------------------------------------------------ Desktop und Software
 
-const SYMBOLE = { befehlszeile: '⌨', webbrowser: '🌐', webserver: '🗄', dnsserver: '📖', emailprogramm: '✉', emailserver: '📮', firewall: '🧱', echoserver: '🔁', client: '💬', texteditor: '📝', dateiexplorer: '🗂', installation: '🧩' };
+const SYMBOLE = { befehlszeile: '⌨', webbrowser: '🌐', webserver: '🗄', dnsserver: '📖', emailprogramm: '✉', emailserver: '📮', firewall: '🧱', echoserver: '🔁', client: '💬', texteditor: '📝', dateiexplorer: '🗂', peertopeer: '🔗', installation: '🧩' };
 
 function desktop(g) {
   const id = `desktop:${g.id}`;
@@ -594,12 +594,12 @@ function desktop(g) {
 }
 
 function oeffneApp(g, app_) {
-  ({ installation, befehlszeile, webbrowser, webserver, dnsserver, emailprogramm, emailserver, firewall, echoserver, client, texteditor, dateiexplorer })[app_]?.(g);
+  ({ installation, befehlszeile, webbrowser, webserver, dnsserver, emailprogramm, emailserver, firewall, echoserver, client, texteditor, dateiexplorer, peertopeer })[app_]?.(g);
 }
 
 function installation(g) {
   fenster(`installation:${g.id}`, `Software-Installation – ${g.name}`, {
-    breite: 400, hoehe: 540,
+    breite: 400, hoehe: 570,
     aufbauen(f) {
       f.inhalt.innerHTML = `<p class="klein">Wähle aus, welche Programme auf ${esc(g.name)} installiert sein sollen.</p>
 ${Object.entries(SOFTWARE).map(([k, name]) => `<label class="nw-check"><input type="checkbox" value="${k}"${g.software.includes(k) ? ' checked' : ''}> ${SYMBOLE[k]} ${name}</label>`).join('')}
@@ -608,6 +608,7 @@ ${Object.entries(SOFTWARE).map(([k, name]) => `<label class="nw-check"><input ty
         g.software = [...f.inhalt.querySelectorAll('input:checked')].map((c) => c.value);
         g.daten.webserver ??= { laeuft: false };
         if (g.software.includes('webserver')) webseitenAnlegen(g);
+        if (g.software.includes('peertopeer')) zustand.netz.p2pFreigaben(g); // legt /peer2peer an
         g.daten.dnsserver ??= { laeuft: false, eintraege: [] };
         // Eine frisch installierte Firewall ist eingeschaltet und lässt nur Antworten herein
         if (g.software.includes('firewall')) g.firewall ??= { aktiv: true, standard: 'verwerfen', antworten: true, regeln: [] };
@@ -1338,6 +1339,91 @@ ${inhalt.length ? '' : '<p class="klein nw-tipp">Dieser Ordner ist leer.</p>'}
   });
 }
 
+// ------------------------------------------------------------------ Peer-to-Peer
+
+function peertopeer(g) {
+  const netz = () => zustand.netz;
+  fenster(`peertopeer:${g.id}`, `Peer-to-Peer – ${g.name}`, {
+    breite: 580, hoehe: 450,
+    aufbauen(f) {
+      f.reiter ??= 'netz';
+      const reiter = [['netz', 'Netzwerk'], ['suche', 'Suche'], ['freigaben', 'Freigegebene Dateien']];
+      f.inhalt.innerHTML = `<div class="nw-reiter" role="tablist">${reiter.map(([k, t]) => `<button type="button" role="tab" aria-selected="${f.reiter === k}" data-reiter="${k}">${t}</button>`).join('')}</div>
+<div class="nw-reiter-inhalt"></div><p class="nw-p2p-status klein" aria-live="polite">${esc(f.status ?? '')}</p>`;
+      f.inhalt.querySelectorAll('[data-reiter]').forEach((b) => b.addEventListener('click', () => { f.reiter = b.dataset.reiter; f.status = ''; f.aufbauen(f); }));
+      const ziel = f.inhalt.querySelector('.nw-reiter-inhalt');
+      const status = (t) => { f.status = t; const el = f.inhalt.querySelector('.nw-p2p-status'); if (el) el.textContent = t; };
+      if (f.reiter === 'netz') {
+        ziel.innerHTML = `<p class="klein">Ein Peer-to-Peer-Netz entsteht, indem jeder Rechner sich mit mindestens einem anderen verbindet, auf dem auch Peer-to-Peer läuft (TCP-Port ${P2P_PORT}). Es gibt keinen zentralen Server.</p>
+<form class="nw-zeile nw-p2p-beitreten"><label class="nw-feld"><span>IP-Adresse eines Peers</span><input placeholder="192.168.0.2" spellcheck="false"></label><button class="knopf primaer">Beitreten</button></form>
+<h4>Nachbarn</h4><div class="nw-p2p-dyn" data-teil="nachbarn"></div>
+<button type="button" class="knopf nw-p2p-verlassen">Netz verlassen</button>
+<h4>Ereignisse</h4><div class="nw-p2p-dyn" data-teil="ereignisse"></div>`;
+        ziel.querySelector('form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const ip = e.target.querySelector('input').value.trim();
+          if (!gueltigeIp(ip)) { status('Bitte eine gültige IP-Adresse eingeben.'); return; }
+          status(`Verbinde mit ${ip} …`);
+          netz().p2pBeitreten(g, ip, (fehler) => { status(fehler ? `${ip}: ${fehler}` : `Mit ${ip} verbunden.`); f.aktualisieren(f); });
+        });
+        ziel.querySelector('.nw-p2p-verlassen').addEventListener('click', () => { netz().p2pVerlassen(g); status('Netz verlassen.'); f.aktualisieren(f); });
+      } else if (f.reiter === 'suche') {
+        ziel.innerHTML = `<form class="nw-zeile nw-p2p-suchen"><label class="nw-feld"><span>Dateiname oder Teil davon (* = alle)</span><input value="${esc(f.begriff ?? '')}" spellcheck="false"></label><button class="knopf primaer">Suchen</button></form>
+<p class="klein">Die Suche geht an die Nachbarn; die reichen sie an ihre Nachbarn weiter – höchstens 3 Schritte weit (TTL 3). Wer die Datei hat, meldet sich direkt.</p>
+<div class="nw-p2p-dyn" data-teil="treffer"></div>`;
+        ziel.querySelector('form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          f.begriff = e.target.querySelector('input').value.trim();
+          if (!netz().p2p(g)?.nachbarn.length) { status('Du hast noch keine Nachbarn – tritt erst im Reiter „Netzwerk“ einem Peer-to-Peer-Netz bei.'); return; }
+          f.suche = netz().p2pSuche(g, f.begriff);
+          status(`Suche nach „${f.begriff || '*'}“ läuft …`);
+          f.aktualisieren(f);
+        });
+        ziel.addEventListener('click', (e) => {
+          const b = e.target.closest('[data-laden]');
+          if (!b) return;
+          const [ip, name] = [b.dataset.ip, b.dataset.laden];
+          status(`Lade „${name}“ von ${ip} …`);
+          netz().p2pHerunterladen(g, ip, name, (fehler, pfad) => {
+            status(fehler ?? `Gespeichert als ${pfad}.`);
+            if (!fehler) { speichere(); aktualisiereExplorer(g); }
+            f.aktualisieren(f);
+          });
+        });
+      } else {
+        ziel.innerHTML = `<p class="klein">Diese Dateien im Ordner <code>${P2P_ORDNER}</code> können andere finden und herunterladen. Heruntergeladene Dateien landen ebenfalls dort. Neue Dateien legst du mit dem Datei-Explorer oder dem Text-Editor in diesem Ordner ab.</p>
+<div class="nw-p2p-dyn" data-teil="freigaben"></div>`;
+      }
+      f.letzte = {};
+      f.aktualisieren(f);
+    },
+    aktualisieren(f) {
+      const p = netz().p2p(g);
+      for (const el of f.inhalt.querySelectorAll('.nw-p2p-dyn')) {
+        let text = '';
+        if (el.dataset.teil === 'nachbarn') {
+          text = p?.nachbarn.length ? `<ul class="klein">${p.nachbarn.map((ip) => `<li>${esc(ip)}</li>`).join('')}</ul>` : '<p class="klein nw-tipp">Noch keine – trage oben die IP-Adresse eines Peers ein.</p>';
+          const knopf = f.inhalt.querySelector('.nw-p2p-verlassen');
+          if (knopf) knopf.disabled = !p?.nachbarn.length;
+        } else if (el.dataset.teil === 'ereignisse') {
+          text = p?.ereignisse.length ? `<ul class="nw-ereignisse klein">${p.ereignisse.slice(-30).reverse().map((e) => `<li>Takt ${e.zeit}: ${esc(e.text)}</li>`).join('')}</ul>` : '<p class="klein nw-tipp">Noch nichts passiert.</p>';
+        } else if (el.dataset.teil === 'treffer') {
+          const suche = f.suche ? p?.suchen.get(f.suche) : null;
+          text = !suche ? '' : suche.treffer.length
+            ? `<table class="nw-tabelle"><thead><tr><th>Datei</th><th>bei</th><th></th></tr></thead><tbody>${suche.treffer.map((t) => `<tr><td>📄 ${esc(t.name)}</td><td>${esc(t.ip)}</td><td><button type="button" class="knopf" data-laden="${esc(t.name)}" data-ip="${esc(t.ip)}">Herunterladen</button></td></tr>`).join('')}</tbody></table>`
+            : '<p class="klein nw-tipp">Noch keine Treffer …</p>';
+        } else if (el.dataset.teil === 'freigaben') {
+          const dateien = netz().p2pFreigaben(g);
+          text = dateien.length ? `<ul class="klein">${dateien.map((n) => `<li>📄 ${esc(n)}</li>`).join('')}</ul>` : '<p class="klein nw-tipp">Noch keine Dateien freigegeben.</p>';
+        }
+        if (f.letzte[el.dataset.teil] === text) continue;
+        f.letzte[el.dataset.teil] = text;
+        el.innerHTML = text;
+      }
+    },
+  });
+}
+
 // ------------------------------------------------------------------ Modem (Verbindung zu einer anderen Simulation)
 
 const modems = new Map(); // Geräte-ID → {code, token, seite, partner, raus, gesendet, empfangen, timer, laeuft, fehler}
@@ -1699,9 +1785,10 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
 <li>Ein angeklicktes Gerät stellst du unten ein (IP-Adresse, Netzmaske, Gateway, DNS-Server, DHCP). Beim Router: Anschlüsse und Weiterleitungstabelle.</li>
 <li>Löschen: Gerät in den <strong>Papierkorb</strong> ziehen – oder Gerät bzw. Kabel anklicken und dann Entf drücken oder auf den Papierkorb klicken. Versehentlich gelöscht? In der Meldung auf <em>Rückgängig</em> klicken (oder Strg+Z).</li></ul>
 <h4>Simulation ▶</h4>
-<ul><li>Doppelklick auf einen Rechner öffnet den Desktop. Über <em>Software-Installation</em> kommen Programme dazu: Befehlszeile, Webbrowser, Webserver, DNS-Server, E-Mail-Programm, E-Mail-Server, Firewall, Echo-Server, einfacher Client, Text-Editor, Datei-Explorer.</li>
+<ul><li>Doppelklick auf einen Rechner öffnet den Desktop. Über <em>Software-Installation</em> kommen Programme dazu: Befehlszeile, Webbrowser, Webserver, DNS-Server, E-Mail-Programm, E-Mail-Server, Firewall, Echo-Server, einfacher Client, Text-Editor, Datei-Explorer, Peer-to-Peer.</li>
 <li><strong>Echo-Server und einfacher Client:</strong> Der Echo-Server (Port 55555) schickt jede Nachricht zurück; mit dem einfachen Client baust du eine TCP-Verbindung auf, schickst Nachrichten und trennst wieder – im Datenaustausch sieht man Verbindungsaufbau, Daten und Abbau.</li>
 <li><strong>Datei-Explorer und Text-Editor:</strong> Jeder Rechner hat Ordner und Textdateien. Im Datei-Explorer legst du Ordner und Dateien an, benennst sie um, löschst sie, importierst Textdateien von deinem Computer oder lädst sie herunter. Im Text-Editor schreibst du Dateien und speicherst sie (Strg+S). Der Webserver liefert die Dateien im Ordner <code>/webserver</code> aus. In der Befehlszeile zeigen <code>dir</code> und <code>type</code> Ordner und Dateien an.</li>
+<li><strong>Peer-to-Peer:</strong> Rechner tauschen Dateien ohne zentralen Server. Im Reiter „Netzwerk“ trittst du über die IP-Adresse eines anderen Peers bei; die Suche wandert von Nachbar zu Nachbar (höchstens 3 Schritte), wer die Datei im Ordner <code>/peer2peer</code> hat, meldet sich, und du lädst sie direkt von dort herunter.</li>
 <li><strong>Firewall:</strong> auf Rechnern als Software (prüft ankommende Pakete), auf Routern über „Firewall“ (prüft alles, was durchläuft). Verworfene Pakete erscheinen im Datenaustausch.</li>
 <li><strong>E-Mail:</strong> Der E-Mail-Server verwaltet eine Domain mit Konten. Das E-Mail-Programm verschickt über SMTP (Postausgangsserver) und holt über POP3 ab (Posteingangsserver). Für fremde Domains braucht der DNS-Server einen MX-Eintrag, der auf deren Mailserver zeigt.</li>
 <li>Befehlszeile: <code>ipconfig</code>, <code>ping</code>, <code>traceroute</code>, <code>host</code>, <code>arp</code>, <code>route</code>, <code>netstat</code> – <code>help</code> zeigt alle.</li>

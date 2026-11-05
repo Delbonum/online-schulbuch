@@ -374,3 +374,44 @@ test('Dateisystem: Ordner, Dateien, Umbenennen, Löschen, Webserver liefert /web
   const neu = Netz.ausJSON(JSON.parse(JSON.stringify(n)));
   assert.equal(fs.leseDatei(neu.geraete.get(g.id), '/dokumente/notiz.txt'), 'Hallo');
 });
+
+test('Peer-to-Peer: beitreten, Suche über mehrere Peers (TTL), herunterladen, verlassen', async () => {
+  const { schreibeDatei, leseDatei, P2P_ORDNER } = await import('../apps/werkzeuge/netzwerk/netz.js');
+  const n = new Netz();
+  const s = n.neuesGeraet('switch');
+  const [a, b, c, d, e] = ['A', 'B', 'C', 'D', 'E'].map((x, i) => {
+    const g = rechner(n, x, `192.168.0.${i + 1}`);
+    g.software.push('peertopeer');
+    n.p2pFreigaben(g); // legt /peer2peer an
+    n.verbinde(g.id, s.id);
+    return g;
+  });
+  schreibeDatei(d, `${P2P_ORDNER}/lied.txt`, 'La la la');
+  schreibeDatei(e, `${P2P_ORDNER}/lied-weit-weg.txt`, 'zu weit');
+  schreibeDatei(b, `${P2P_ORDNER}/rezept.txt`, 'Mehl');
+  n.start();
+  // Kette A – B – C – D – E (jeder kennt nur seine Nachbarn)
+  const beitreten = (g, ip) => { let ok; n.p2pBeitreten(g, ip, (f) => { ok = f ?? true; }); n.laufe(() => ok !== undefined, 300); assert.equal(ok, true); };
+  beitreten(a, '192.168.0.2'); beitreten(c, '192.168.0.2'); beitreten(d, '192.168.0.3'); beitreten(e, '192.168.0.4');
+  assert.deepEqual(n.p2p(b).nachbarn.sort(), ['192.168.0.1', '192.168.0.3']);
+  const id = n.p2pSuche(a, 'LIED');
+  n.laufe(() => false, 400);
+  const treffer = n.p2p(a).suchen.get(id).treffer;
+  // D ist 3 Schritte entfernt (TTL 3), E wäre der 4. – zu weit
+  assert.deepEqual(treffer, [{ ip: '192.168.0.4', name: 'lied.txt' }]);
+  assert.ok(n.p2p(c).ereignisse.some((x) => x.text.includes('Suche „LIED“')));
+  let fehler; let pfad;
+  n.p2pHerunterladen(a, '192.168.0.4', 'lied.txt', (f, p) => { fehler = f; pfad = p ?? null; });
+  n.laufe(() => pfad !== undefined || fehler, 300);
+  assert.equal(fehler, null);
+  assert.equal(leseDatei(a, pfad), 'La la la');
+  assert.ok(n.zustand.get(a.id).log.some((z) => z.protokoll === 'P2P' && z.bemerkung.startsWith('QUERY')));
+  // fehlende Datei, verlassen
+  fehler = undefined;
+  n.p2pHerunterladen(a, '192.168.0.4', 'gibtsnicht.txt', (f) => { fehler = f; });
+  n.laufe(() => fehler !== undefined, 300);
+  assert.match(fehler, /nicht/);
+  n.p2pVerlassen(a);
+  n.laufe(() => false, 100);
+  assert.deepEqual(n.p2p(b).nachbarn, ['192.168.0.3']);
+});
