@@ -116,7 +116,7 @@ function freshDatabase(): Database
         'password' => getenv('SCHULBUCH_TEST_PASSWORD') ?: null]);
     if ($db->driver() === 'mysql') {
         $db->pdo()->exec('SET FOREIGN_KEY_CHECKS = 0');
-        foreach (['poll_answers', 'poll_runs', 'poll_polls', 'login_attempts', 'progress_log', 'quiz_attempts', 'level_progress', 'users'] as $table) {
+        foreach (['modem_frames', 'modem_links', 'poll_submissions', 'poll_players', 'poll_answers', 'poll_runs', 'poll_polls', 'login_attempts', 'progress_log', 'quiz_attempts', 'level_progress', 'users'] as $table) {
             $db->pdo()->exec("DROP TABLE IF EXISTS {$table}");
         }
         $db->pdo()->exec('SET FOREIGN_KEY_CHECKS = 1');
@@ -1028,6 +1028,33 @@ test('Migration: bestehende Umfrage-Tabellen bekommen die neuen Spalten', functi
     check(!$db->hasColumn('poll_polls', 'kind'), 'Spalte fehlt vorher');
     $db->migrate();
     check($db->hasColumn('poll_polls', 'kind') && $db->hasColumn('poll_answers', 'text_value'), 'Spalten ergänzt');
+});
+
+test('Modem: anbieten, einwählen, Rahmen in beide Richtungen, auflegen', function () use ($catalog): void {
+    $db = freshDatabase();
+    $a = new Client($db, $catalog);
+    $b = new Client($db, $catalog);
+    $angebot = asArray($a->call('POST', '/modem', []));
+    check(preg_match('/^\d{6}$/', $angebot['code']) === 1 && strlen($angebot['token']) === 32, 'Code und Schlüssel');
+    $code = $angebot['code'];
+    check($b->call('POST', '/modem/000000/join', [])->status() === 404, 'unbekannter Code');
+    $ein = asArray($b->call('POST', "/modem/{$code}/join", []));
+    check($ein['seite'] === 'b', 'eingewählt');
+    $dritter = new Client($db, $catalog);
+    check($dritter->call('POST', "/modem/{$code}/join", [])->status() === 409, 'nur ein Partner');
+
+    $rahmen = ['typ' => 'IP', 'quellMac' => 'AA', 'zielMac' => 'BB', 'daten' => ['ziel' => '10.0.0.1']];
+    $antwort = asArray($a->call('POST', "/modem/{$code}/send", ['token' => $angebot['token'], 'rahmen' => [$rahmen, $rahmen]]));
+    check($antwort['partner'] === true, 'Partner ist da');
+    $abgeholt = asArray($b->callWithQuery('GET', "/modem/{$code}", ['token' => $ein['token']]));
+    check(count($abgeholt['rahmen']) === 2 && $abgeholt['rahmen'][0]['daten']['ziel'] === '10.0.0.1', 'Rahmen kommen bei B an');
+    check(asArray($b->callWithQuery('GET', "/modem/{$code}", ['token' => $ein['token']]))['rahmen'] === [], 'nur einmal ausgeliefert');
+    check(asArray($a->callWithQuery('GET', "/modem/{$code}", ['token' => $angebot['token']]))['rahmen'] === [], 'A bekommt die eigenen nicht');
+    $b->call('POST', "/modem/{$code}/send", ['token' => $ein['token'], 'rahmen' => [$rahmen]]);
+    check(count(asArray($a->callWithQuery('GET', "/modem/{$code}", ['token' => $angebot['token']]))['rahmen']) === 1, 'Rückrichtung');
+    check($dritter->callWithQuery('GET', "/modem/{$code}", ['token' => str_repeat('0', 32)])->status() === 403, 'fremder Schlüssel abgelehnt');
+    check($a->call('POST', "/modem/{$code}/hangup", ['token' => $angebot['token']])->status() === 204, 'aufgelegt');
+    check($b->callWithQuery('GET', "/modem/{$code}", ['token' => $ein['token']])->status() === 404, 'Verbindung weg');
 });
 
 fwrite(STDOUT, "\n{$passes} Prüfungen bestanden, {$failures} fehlgeschlagen.\n");

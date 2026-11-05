@@ -12,7 +12,7 @@
 // während der Simulation (ARP-Tabellen, Verbindungen, Protokolle) entsteht bei start() neu.
 
 export const BROADCAST_MAC = 'FF:FF:FF:FF:FF:FF';
-export const TYPEN = ['rechner', 'notebook', 'switch', 'router'];
+export const TYPEN = ['rechner', 'notebook', 'switch', 'router', 'modem'];
 export const SOFTWARE = {
   befehlszeile: 'Befehlszeile',
   webbrowser: 'Webbrowser',
@@ -84,7 +84,7 @@ export class Netz {
     if (!TYPEN.includes(typ)) throw new Error(`Unbekannter Gerätetyp: ${typ}`);
     const id = `g${this.zaehler++}`;
     const nummer = [...this.geraete.values()].filter((g) => g.typ === typ).length + 1;
-    const grund = { rechner: 'Rechner', notebook: 'Notebook', switch: 'Switch', router: 'Router' }[typ];
+    const grund = { rechner: 'Rechner', notebook: 'Notebook', switch: 'Switch', router: 'Router', modem: 'Modem' }[typ];
     const g = {
       id, typ, name: name ?? `${grund} ${nummer}`, x, y,
       nics: [],
@@ -95,6 +95,7 @@ export class Netz {
       daten: {},
     };
     if (typ === 'router') { g.nics.push(this.neueNic(), this.neueNic()); g.routenAuto = true; }
+    if (typ === 'modem') g.nics.push(this.neueNic());
     if (typ === 'rechner' || typ === 'notebook') {
       g.nics.push({ ...this.neueNic(), ip: `192.168.0.${10 + this.geraete.size}`, maske: '255.255.255.0' });
       g.software = ['befehlszeile'];
@@ -231,7 +232,10 @@ export class Netz {
       this.aktiveKabel.add(f.kabel.id);
       const ziel = f.kabel.a.g === f.von.g && f.kabel.a.nic === f.von.nic ? f.kabel.b : f.kabel.a;
       const g = this.geraete.get(ziel.g);
-      if (g) this.empfange(g, ziel.nic, f.rahmen);
+      if (!g) continue;
+      if (!f.fremd) { this.empfange(g, ziel.nic, f.rahmen); continue; }
+      // Rahmen aus einer anderen Simulation (Modem): ein kaputter Rahmen darf diese hier nicht anhalten
+      try { this.empfange(g, ziel.nic, f.rahmen); } catch { /* verwerfen */ }
     }
     const timer = this.timer.filter((t) => t.zeit <= this.zeit);
     this.timer = this.timer.filter((t) => t.zeit > this.zeit);
@@ -263,6 +267,7 @@ export class Netz {
 
   empfange(g, nic, rahmen) {
     if (g.typ === 'switch') { this.switchEmpfang(g, nic, rahmen); return; }
+    if (g.typ === 'modem') { this.modemAusgang?.(g, kopie(rahmen)); return; }
     const eigene = g.nics[nic];
     if (rahmen.zielMac !== eigene.mac && rahmen.zielMac !== BROADCAST_MAC) return;
     this.protokolliere(g, rahmen, 'ein');
@@ -281,6 +286,19 @@ export class Netz {
   sendeRahmenSwitch(g, port, rahmen) {
     const k = this.kabelAn(g.id, port);
     if (k) this.unterwegs.push({ kabel: k, von: { g: g.id, nic: port }, rahmen, ankunft: this.zeit + 1 });
+  }
+
+  /**
+   * Modem: reicht Rahmen unverändert weiter wie ein Kabel zur anderen Simulation. Was am Kabel ankommt, geht an
+   * modemAusgang(g, rahmen) (setzt die Oberfläche bzw. ein Test); Rahmen von der Gegenseite kommen hier herein.
+   */
+  modemEingang(gid, rahmen) {
+    const g = this.geraete.get(gid);
+    const mac = (m) => typeof m === 'string' && m.length <= 17;
+    if (!this.laeuft || g?.typ !== 'modem' || !rahmen || typeof rahmen !== 'object') return;
+    if (!['ARP', 'IP'].includes(rahmen.typ) || !mac(rahmen.quellMac) || !mac(rahmen.zielMac) || !rahmen.daten || typeof rahmen.daten !== 'object') return;
+    const k = this.kabelAn(g.id, 0);
+    if (k) this.unterwegs.push({ kabel: k, von: { g: g.id, nic: 0 }, rahmen, ankunft: this.zeit + 1, fremd: true });
   }
 
   arpEmpfang(g, nic, arp) {

@@ -167,3 +167,26 @@ CREATE TABLE IF NOT EXISTS poll_submissions (
     PRIMARY KEY (run_id, participant),
     CONSTRAINT fk_submission_run FOREIGN KEY (run_id) REFERENCES poll_runs (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Netzwerk-Simulation: Modem-Verbindungen zwischen zwei Simulationen (z. B. zwei Schülergruppen). Der Server
+-- reicht nur Ethernet-Rahmen weiter; Verbindungen ohne Lebenszeichen werden nach 12 Stunden gelöscht.
+CREATE TABLE IF NOT EXISTS modem_links (
+    code       CHAR(6)     NOT NULL,
+    token_a    CHAR(32)    NOT NULL,
+    token_b    CHAR(32)    NULL,
+    seen_a     DATETIME(3) NOT NULL,
+    seen_b     DATETIME(3) NULL,
+    created_at DATETIME(3) NOT NULL,
+    PRIMARY KEY (code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS modem_frames (
+    id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    code       CHAR(6)      NOT NULL,
+    to_side    CHAR(1)      NOT NULL,
+    payload    MEDIUMTEXT   NOT NULL,
+    created_at DATETIME(3)  NOT NULL,
+    PRIMARY KEY (id),
+    KEY idx_modem_frames (code, to_side, id),
+    CONSTRAINT fk_modem_frames FOREIGN KEY (code) REFERENCES modem_links (code) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

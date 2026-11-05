@@ -6,6 +6,7 @@ namespace Schulbuch;
 
 use Schulbuch\Controller\AuthController;
 use Schulbuch\Controller\ClassController;
+use Schulbuch\Controller\ModemController;
 use Schulbuch\Controller\PollController;
 use Schulbuch\Controller\QuizController;
 use Schulbuch\Controller\RegistrationController;
@@ -69,6 +70,7 @@ final class App
         );
         $teacherContentController = new TeacherContentController($auth, $contentKey);
         $pollController = new PollController($auth, new PollRepository($db));
+        $modemController = new ModemController($db);
 
         $this->router = new Router();
         $r = $this->router;
@@ -96,6 +98,13 @@ final class App
         $r->add('GET', '/join/{code}', [$pollController, 'join']);
         $r->add('POST', '/join/{code}/answers', [$pollController, 'answer']);
         $r->add('POST', '/join/{code}/name', [$pollController, 'nickname']);
+
+        // Netzwerk-Simulation: Modem (Verbindung zweier Simulationen, ohne Konto)
+        $r->add('POST', '/modem', [$modemController, 'anbieten']);
+        $r->add('POST', '/modem/{code}/join', [$modemController, 'einwaehlen']);
+        $r->add('POST', '/modem/{code}/send', [$modemController, 'senden']);
+        $r->add('GET', '/modem/{code}', [$modemController, 'abholen']);
+        $r->add('POST', '/modem/{code}/hangup', [$modemController, 'auflegen']);
 
         $r->add('GET', '/quizzes/{level}', [$quizController, 'show']);
         $r->add('POST', '/quizzes/{level}/submit', [$quizController, 'submit']);

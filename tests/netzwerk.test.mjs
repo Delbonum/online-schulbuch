@@ -311,3 +311,30 @@ test('Echo-Server und einfacher Client: Verbindung, Nachrichten, Trennen', async
   n.laufe(() => ende, 200);
   assert.match(ende.fehler, /abgelehnt/);
 });
+
+test('Modem: zwei Simulationen wie über eine Leitung verbunden (ping, kaputte Rahmen)', () => {
+  // zwei getrennte Netze; was ein Modem am Kabel empfängt, kommt beim anderen wieder heraus (sonst: über die API)
+  const n1 = new Netz();
+  const n2 = new Netz();
+  const a = rechner(n1, 'A', '10.0.0.1');
+  const m1 = n1.neuesGeraet('modem');
+  n1.verbinde(a.id, m1.id);
+  const b = rechner(n2, 'B', '10.0.0.2');
+  const s = n2.neuesGeraet('switch');
+  const m2 = n2.neuesGeraet('modem');
+  n2.verbinde(b.id, s.id); n2.verbinde(m2.id, s.id);
+  assert.throws(() => n1.verbinde(n1.neuesGeraet('switch').id, m1.id), /nur einen Netzwerkanschluss/);
+  n1.modemAusgang = (g, r) => n2.modemEingang(m2.id, r);
+  n2.modemAusgang = (g, r) => n1.modemEingang(m1.id, r);
+  n1.start(); n2.start();
+  const zeilen = [];
+  let fertig = false;
+  n1.ping(a, '10.0.0.2', (z) => zeilen.push(z), () => { fertig = true; });
+  for (let i = 0; i < 2000 && !fertig; i++) { n1.schritt(); n2.schritt(); }
+  assert.match(zeilen.at(-1), /4 Pakete gesendet, 4 empfangen/);
+  // Unsinn von der Gegenseite wird verworfen und hält die Simulation nicht an
+  n1.modemEingang(m1.id, { typ: 'IP', quellMac: 'x', zielMac: a.nics[0].mac, daten: { protokoll: 'TCP' } });
+  n1.modemEingang(m1.id, { typ: 'Quatsch' });
+  n1.modemEingang(m1.id, null);
+  assert.doesNotThrow(() => n1.laufe(() => false, 5));
+});

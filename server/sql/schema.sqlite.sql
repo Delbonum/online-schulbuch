@@ -139,3 +139,21 @@ CREATE TABLE IF NOT EXISTS poll_submissions (
     participant TEXT    NOT NULL,
     PRIMARY KEY (run_id, participant)
 );
+
+CREATE TABLE IF NOT EXISTS modem_links (
+    code       TEXT NOT NULL PRIMARY KEY,
+    token_a    TEXT NOT NULL,
+    token_b    TEXT NULL,
+    seen_a     TEXT NOT NULL,
+    seen_b     TEXT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS modem_frames (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    code       TEXT    NOT NULL REFERENCES modem_links (code) ON DELETE CASCADE,
+    to_side    TEXT    NOT NULL,
+    payload    TEXT    NOT NULL,
+    created_at TEXT    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_modem_frames ON modem_frames (code, to_side, id);

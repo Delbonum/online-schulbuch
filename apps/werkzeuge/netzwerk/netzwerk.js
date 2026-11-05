@@ -2,6 +2,9 @@
 // Software installieren und ausprobieren (Befehlszeile, Webbrowser, Webserver, DNS-Server) und den Datenaustausch
 // Schicht für Schicht verfolgen. Die Simulation selbst steckt in netz.js, die Befehlszeile in befehle.js.
 //
+// Das Modem verbindet zwei Simulationen in verschiedenen Browsern; die Rahmen reicht die Schulbuch-API weiter
+// (/api/modem, ohne Konto, Verbindung über einen sechsstelligen Code).
+//
 // Bilder der Geräte: bilder/<typ>.svg – Platzhalter, die sich durch eigene Bilder gleichen Namens ersetzen lassen
 // (andere Endung: BILDER unten anpassen).
 
@@ -10,9 +13,10 @@ import { fuehreAus } from './befehle.js';
 
 const wurzel = document.getElementById('netzwerk');
 const BASIS_BILDER = new URL('./bilder/', import.meta.url).href.replace(/\?.*$/, '');
-const BILDER = { rechner: 'rechner.svg', notebook: 'notebook.svg', switch: 'switch.svg', router: 'router.svg' };
+const BILDER = { rechner: 'rechner.svg', notebook: 'notebook.svg', switch: 'switch.svg', router: 'router.svg', modem: 'modem.svg' };
 const bild = (typ) => `${BASIS_BILDER}${BILDER[typ]}`;
-const NAMEN = { rechner: 'Rechner', notebook: 'Notebook', switch: 'Switch', router: 'Router' };
+const NAMEN = { rechner: 'Rechner', notebook: 'Notebook', switch: 'Switch', router: 'Router', modem: 'Modem' };
+const API = '/api';
 const SPEICHER = 'netzwerk-simulation:entwurf';
 const TEMPO = [800, 400, 200, 100, 40];
 const BREITE = 2000;
@@ -25,7 +29,8 @@ const istHost = (g) => g.typ === 'rechner' || g.typ === 'notebook';
 const zustand = {
   netz: new Netz(),
   modus: 'entwurf',
-  werkzeug: 'auswahl', // oder 'kabel'
+  werkzeug: 'auswahl', // oder 'kabel', 'platzieren'
+  platzieren: null, // Gerätetyp, der beim nächsten Klick auf die Fläche entsteht
   auswahl: null, // {art: 'geraet'|'kabel', id}
   kabelStart: null,
   tempo: 2,
@@ -54,7 +59,7 @@ wurzel.innerHTML = `<div class="nw" tabindex="-1">
 </div>
 <div class="nw-haupt">
 <aside class="nw-palette" aria-label="Bauteile"></aside>
-<div class="nw-flaeche-rahmen"><svg class="nw-flaeche" viewBox="0 0 ${BREITE} ${HOEHE}" width="${BREITE}" height="${HOEHE}" role="application" aria-label="Netzwerk"><g class="nw-kabel"></g><line class="nw-kabel-vorschau" hidden/><g class="nw-geraete"></g></svg></div>
+<div class="nw-flaeche-rahmen"><svg class="nw-flaeche" viewBox="0 0 ${BREITE} ${HOEHE}" width="${BREITE}" height="${HOEHE}" role="application" aria-label="Netzwerk"><g class="nw-kabel"></g><line class="nw-kabel-vorschau" hidden/><g class="nw-geraete"></g><image class="nw-geist" width="64" height="64" hidden/></svg></div>
 </div>
 <div class="nw-panel"></div>
 <div class="nw-meldung" role="status" aria-live="polite"></div>
@@ -66,15 +71,22 @@ const svg = app.querySelector('.nw-flaeche');
 const gKabel = svg.querySelector('.nw-kabel');
 const gGeraete = svg.querySelector('.nw-geraete');
 const vorschau = svg.querySelector('.nw-kabel-vorschau');
+const geist = svg.querySelector('.nw-geist');
 const panel = app.querySelector('.nw-panel');
 const ebene = app.querySelector('.nw-fenster-ebene');
 
-function melde(text, art = 'info') {
+function melde(text, art = 'info', rueckgaengig = null) {
   const el = app.querySelector('.nw-meldung');
   el.textContent = text;
   el.className = `nw-meldung sichtbar ${art}`;
+  melde.rueckgaengig = rueckgaengig;
+  if (rueckgaengig) {
+    el.classList.add('mit-knopf');
+    el.append(' ', html('<button type="button" class="nw-rueckgaengig">Rückgängig</button>'));
+    el.lastChild.addEventListener('click', () => { melde.rueckgaengig = null; el.classList.remove('sichtbar'); rueckgaengig(); });
+  }
   clearTimeout(melde.timer);
-  melde.timer = setTimeout(() => el.classList.remove('sichtbar'), 4000);
+  melde.timer = setTimeout(() => { el.classList.remove('sichtbar'); melde.rueckgaengig = null; }, rueckgaengig ? 8000 : 4000);
 }
 
 function speichere() {
@@ -84,8 +96,10 @@ function speichere() {
 // ------------------------------------------------------------------ Palette (Entwurf)
 
 const palette = app.querySelector('.nw-palette');
-palette.innerHTML = `${Object.keys(BILDER).map((typ) => `<button type="button" class="nw-bauteil" data-typ="${typ}" draggable="true" title="${NAMEN[typ]} hinzufügen (klicken oder auf die Fläche ziehen)"><img src="${bild(typ)}" alt=""><span>${NAMEN[typ]}</span></button>`).join('')}
-<button type="button" class="nw-bauteil nw-kabel-werkzeug" title="Kabel: erst ein Gerät, dann das andere anklicken"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40C18 40 14 8 30 8h12" fill="none" stroke="#3d4a5c" stroke-width="4" stroke-linecap="round"/><circle cx="6" cy="40" r="4" fill="#0b6b72"/><circle cx="42" cy="8" r="4" fill="#0b6b72"/></svg><span>Kabel</span></button>`;
+palette.innerHTML = `${Object.keys(BILDER).map((typ) => `<button type="button" class="nw-bauteil" data-typ="${typ}" draggable="true" aria-pressed="false" title="${NAMEN[typ]}: anklicken und dann auf die Fläche klicken – oder auf die Fläche ziehen"><img src="${bild(typ)}" alt=""><span>${NAMEN[typ]}</span></button>`).join('')}
+<button type="button" class="nw-bauteil nw-kabel-werkzeug" title="Kabel: erst ein Gerät, dann das andere anklicken"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40C18 40 14 8 30 8h12" fill="none" stroke="#3d4a5c" stroke-width="4" stroke-linecap="round"/><circle cx="6" cy="40" r="4" fill="#0b6b72"/><circle cx="42" cy="8" r="4" fill="#0b6b72"/></svg><span>Kabel</span></button>
+<button type="button" class="nw-bauteil nw-papierkorb" title="Papierkorb: Gerät hierher ziehen – oder Gerät bzw. Kabel anklicken und dann hier klicken"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 13h28M19 13V8h10v5M13 13l2 28h18l2-28" fill="none" stroke="#3d4a5c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 19v16M28 19v16" stroke="#3d4a5c" stroke-width="3" stroke-linecap="round"/></svg><span>Papierkorb</span></button>`;
+const papierkorb = palette.querySelector('.nw-papierkorb');
 
 function neuesGeraet(typ, x, y) {
   const g = zustand.netz.neuesGeraet(typ, { x: Math.round(x), y: Math.round(y) });
@@ -97,11 +111,15 @@ function neuesGeraet(typ, x, y) {
 palette.addEventListener('click', (e) => {
   const knopf = e.target.closest('.nw-bauteil');
   if (!knopf || zustand.modus !== 'entwurf') return;
+  if (knopf === papierkorb) {
+    if (zustand.auswahl) loescheAuswahl();
+    else melde('Ziehe ein Gerät in den Papierkorb – oder klicke erst ein Gerät oder Kabel an und dann den Papierkorb.');
+    return;
+  }
   if (knopf.classList.contains('nw-kabel-werkzeug')) { setzeWerkzeug(zustand.werkzeug === 'kabel' ? 'auswahl' : 'kabel'); return; }
-  // in die Mitte des sichtbaren Bereichs, leicht versetzt
-  const rahmen = app.querySelector('.nw-flaeche-rahmen');
-  const n = zustand.netz.geraete.size % 6;
-  neuesGeraet(knopf.dataset.typ, rahmen.scrollLeft + rahmen.clientWidth / 2 - 60 + n * 30, rahmen.scrollTop + rahmen.clientHeight / 2 - 60 + n * 30);
+  // Gerät anwählen; es entsteht erst beim Klick auf die Fläche (nochmals anklicken: abwählen)
+  if (zustand.werkzeug === 'platzieren' && zustand.platzieren === knopf.dataset.typ) setzeWerkzeug('auswahl');
+  else setzeWerkzeug('platzieren', knopf.dataset.typ);
 });
 palette.addEventListener('dragstart', (e) => {
   const knopf = e.target.closest('.nw-bauteil[data-typ]');
@@ -116,13 +134,24 @@ svg.addEventListener('drop', (e) => {
   neuesGeraet(typ, p.x, p.y);
 });
 
-function setzeWerkzeug(w) {
+function setzeWerkzeug(w, typ = null) {
   zustand.werkzeug = w;
+  zustand.platzieren = w === 'platzieren' ? typ : null;
   zustand.kabelStart = null;
   vorschau.hidden = true;
+  geist.hidden = true;
   palette.querySelector('.nw-kabel-werkzeug').classList.toggle('aktiv', w === 'kabel');
+  palette.querySelectorAll('[data-typ]').forEach((b) => {
+    b.classList.toggle('aktiv', b.dataset.typ === zustand.platzieren);
+    b.setAttribute('aria-pressed', String(b.dataset.typ === zustand.platzieren));
+  });
   svg.classList.toggle('kabel-modus', w === 'kabel');
+  svg.classList.toggle('platzieren-modus', w === 'platzieren');
   if (w === 'kabel') melde('Kabel verlegen: Klicke nacheinander auf die beiden Geräte. Esc beendet.');
+  if (w === 'platzieren') {
+    geist.setAttribute('href', bild(typ));
+    melde(`${NAMEN[typ]} gewählt: Klicke auf die Fläche, wo es hin soll. Esc bricht ab.`);
+  }
 }
 
 function svgPunkt(e) {
@@ -147,7 +176,7 @@ function zeichne() {
   }).join('');
   gGeraete.innerHTML = [...n.geraete.values()].map((g) => {
     const gewaehlt = zustand.auswahl?.art === 'geraet' && zustand.auswahl.id === g.id;
-    const ips = g.typ === 'switch' ? '' : g.nics.map((x) => x.ip).filter(Boolean).join(', ');
+    const ips = g.typ === 'switch' ? '' : g.typ === 'modem' ? modemText(g) : g.nics.map((x) => x.ip).filter(Boolean).join(', ');
     return `<g class="nw-geraet${gewaehlt ? ' gewaehlt' : ''}${zustand.kabelStart === g.id ? ' kabel-start' : ''}" data-geraet="${g.id}" transform="translate(${g.x} ${g.y})" tabindex="0" role="button" aria-label="${esc(NAMEN[g.typ])} ${esc(g.name)}">
 <rect class="nw-geraet-rand" x="-6" y="-6" width="84" height="76" rx="8"/>
 <image href="${bild(g.typ)}" x="4" y="0" width="64" height="64"/>
@@ -171,6 +200,12 @@ let ziehen = null;
 svg.addEventListener('pointerdown', (e) => {
   const geraetEl = e.target.closest('[data-geraet]');
   const kabelEl = e.target.closest('[data-kabel]');
+  if (zustand.werkzeug === 'platzieren' && zustand.modus === 'entwurf') {
+    const p = svgPunkt(e);
+    neuesGeraet(zustand.platzieren, Math.max(0, Math.min(BREITE - 80, p.x - 36)), Math.max(0, Math.min(HOEHE - 100, p.y - 32)));
+    setzeWerkzeug('auswahl');
+    return;
+  }
   if (zustand.werkzeug === 'kabel' && zustand.modus === 'entwurf') {
     if (!geraetEl) { setzeWerkzeug('auswahl'); return; }
     const id = geraetEl.dataset.geraet;
@@ -215,7 +250,18 @@ svg.addEventListener('pointerdown', (e) => {
   zeichneAuswahl();
 });
 
+const ueberPapierkorb = (e) => {
+  const r = papierkorb.getBoundingClientRect();
+  return r.width > 0 && e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+};
+
 svg.addEventListener('pointermove', (e) => {
+  if (zustand.werkzeug === 'platzieren') {
+    const p = svgPunkt(e);
+    geist.setAttribute('x', p.x - 32);
+    geist.setAttribute('y', p.y - 32);
+    geist.hidden = false;
+  }
   if (zustand.kabelStart && !vorschau.hidden) {
     const p = svgPunkt(e);
     vorschau.setAttribute('x2', p.x);
@@ -226,6 +272,7 @@ svg.addEventListener('pointermove', (e) => {
   ziehen.g.x = Math.max(0, Math.min(BREITE - 80, Math.round(p.x - ziehen.dx)));
   ziehen.g.y = Math.max(0, Math.min(HOEHE - 100, Math.round(p.y - ziehen.dy)));
   ziehen.bewegt = true;
+  papierkorb.classList.toggle('bereit', ueberPapierkorb(e));
   ziehen.el.setAttribute('transform', `translate(${ziehen.g.x} ${ziehen.g.y})`);
   // Kabel mitziehen
   for (const k of zustand.netz.kabel) {
@@ -236,7 +283,16 @@ svg.addEventListener('pointermove', (e) => {
   }
 });
 
-svg.addEventListener('pointerup', () => {
+svg.addEventListener('pointerleave', () => { geist.hidden = true; });
+
+svg.addEventListener('pointerup', (e) => {
+  papierkorb.classList.remove('bereit');
+  if (ziehen?.bewegt && ueberPapierkorb(e)) {
+    zustand.auswahl = { art: 'geraet', id: ziehen.g.id };
+    ziehen = null;
+    loescheAuswahl();
+    return;
+  }
   if (ziehen?.bewegt) speichere();
   ziehen = null;
 });
@@ -248,6 +304,7 @@ svg.addEventListener('dblclick', (e) => {
   if (zustand.modus === 'simulation') {
     if (istHost(g)) desktop(g);
     else if (g.typ === 'switch') satFenster(g);
+    else if (g.typ === 'modem') modemFenster(g);
     else datenaustausch(g);
   } else {
     panel.querySelector('input')?.focus();
@@ -262,20 +319,38 @@ function zeichneAuswahl() {
 }
 
 app.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { if (zustand.werkzeug === 'kabel') setzeWerkzeug('auswahl'); return; }
+  if (e.key === 'Escape') { if (zustand.werkzeug !== 'auswahl') setzeWerkzeug('auswahl'); return; }
+  if (e.key === 'z' && (e.ctrlKey || e.metaKey) && melde.rueckgaengig && !e.target.closest('input, textarea, select')) {
+    e.preventDefault();
+    const r = melde.rueckgaengig;
+    melde.rueckgaengig = null;
+    app.querySelector('.nw-meldung').classList.remove('sichtbar');
+    r();
+    return;
+  }
   if ((e.key === 'Delete' || e.key === 'Backspace') && zustand.modus === 'entwurf' && zustand.auswahl && !e.target.closest('input, textarea, select')) {
     e.preventDefault();
     loescheAuswahl();
   }
 });
 
+/** Löscht das gewählte Gerät oder Kabel; die Meldung bietet „Rückgängig“ an (statt einer Sicherheitsfrage). */
 function loescheAuswahl() {
   const a = zustand.auswahl;
-  if (!a) return;
+  if (!a || zustand.modus !== 'entwurf') return;
+  const vorher = JSON.parse(JSON.stringify(zustand.netz));
+  const name = a.art === 'geraet' ? zustand.netz.geraete.get(a.id)?.name : 'Kabel';
   if (a.art === 'geraet') zustand.netz.entferneGeraet(a.id); else zustand.netz.entferneKabel(a.id);
   zustand.auswahl = null;
   speichere();
   zeichne();
+  melde(`„${name}“ gelöscht.`, 'info', () => {
+    if (zustand.modus !== 'entwurf') return;
+    zustand.netz = Netz.ausJSON(vorher);
+    zustand.auswahl = a;
+    speichere();
+    zeichne();
+  });
 }
 
 // ------------------------------------------------------------------ Panel unten
@@ -290,7 +365,7 @@ function zeichnePanel() {
   const n = zustand.netz;
   if (!a) {
     panel.innerHTML = zustand.modus === 'entwurf'
-      ? '<p class="nw-tipp">Füge links Geräte hinzu (anklicken oder auf die Fläche ziehen) und verbinde sie mit dem Kabel. Ein angeklicktes Gerät stellst du hier unten ein. Dann oben auf <strong>▶ Simulation</strong>.</p>'
+      ? '<p class="nw-tipp">Füge links Geräte hinzu (anklicken und dann auf die Fläche klicken – oder auf die Fläche ziehen) und verbinde sie mit dem Kabel. Ein angeklicktes Gerät stellst du hier unten ein. Dann oben auf <strong>▶ Simulation</strong>.</p>'
       : '<p class="nw-tipp">Simulation läuft. Doppelklick auf einen Rechner öffnet seinen Desktop (Software installieren, Befehlszeile, Browser …); Doppelklick auf Switch oder Router zeigt, was dort passiert. Grün leuchtende Kabel übertragen gerade Daten.</p>';
     return;
   }
@@ -307,6 +382,7 @@ function zeichnePanel() {
   if (zustand.modus === 'simulation') { panelSimulation(g); return; }
   if (istHost(g)) panelHost(g);
   else if (g.typ === 'switch') panelSwitch(g);
+  else if (g.typ === 'modem') panelModem(g);
   else panelRouter(g);
 }
 
@@ -402,6 +478,19 @@ ${belegt.length ? `Verbunden mit: ${belegt.map((x) => esc(x.name)).join(', ')}.`
   panel.querySelector('.nw-loeschen').addEventListener('click', loescheAuswahl);
 }
 
+function panelModem(g) {
+  const gegenueber = zustand.netz.gegenueber(g.id, 0);
+  panel.innerHTML = `<div class="nw-panel-kopf"><img src="${bild('modem')}" alt="" width="32" height="32"><strong>Modem</strong>
+<button type="button" class="knopf nw-loeschen">Gerät löschen</button></div>
+<div class="nw-felder">${feld('Name', g.name, 'data-f="name" maxlength="30"')}</div>
+<p class="nw-hinweis">Ein Modem verbindet dieses Netz mit dem Netz einer anderen Gruppe (anderer Rechner, anderer Browser) – wie ein langes Kabel.
+Es braucht keine IP-Adresse und hat einen Anschluss, meist für einen Router oder Switch. In der Simulation: Doppelklick auf das Modem,
+dann bietet eine Seite die Verbindung an und die andere wählt sich mit dem angezeigten Code ein.
+${gegenueber ? `Verbunden mit: ${esc(gegenueber.name)}.` : ''}</p>`;
+  panel.querySelector('[data-f]').addEventListener('input', (e) => { g.name = e.target.value; aenderung(); });
+  panel.querySelector('.nw-loeschen').addEventListener('click', loescheAuswahl);
+}
+
 function panelRouter(g) {
   const n = zustand.netz;
   panel.innerHTML = `<div class="nw-panel-kopf"><img src="${bild('router')}" alt="" width="32" height="32"><strong>Router (Vermittlungsrechner)</strong>
@@ -442,6 +531,12 @@ ${g.routen.map((r, i) => `<tr><td><input data-route="${i}" data-feld="ziel" valu
 }
 
 function panelSimulation(g) {
+  if (g.typ === 'modem') {
+    panel.innerHTML = `<div class="nw-panel-kopf"><img src="${bild('modem')}" alt="" width="32" height="32"><strong>${esc(g.name)}</strong> <span class="klein">${esc(modemText(g))}</span>
+<span class="nw-knoepfe"><button type="button" class="knopf primaer" data-tat="modem">Modem-Verbindung …</button></span></div>`;
+    panel.querySelector('[data-tat="modem"]').addEventListener('click', () => modemFenster(g));
+    return;
+  }
   const ips = g.nics.map((x) => x.ip).filter(Boolean).join(', ');
   panel.innerHTML = `<div class="nw-panel-kopf"><img src="${bild(g.typ)}" alt="" width="32" height="32"><strong>${esc(g.name)}</strong> <span class="klein">${esc(ips)}</span>
 <span class="nw-knoepfe">
@@ -472,7 +567,7 @@ function fenster(id, titel, { breite = 520, hoehe = 380, aufbauen, aktualisieren
 <header class="nw-fenster-kopf"><span>${esc(titel)}</span><button type="button" class="nw-fenster-zu" aria-label="Schließen">✕</button></header>
 <div class="nw-fenster-inhalt"></div></section>`);
   ebene.append(el);
-  const f = { el, inhalt: el.querySelector('.nw-fenster-inhalt'), aktualisieren };
+  const f = { el, inhalt: el.querySelector('.nw-fenster-inhalt'), aktualisieren, aufbauen };
   fensterListe.set(id, f);
   el.querySelector('.nw-fenster-zu').addEventListener('click', () => schliesse(id));
   el.addEventListener('pointerdown', () => { el.style.zIndex = ++fensterZ; });
@@ -1034,6 +1129,163 @@ ${t.map((r) => `<tr><td>${r.ziel}</td><td>${r.maske}</td><td>${r.gateway || '–
   });
 }
 
+// ------------------------------------------------------------------ Modem (Verbindung zu einer anderen Simulation)
+
+const modems = new Map(); // Geräte-ID → {code, token, seite, partner, raus, gesendet, empfangen, timer, laeuft, fehler}
+const MODEM_ABFRAGE = 1000; // ms zwischen zwei Abfragen beim Server
+
+async function modemApi(methode, pfad, daten) {
+  let antwort;
+  try {
+    antwort = await fetch(API + pfad, {
+      method: methode,
+      headers: { Accept: 'application/json', ...(methode !== 'GET' && { 'Content-Type': 'application/json' }) },
+      body: methode === 'GET' ? undefined : JSON.stringify(daten ?? {}),
+    });
+  } catch {
+    throw Object.assign(new Error('Der Server ist nicht erreichbar. Bitte prüfe die Internetverbindung.'), { status: 0 });
+  }
+  const json = antwort.status === 204 ? null : await antwort.json().catch(() => null);
+  if (!antwort.ok) throw Object.assign(new Error(json?.error || `Serverfehler (${antwort.status}).`), { status: antwort.status });
+  return json;
+}
+
+function modemText(g) {
+  const v = modems.get(g.id);
+  if (!v) return zustand.modus === 'simulation' ? 'nicht verbunden' : '';
+  if (!v.code) return 'wählt …';
+  return v.partner ? `verbunden (${v.code})` : `Code ${v.code} – wartet`;
+}
+
+/** Was das Modem am Kabel empfängt, geht zur Gegenseite (gesammelt, damit nicht jeder Rahmen eine Anfrage wird). */
+function modemAusgang(g, rahmen) {
+  const v = modems.get(g.id);
+  if (!v?.token) return;
+  v.raus.push(rahmen);
+  if (v.raus.length > 300) v.raus.splice(0, v.raus.length - 300); // Leitung überlastet: Älteste gehen verloren
+  if (!v.sendetBald) { v.sendetBald = true; setTimeout(() => modemSenden(g.id), 150); }
+}
+
+async function modemSenden(gid) {
+  const v = modems.get(gid);
+  if (!v) return;
+  v.sendetBald = false;
+  if (v.sendet || !v.raus.length) return;
+  v.sendet = true;
+  const paket = v.raus.splice(0, 50);
+  try {
+    const r = await modemApi('POST', `/modem/${v.code}/send`, { token: v.token, rahmen: paket });
+    v.gesendet += paket.length;
+    v.partner = r.partner;
+  } catch (err) {
+    v.fehler = err.message;
+    if (err.status === 404 || err.status === 403) { modemTrennen(gid, 'Die Verbindung besteht nicht mehr – die Gegenseite hat aufgelegt.'); return; }
+  } finally {
+    v.sendet = false;
+  }
+  if (v.raus.length && modems.get(gid) === v) modemSenden(gid);
+}
+
+async function modemAbfragen(gid) {
+  const v = modems.get(gid);
+  if (!v?.laeuft) return;
+  try {
+    const r = await modemApi('GET', `/modem/${v.code}?token=${v.token}`);
+    if (modems.get(gid) !== v) return;
+    const vorher = v.partner;
+    v.partner = r.partner;
+    v.fehler = '';
+    for (const rahmen of r.rahmen ?? []) zustand.netz.modemEingang(gid, rahmen);
+    v.empfangen += r.rahmen?.length ?? 0;
+    if (vorher !== v.partner) { zeichneGeraetText(); melde(v.partner ? `${zustand.netz.geraete.get(gid)?.name}: Verbindung zur Gegenseite steht.` : `${zustand.netz.geraete.get(gid)?.name}: Gegenseite nicht mehr erreichbar.`); }
+  } catch (err) {
+    if (modems.get(gid) !== v) return;
+    if (err.status === 404 || err.status === 403) { modemTrennen(gid, 'Die Gegenseite hat aufgelegt.'); return; }
+    v.fehler = err.message;
+  }
+  fensterListe.get(`modem:${gid}`)?.aktualisieren?.(fensterListe.get(`modem:${gid}`));
+  if (modems.get(gid) === v && v.laeuft) v.timer = setTimeout(() => modemAbfragen(gid), MODEM_ABFRAGE);
+}
+
+async function modemVerbinden(g, code) {
+  if (modems.has(g.id)) return;
+  const v = { code: '', token: '', seite: '', partner: false, raus: [], gesendet: 0, empfangen: 0, timer: null, laeuft: false, fehler: '' };
+  modems.set(g.id, v);
+  zeichneGeraetText();
+  try {
+    const r = code ? await modemApi('POST', `/modem/${code}/join`) : await modemApi('POST', '/modem');
+    if (modems.get(g.id) !== v) { modemApi('POST', `/modem/${r.code}/hangup`, { token: r.token }).catch(() => {}); return; }
+    Object.assign(v, { code: r.code, token: r.token, seite: r.seite, laeuft: true });
+    modemAbfragen(g.id);
+  } catch (err) {
+    modems.delete(g.id);
+    melde(err.message, 'fehler');
+  }
+  zeichneGeraetText();
+  const f = fensterListe.get(`modem:${g.id}`);
+  f?.aufbauen?.(f);
+}
+
+/** Auflegen: beim Server abmelden (ohne darauf zu warten) und den Zustand vergessen */
+function modemTrennen(gid, hinweis = '') {
+  const v = modems.get(gid);
+  if (!v) return;
+  modems.delete(gid);
+  clearTimeout(v.timer);
+  v.laeuft = false;
+  if (v.token) fetch(`${API}/modem/${v.code}/hangup`, { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: v.token }) }).catch(() => {});
+  if (hinweis) melde(hinweis, 'fehler');
+  zeichneGeraetText();
+  const f = fensterListe.get(`modem:${gid}`);
+  f?.aufbauen?.(f);
+}
+
+function modemeTrennen() { for (const gid of [...modems.keys()]) modemTrennen(gid); }
+window.addEventListener('pagehide', modemeTrennen);
+
+function modemFenster(g) {
+  fenster(`modem:${g.id}`, `Modem – ${g.name}`, {
+    breite: 440, hoehe: 330,
+    aufbauen(f) {
+      const v = modems.get(g.id);
+      if (!v) {
+        f.inhalt.innerHTML = `<p class="klein">Das Modem verbindet dein Netz mit dem Netz einer anderen Gruppe. Eine Seite bietet die Verbindung an,
+die andere wählt sich mit dem Code ein. Danach verhalten sich beide Netze, als wären die Modems mit einem langen Kabel verbunden.</p>
+<div class="nw-modem-wahl"><div><h4>Verbindung anbieten</h4><p class="klein">Du bekommst einen Code für die andere Gruppe.</p>
+<button type="button" class="knopf primaer nw-anbieten">Code erzeugen</button></div>
+<form class="nw-einwaehlen"><h4>Einwählen</h4><label class="klein" for="nw-code-${g.id}">Code der anderen Gruppe</label>
+<span class="nw-zeile"><input id="nw-code-${g.id}" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required placeholder="123456" autocomplete="off"><button class="knopf primaer">Verbinden</button></span></form></div>
+<p class="nw-hinweis klein">Die Rahmen laufen über den Server des Online-Schulbuchs und brauchen dabei etwa eine Sekunde. Stell das Tempo daher eher langsam ein.</p>`;
+        f.inhalt.querySelector('.nw-anbieten').addEventListener('click', () => modemVerbinden(g, ''));
+        f.inhalt.querySelector('.nw-einwaehlen').addEventListener('submit', (e) => {
+          e.preventDefault();
+          const code = e.target.querySelector('input').value.replace(/\D/g, '');
+          if (code.length !== 6) { melde('Der Code hat sechs Ziffern.', 'fehler'); return; }
+          modemVerbinden(g, code);
+        });
+        return;
+      }
+      f.inhalt.innerHTML = '<div class="nw-modem-status"></div>';
+      f.aktualisieren(f);
+    },
+    aktualisieren(f) {
+      const v = modems.get(g.id);
+      const el = f.inhalt.querySelector('.nw-modem-status');
+      if (!v || !el) return;
+      const text = !v.code ? '<p>Verbinde …</p>'
+        : `${v.seite === 'a' ? `<p>Code für die andere Gruppe:</p><p class="nw-modem-code">${v.code}</p>` : `<p>Eingewählt mit Code <strong>${v.code}</strong>.</p>`}
+<p class="nw-modem-zustand ${v.partner ? 'ok' : ''}">${v.partner ? '● Verbunden – die Gegenseite ist da.' : '○ Warte auf die Gegenseite …'}</p>
+<p class="klein">Gesendet: ${v.gesendet} Rahmen · empfangen: ${v.empfangen} Rahmen</p>
+${v.fehler ? `<p class="nw-hinweis klein">${esc(v.fehler)}</p>` : ''}
+<button type="button" class="knopf nw-auflegen">Auflegen</button>`;
+      if (el.dataset.text === text) return;
+      el.dataset.text = text;
+      el.innerHTML = text;
+      el.querySelector('.nw-auflegen')?.addEventListener('click', () => modemTrennen(g.id));
+    },
+  });
+}
+
 // ------------------------------------------------------------------ Modus und Ablauf
 
 function setzeModus(modus) {
@@ -1043,10 +1295,12 @@ function setzeModus(modus) {
   schliesseAlle();
   clearInterval(zustand.timer);
   if (modus === 'simulation') {
+    zustand.netz.modemAusgang = modemAusgang;
     zustand.netz.start();
     starteTakt();
     melde('Simulation gestartet. Doppelklick auf einen Rechner öffnet seinen Desktop.');
   } else {
+    modemeTrennen();
     zustand.netz.stop();
     zustand.aktivBis.clear();
   }
@@ -1229,10 +1483,10 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
   aufbauen(f) {
     f.inhalt.classList.add('nw-hilfe');
     f.inhalt.innerHTML = `<h4>Entwurf ✎</h4>
-<ul><li>Links ein Gerät anklicken oder auf die Fläche ziehen. Geräte lassen sich verschieben.</li>
+<ul><li>Links ein Gerät anklicken und dann auf die Fläche klicken, wo es hin soll (Esc bricht ab) – oder es direkt auf die Fläche ziehen. Geräte lassen sich verschieben.</li>
 <li><strong>Kabel:</strong> Kabel-Werkzeug wählen, dann nacheinander zwei Geräte anklicken. Rechner haben einen Anschluss, Switch und Router bekommen bei Bedarf weitere.</li>
 <li>Ein angeklicktes Gerät stellst du unten ein (IP-Adresse, Netzmaske, Gateway, DNS-Server, DHCP). Beim Router: Anschlüsse und Weiterleitungstabelle.</li>
-<li>Gerät oder Kabel löschen: anklicken und Entf drücken.</li></ul>
+<li>Löschen: Gerät in den <strong>Papierkorb</strong> ziehen – oder Gerät bzw. Kabel anklicken und dann Entf drücken oder auf den Papierkorb klicken. Versehentlich gelöscht? In der Meldung auf <em>Rückgängig</em> klicken (oder Strg+Z).</li></ul>
 <h4>Simulation ▶</h4>
 <ul><li>Doppelklick auf einen Rechner öffnet den Desktop. Über <em>Software-Installation</em> kommen Programme dazu: Befehlszeile, Webbrowser, Webserver, DNS-Server, E-Mail-Programm, E-Mail-Server.</li>
 <li><strong>Echo-Server und einfacher Client:</strong> Der Echo-Server (Port 55555) schickt jede Nachricht zurück; mit dem einfachen Client baust du eine TCP-Verbindung auf, schickst Nachrichten und trennst wieder – im Datenaustausch sieht man Verbindungsaufbau, Daten und Abbau.</li>
@@ -1241,6 +1495,7 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
 <li>Befehlszeile: <code>ipconfig</code>, <code>ping</code>, <code>traceroute</code>, <code>host</code>, <code>arp</code>, <code>route</code>, <code>netstat</code> – <code>help</code> zeigt alle.</li>
 <li>Server müssen nach der Installation <strong>gestartet</strong> werden.</li>
 <li><em>Datenaustausch anzeigen</em> (Rechner/Router) listet jede Nachricht mit einer Zeile je Schicht: Netzzugang, Vermittlung, Transport, Anwendung. Beim Switch zeigt die <em>Lerntabelle</em>, welche MAC-Adresse an welchem Anschluss hängt.</li>
+<li><strong>Modem:</strong> verbindet zwei Simulationen auf verschiedenen Geräten. Doppelklick auf das Modem: Eine Gruppe erzeugt einen Code, die andere wählt sich damit ein. Danach verhalten sich beide Netze wie mit einem langen Kabel verbunden – z. B. Modem → Router auf beiden Seiten, verschiedene Netze, passende Weiterleitungstabellen. Beim Wechsel in den Entwurf wird aufgelegt.</li>
 <li>Grün leuchtende Kabel übertragen gerade Daten; das Tempo stellst du oben ein.</li></ul>
 <h4>Speichern</h4><p>Der Entwurf bleibt in diesem Browser erhalten. Mit „Speichern“ lädst du ihn als Datei herunter, mit „Öffnen …“ lädst du sie wieder.</p>`;
   },

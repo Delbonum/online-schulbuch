@@ -273,6 +273,10 @@ Es gibt keine Abhängigkeiten außer Node.js (ab Version 20).
   `start`, `phase`, `kick`, `end`), ohne Konto: `GET /api/join/{code}`, `POST /api/join/{code}/answers`,
   `POST /api/join/{code}/name` (Quiz). Countdown und Ablauf einer Quizfrage rücken beim Abruf serverseitig weiter;
   Durchführungen enden nach 12 Stunden automatisch.
+- **Modem der Netzwerk-Simulation** (Tabellen `modem_*`, ohne Konto): `POST /api/modem` (Verbindung anbieten →
+  sechsstelliger Code und geheimer `token`), `POST /api/modem/{code}/join` (einwählen), `POST …/send` und
+  `GET /api/modem/{code}?token=…` (Ethernet-Rahmen weiterreichen bzw. abholen, danach gelöscht),
+  `POST …/hangup`. Verbindungen ohne Lebenszeichen verfallen nach 12 Stunden.
 - **Neue Tabellen** legt die API nach dem Hochladen beim ersten Aufruf selbst an (Markierung
   `data/.schema-<Prüfsumme>`), denn auf dem Server gibt es kein PHP auf der Kommandozeile.
 - **KryptoGAME:** Fortschritt, Prüfungen (Bewertung auf dem Server), Statistik.
