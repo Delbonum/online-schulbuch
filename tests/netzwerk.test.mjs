@@ -338,3 +338,39 @@ test('Modem: zwei Simulationen wie über eine Leitung verbunden (ping, kaputte R
   n1.modemEingang(m1.id, null);
   assert.doesNotThrow(() => n1.laufe(() => false, 5));
 });
+
+test('Dateisystem: Ordner, Dateien, Umbenennen, Löschen, Webserver liefert /webserver aus', async () => {
+  const fs = await import('../apps/werkzeuge/netzwerk/netz.js');
+  const { fuehreAus } = await import('../apps/werkzeuge/netzwerk/befehle.js');
+  const n = new Netz();
+  const g = rechner(n, 'A', '192.168.0.1');
+  assert.deepEqual(fs.ordnerInhalt(g, '/').map((e) => e.name), ['dokumente', 'webserver']);
+  fs.schreibeDatei(g, '/dokumente/notiz.txt', 'Hallo');
+  fs.neuerOrdner(g, '/dokumente/projekt');
+  fs.schreibeDatei(g, '/dokumente/projekt/a.txt', 'A');
+  assert.deepEqual(fs.ordnerInhalt(g, '/dokumente').map((e) => `${e.ordner ? 'D' : 'F'}:${e.name}`), ['D:projekt', 'F:notiz.txt']);
+  assert.throws(() => fs.schreibeDatei(g, '/gibtsnicht/x.txt', ''), /gibt es nicht/);
+  assert.throws(() => fs.neuerOrdner(g, '/dokumente/projekt'), /schon/);
+  assert.throws(() => fs.neuerOrdner(g, '/dokumente/a:b'), /nicht erlaubt/);
+  assert.equal(fs.normalerPfad('/../etc'), null);
+  assert.equal(fs.benenneUm(g, '/dokumente/projekt', 'arbeit'), '/dokumente/arbeit');
+  assert.equal(fs.leseDatei(g, '/dokumente/arbeit/a.txt'), 'A');
+  fs.loesche(g, '/dokumente/arbeit');
+  assert.equal(fs.existiert(g, '/dokumente/arbeit/a.txt'), null);
+  // ältere Entwürfe: Webseiten wandern nach /webserver
+  g.daten.webserver = { laeuft: true, dateien: { 'index.html': '<h1>Alt</h1>' } };
+  assert.match(n.http(g, 'GET / HTTP/1.1'), /200 OK[\s\S]*Alt/);
+  assert.equal(g.daten.webserver.dateien, undefined);
+  fs.schreibeDatei(g, '/webserver/info.html', 'Info');
+  fs.schreibeDatei(g, '/dokumente/geheim.txt', 'geheim');
+  assert.match(n.http(g, 'GET /info.html HTTP/1.1'), /200 OK/);
+  assert.match(n.http(g, 'GET /../dokumente/geheim.txt HTTP/1.1'), /404/);
+  // Befehlszeile
+  const zeilen = [];
+  fuehreAus(n, g, 'dir /webserver', (z) => zeilen.push(z), () => {});
+  fuehreAus(n, g, 'type /dokumente/notiz.txt', (z) => zeilen.push(z), () => {});
+  assert.ok(zeilen.some((z) => z.includes('info.html')) && zeilen.includes('Hallo'));
+  // bleibt beim Speichern und Laden erhalten
+  const neu = Netz.ausJSON(JSON.parse(JSON.stringify(n)));
+  assert.equal(fs.leseDatei(neu.geraete.get(g.id), '/dokumente/notiz.txt'), 'Hallo');
+});

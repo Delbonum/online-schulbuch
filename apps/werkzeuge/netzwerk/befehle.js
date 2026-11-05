@@ -1,6 +1,6 @@
 // Befehlszeile eines simulierten Rechners (ohne DOM, testbar).
 
-import { gueltigeIp } from './netz.js';
+import { gueltigeIp, ordnerInhalt, leseDatei, existiert } from './netz.js';
 
 export const HILFE = [
   'Verfügbare Befehle:',
@@ -12,6 +12,8 @@ export const HILFE = [
   '  arp                   ARP-Tabelle anzeigen (IP-Adresse → MAC-Adresse)',
   '  route                 Weiterleitungstabelle anzeigen',
   '  netstat               offene TCP-Verbindungen anzeigen',
+  '  dir [ORDNER]          Dateien und Ordner anzeigen (auch: ls), z. B. dir /webserver',
+  '  type DATEI            Inhalt einer Textdatei anzeigen (auch: cat)',
   '  cls                   Bildschirm leeren',
 ];
 
@@ -102,6 +104,29 @@ export function fuehreAus(netz, g, zeile, ausgabe, fertig) {
       if (g.daten.dnsserver?.laeuft && g.software.includes('dnsserver')) ausgabe('UDP  Port 53 wartet auf Anfragen (DNS-Server)');
       if (g.daten.echoserver?.laeuft && g.software.includes('echoserver')) ausgabe(`TCP  Port ${g.daten.echoserver.port || 55555} wartet auf Verbindungen (Echo-Server)`);
       if (g.daten.emailserver?.laeuft && g.software.includes('emailserver')) { ausgabe('TCP  Port 25 wartet auf Verbindungen (SMTP)'); ausgabe('TCP  Port 110 wartet auf Verbindungen (POP3)'); }
+      fertig();
+      return undefined;
+    }
+    case 'dir': case 'ls': {
+      const ordner = argumente.find((a) => !a.startsWith('-')) ?? '/';
+      try {
+        if (existiert(g, ordner) === 'datei') ausgabe(ordner);
+        else {
+          const inhalt = ordnerInhalt(g, ordner);
+          ausgabe(`Inhalt von ${ordner}`);
+          if (!inhalt.length) ausgabe('  (leer)');
+          for (const e of inhalt) ausgabe(e.ordner ? `  [Ordner]  ${e.name}` : `  ${String(e.groesse).padStart(8)}  ${e.name}`);
+        }
+      } catch (err) { ausgabe(err.message); }
+      fertig();
+      return undefined;
+    }
+    case 'type': case 'cat': {
+      const datei = argumente.find((a) => !a.startsWith('-'));
+      if (!datei) ausgabe('Aufruf: type DATEI   (z. B. type /webserver/index.html)');
+      else {
+        try { leseDatei(g, datei.startsWith('/') ? datei : `/${datei}`).split('\n').forEach(ausgabe); } catch (err) { ausgabe(err.message); }
+      }
       fertig();
       return undefined;
     }

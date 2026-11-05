@@ -8,6 +8,9 @@
 //   Transport    UDP und ein vereinfachtes TCP (Verbindungsaufbau, Daten, Bestätigung, Abbau)
 //   Anwendung    DNS, DHCP, HTTP (Webserver/-browser)
 //
+// Jeder Rechner hat ein kleines Dateisystem (Ordner und Textdateien, g.daten.dateisystem) für Text-Editor und
+// Datei-Explorer; der Webserver liefert die Dateien im Ordner /webserver aus.
+//
 // Gespeichert wird nur der Entwurf (Geräte, Einstellungen, installierte Software, Daten der Server); der Zustand
 // während der Simulation (ARP-Tabellen, Verbindungen, Protokolle) entsteht bei start() neu.
 
@@ -23,6 +26,8 @@ export const SOFTWARE = {
   firewall: 'Firewall',
   echoserver: 'Echo-Server',
   client: 'Einfacher Client',
+  texteditor: 'Text-Editor',
+  dateiexplorer: 'Datei-Explorer',
 };
 export const ECHO_PORT = 55555;
 /** Rückgabe von ablauf.naechste(): Verbindung offen halten, ohne etwas zu senden (z. B. einfacher Client) */
@@ -67,6 +72,136 @@ function neueMac() {
 
 const kopie = (o) => JSON.parse(JSON.stringify(o));
 
+// ------------------------------------------------------------------ Dateisystem eines Rechners
+//
+// g.daten.dateisystem = { ordner: ['/dokumente', '/webserver', …], dateien: { '/dokumente/notiz.txt': 'Text', … } }
+// Pfade beginnen mit „/“, Ordner werden mit „/“ getrennt. Es gibt nur Textdateien.
+
+export const MAX_DATEI = 200000; // Zeichen je Datei (der Entwurf liegt im Speicher des Browsers)
+
+/** Legt das Dateisystem an (falls nötig) und übernimmt Webseiten aus älteren Entwürfen nach /webserver. */
+export function dateisystem(g) {
+  const fs = (g.daten.dateisystem ??= { ordner: ['/dokumente', '/webserver'], dateien: {} });
+  fs.ordner ??= [];
+  fs.dateien ??= {};
+  const alt = g.daten.webserver?.dateien;
+  if (alt && typeof alt === 'object') {
+    if (!fs.ordner.includes('/webserver')) fs.ordner.push('/webserver');
+    for (const [name, text] of Object.entries(alt)) {
+      const pfad = normalerPfad(`/webserver/${name}`);
+      if (pfad && fs.dateien[pfad] === undefined) { elternAnlegen(fs, pfad); fs.dateien[pfad] = String(text); }
+    }
+    delete g.daten.webserver.dateien;
+  }
+  return fs;
+}
+
+/** „/a/./b/../c“ → „/a/c“; null, wenn der Pfad über die Wurzel hinausführt */
+export function normalerPfad(pfad, basis = '/') {
+  const roh = String(pfad ?? '').trim().replace(/\\/g, '/');
+  const teile = [];
+  for (const t of (roh.startsWith('/') ? roh : `${basis}/${roh}`).split('/')) {
+    if (t === '' || t === '.') continue;
+    if (t === '..') { if (!teile.length) return null; teile.pop(); } else teile.push(t);
+  }
+  return `/${teile.join('/')}`;
+}
+
+const elternVon = (pfad) => pfad.slice(0, pfad.lastIndexOf('/')) || '/';
+const nameVon = (pfad) => pfad.slice(pfad.lastIndexOf('/') + 1);
+const istOrdner = (fs, pfad) => pfad === '/' || fs.ordner.includes(pfad);
+function elternAnlegen(fs, pfad) {
+  for (let e = elternVon(pfad); e !== '/'; e = elternVon(e)) if (!fs.ordner.includes(e)) fs.ordner.push(e);
+}
+
+export function pruefeName(name) {
+  const n = String(name ?? '').trim();
+  if (!n) throw new Error('Bitte gib einen Namen ein.');
+  if (n.length > 60) throw new Error('Der Name ist zu lang (höchstens 60 Zeichen).');
+  if (/[\\/:*?"<>|]/.test(n) || n === '.' || n === '..') throw new Error('Im Namen sind diese Zeichen nicht erlaubt: / \\ : * ? " < > |');
+  return n;
+}
+
+/** Inhalt eines Ordners: erst Ordner, dann Dateien, jeweils alphabetisch */
+export function ordnerInhalt(g, ordner) {
+  const fs = dateisystem(g);
+  const o = normalerPfad(ordner);
+  if (!o || !istOrdner(fs, o)) throw new Error(`Den Ordner ${ordner} gibt es nicht.`);
+  const direkt = (p) => p !== o && elternVon(p) === o;
+  const sortiert = (a, b) => a.localeCompare(b, 'de');
+  return [
+    ...fs.ordner.filter(direkt).sort(sortiert).map((p) => ({ name: nameVon(p), pfad: p, ordner: true })),
+    ...Object.keys(fs.dateien).filter(direkt).sort(sortiert).map((p) => ({ name: nameVon(p), pfad: p, ordner: false, groesse: fs.dateien[p].length })),
+  ];
+}
+
+export function alleDateien(g) {
+  return Object.keys(dateisystem(g).dateien).sort((a, b) => a.localeCompare(b, 'de'));
+}
+
+export function existiert(g, pfad) {
+  const fs = dateisystem(g);
+  const p = normalerPfad(pfad);
+  return p ? (istOrdner(fs, p) ? 'ordner' : fs.dateien[p] !== undefined ? 'datei' : null) : null;
+}
+
+export function leseDatei(g, pfad) {
+  const fs = dateisystem(g);
+  const p = normalerPfad(pfad);
+  if (!p || fs.dateien[p] === undefined) throw new Error(`Die Datei ${pfad} gibt es nicht.`);
+  return fs.dateien[p];
+}
+
+/** Schreibt eine Textdatei (legt sie an oder überschreibt sie); der Ordner muss existieren. */
+export function schreibeDatei(g, pfad, text) {
+  const fs = dateisystem(g);
+  const p = normalerPfad(pfad);
+  if (!p || p === '/') throw new Error('Ungültiger Dateiname.');
+  pruefeName(nameVon(p));
+  if (istOrdner(fs, p)) throw new Error(`${p} ist ein Ordner.`);
+  if (!istOrdner(fs, elternVon(p))) throw new Error(`Den Ordner ${elternVon(p)} gibt es nicht.`);
+  const t = String(text ?? '');
+  if (t.length > MAX_DATEI) throw new Error(`Die Datei ist zu groß (höchstens ${MAX_DATEI / 1000} 000 Zeichen).`);
+  fs.dateien[p] = t;
+  return p;
+}
+
+export function neuerOrdner(g, pfad) {
+  const fs = dateisystem(g);
+  const p = normalerPfad(pfad);
+  if (!p || p === '/') throw new Error('Ungültiger Ordnername.');
+  pruefeName(nameVon(p));
+  if (existiert(g, p)) throw new Error(`${nameVon(p)} gibt es hier schon.`);
+  if (!istOrdner(fs, elternVon(p))) throw new Error(`Den Ordner ${elternVon(p)} gibt es nicht.`);
+  fs.ordner.push(p);
+  return p;
+}
+
+/** Löscht eine Datei oder einen Ordner samt Inhalt */
+export function loesche(g, pfad) {
+  const fs = dateisystem(g);
+  const p = normalerPfad(pfad);
+  if (!p || p === '/') throw new Error('Die Wurzel lässt sich nicht löschen.');
+  if (!existiert(g, p)) throw new Error(`${pfad} gibt es nicht.`);
+  const darin = (x) => x === p || x.startsWith(`${p}/`);
+  fs.ordner = fs.ordner.filter((o) => !darin(o));
+  for (const d of Object.keys(fs.dateien)) if (darin(d)) delete fs.dateien[d];
+}
+
+/** Benennt eine Datei oder einen Ordner um (bleibt im selben Ordner); gibt den neuen Pfad zurück */
+export function benenneUm(g, pfad, neuerName) {
+  const fs = dateisystem(g);
+  const p = normalerPfad(pfad);
+  if (!p || p === '/' || !existiert(g, p)) throw new Error(`${pfad} gibt es nicht.`);
+  const neu = normalerPfad(`${elternVon(p)}/${pruefeName(neuerName)}`);
+  if (neu === p) return p;
+  if (existiert(g, neu)) throw new Error(`${nameVon(neu)} gibt es hier schon.`);
+  const umsetzen = (x) => (x === p ? neu : x.startsWith(`${p}/`) ? neu + x.slice(p.length) : x);
+  fs.ordner = fs.ordner.map(umsetzen);
+  fs.dateien = Object.fromEntries(Object.entries(fs.dateien).map(([k, v]) => [umsetzen(k), v]));
+  return neu;
+}
+
 // ------------------------------------------------------------------ Netz
 
 export class Netz {
@@ -99,6 +234,7 @@ export class Netz {
     if (typ === 'rechner' || typ === 'notebook') {
       g.nics.push({ ...this.neueNic(), ip: `192.168.0.${10 + this.geraete.size}`, maske: '255.255.255.0' });
       g.software = ['befehlszeile'];
+      dateisystem(g);
     }
     this.geraete.set(id, g);
     return g;
@@ -166,6 +302,7 @@ export class Netz {
         dhcpServer: { aktiv: false, von: '', bis: '', gateway: '', dns: '' }, routen: [], software: [], daten: {}, gateway: '', dns: '', dhcp: false,
         ...kopie(g),
       });
+      if (g.typ === 'rechner' || g.typ === 'notebook') dateisystem(n.geraete.get(g.id));
     }
     n.kabel = (daten.kabel ?? []).filter((k) => n.geraete.has(k.a?.g) && n.geraete.has(k.b?.g));
     return n;
@@ -637,10 +774,12 @@ export class Netz {
   http(g, anfrage) {
     const zeile = String(anfrage).split('\n')[0];
     const m = /^GET\s+(\S+)/.exec(zeile);
-    const dateien = g.daten.webserver?.dateien ?? {};
-    let pfad = m ? decodeURIComponent(m[1]).replace(/^\/+/, '') : '';
+    const { dateien } = dateisystem(g);
+    let pfad = '';
+    try { pfad = m ? decodeURIComponent(m[1].split('?')[0]).replace(/^\/+/, '') : ''; } catch { /* kaputte Adresse */ }
     if (pfad === '' || pfad.endsWith('/')) pfad += 'index.html';
-    if (m && Object.prototype.hasOwnProperty.call(dateien, pfad)) return `HTTP/1.1 200 OK\n\n${dateien[pfad]}`;
+    const datei = normalerPfad(`/webserver/${pfad}`); // nur innerhalb von /webserver
+    if (m && datei?.startsWith('/webserver/') && Object.prototype.hasOwnProperty.call(dateien, datei)) return `HTTP/1.1 200 OK\n\n${dateien[datei]}`;
     return `HTTP/1.1 404 Not Found\n\n<html><body><h1>404 – Nicht gefunden</h1><p>Die Datei ${pfad.replace(/</g, '&lt;')} gibt es auf diesem Server nicht.</p></body></html>`;
   }
 

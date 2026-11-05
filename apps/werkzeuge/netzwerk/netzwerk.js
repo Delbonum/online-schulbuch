@@ -8,7 +8,10 @@
 // Bilder der Geräte: bilder/<typ>.svg – Platzhalter, die sich durch eigene Bilder gleichen Namens ersetzen lassen
 // (andere Endung: BILDER unten anpassen).
 
-import { Netz, SOFTWARE, STANDARD_SEITE, gueltigeIp, gueltigeMaske, imSelbenNetz, adressbereich, ECHO_PORT } from './netz.js';
+import {
+  Netz, SOFTWARE, STANDARD_SEITE, gueltigeIp, gueltigeMaske, imSelbenNetz, adressbereich, ECHO_PORT,
+  dateisystem, ordnerInhalt, alleDateien, existiert, leseDatei, schreibeDatei, neuerOrdner, loesche, benenneUm, normalerPfad, MAX_DATEI,
+} from './netz.js';
 import { fuehreAus } from './befehle.js';
 
 const wurzel = document.getElementById('netzwerk');
@@ -29,8 +32,7 @@ const istHost = (g) => g.typ === 'rechner' || g.typ === 'notebook';
 const zustand = {
   netz: new Netz(),
   modus: 'entwurf',
-  werkzeug: 'auswahl', // oder 'kabel', 'platzieren'
-  platzieren: null, // Gerätetyp, der beim nächsten Klick auf die Fläche entsteht
+  werkzeug: 'auswahl', // oder 'kabel'
   auswahl: null, // {art: 'geraet'|'kabel', id}
   kabelStart: null,
   tempo: 2,
@@ -59,7 +61,7 @@ wurzel.innerHTML = `<div class="nw" tabindex="-1">
 </div>
 <div class="nw-haupt">
 <aside class="nw-palette" aria-label="Bauteile"></aside>
-<div class="nw-flaeche-rahmen"><svg class="nw-flaeche" viewBox="0 0 ${BREITE} ${HOEHE}" width="${BREITE}" height="${HOEHE}" role="application" aria-label="Netzwerk"><g class="nw-kabel"></g><line class="nw-kabel-vorschau" hidden/><g class="nw-geraete"></g><image class="nw-geist" width="64" height="64" hidden/></svg></div>
+<div class="nw-flaeche-rahmen"><svg class="nw-flaeche" viewBox="0 0 ${BREITE} ${HOEHE}" width="${BREITE}" height="${HOEHE}" role="application" aria-label="Netzwerk"><g class="nw-kabel"></g><line class="nw-kabel-vorschau" hidden/><g class="nw-geraete"></g></svg></div>
 </div>
 <div class="nw-panel"></div>
 <div class="nw-meldung" role="status" aria-live="polite"></div>
@@ -71,7 +73,6 @@ const svg = app.querySelector('.nw-flaeche');
 const gKabel = svg.querySelector('.nw-kabel');
 const gGeraete = svg.querySelector('.nw-geraete');
 const vorschau = svg.querySelector('.nw-kabel-vorschau');
-const geist = svg.querySelector('.nw-geist');
 const panel = app.querySelector('.nw-panel');
 const ebene = app.querySelector('.nw-fenster-ebene');
 
@@ -96,7 +97,7 @@ function speichere() {
 // ------------------------------------------------------------------ Palette (Entwurf)
 
 const palette = app.querySelector('.nw-palette');
-palette.innerHTML = `${Object.keys(BILDER).map((typ) => `<button type="button" class="nw-bauteil" data-typ="${typ}" draggable="true" aria-pressed="false" title="${NAMEN[typ]}: anklicken und dann auf die Fläche klicken – oder auf die Fläche ziehen"><img src="${bild(typ)}" alt=""><span>${NAMEN[typ]}</span></button>`).join('')}
+palette.innerHTML = `${Object.keys(BILDER).map((typ) => `<button type="button" class="nw-bauteil" data-typ="${typ}" draggable="true" title="${NAMEN[typ]} hinzufügen (klicken oder auf die Fläche ziehen)"><img src="${bild(typ)}" alt=""><span>${NAMEN[typ]}</span></button>`).join('')}
 <button type="button" class="nw-bauteil nw-kabel-werkzeug" title="Kabel: erst ein Gerät, dann das andere anklicken"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40C18 40 14 8 30 8h12" fill="none" stroke="#3d4a5c" stroke-width="4" stroke-linecap="round"/><circle cx="6" cy="40" r="4" fill="#0b6b72"/><circle cx="42" cy="8" r="4" fill="#0b6b72"/></svg><span>Kabel</span></button>
 <button type="button" class="nw-bauteil nw-papierkorb" title="Papierkorb: Gerät hierher ziehen – oder Gerät bzw. Kabel anklicken und dann hier klicken"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 13h28M19 13V8h10v5M13 13l2 28h18l2-28" fill="none" stroke="#3d4a5c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 19v16M28 19v16" stroke="#3d4a5c" stroke-width="3" stroke-linecap="round"/></svg><span>Papierkorb</span></button>`;
 const papierkorb = palette.querySelector('.nw-papierkorb');
@@ -117,9 +118,10 @@ palette.addEventListener('click', (e) => {
     return;
   }
   if (knopf.classList.contains('nw-kabel-werkzeug')) { setzeWerkzeug(zustand.werkzeug === 'kabel' ? 'auswahl' : 'kabel'); return; }
-  // Gerät anwählen; es entsteht erst beim Klick auf die Fläche (nochmals anklicken: abwählen)
-  if (zustand.werkzeug === 'platzieren' && zustand.platzieren === knopf.dataset.typ) setzeWerkzeug('auswahl');
-  else setzeWerkzeug('platzieren', knopf.dataset.typ);
+  // in die Mitte des sichtbaren Bereichs, leicht versetzt
+  const rahmen = app.querySelector('.nw-flaeche-rahmen');
+  const n = zustand.netz.geraete.size % 6;
+  neuesGeraet(knopf.dataset.typ, rahmen.scrollLeft + rahmen.clientWidth / 2 - 60 + n * 30, rahmen.scrollTop + rahmen.clientHeight / 2 - 60 + n * 30);
 });
 palette.addEventListener('dragstart', (e) => {
   const knopf = e.target.closest('.nw-bauteil[data-typ]');
@@ -134,24 +136,13 @@ svg.addEventListener('drop', (e) => {
   neuesGeraet(typ, p.x, p.y);
 });
 
-function setzeWerkzeug(w, typ = null) {
+function setzeWerkzeug(w) {
   zustand.werkzeug = w;
-  zustand.platzieren = w === 'platzieren' ? typ : null;
   zustand.kabelStart = null;
   vorschau.hidden = true;
-  geist.hidden = true;
   palette.querySelector('.nw-kabel-werkzeug').classList.toggle('aktiv', w === 'kabel');
-  palette.querySelectorAll('[data-typ]').forEach((b) => {
-    b.classList.toggle('aktiv', b.dataset.typ === zustand.platzieren);
-    b.setAttribute('aria-pressed', String(b.dataset.typ === zustand.platzieren));
-  });
   svg.classList.toggle('kabel-modus', w === 'kabel');
-  svg.classList.toggle('platzieren-modus', w === 'platzieren');
   if (w === 'kabel') melde('Kabel verlegen: Klicke nacheinander auf die beiden Geräte. Esc beendet.');
-  if (w === 'platzieren') {
-    geist.setAttribute('href', bild(typ));
-    melde(`${NAMEN[typ]} gewählt: Klicke auf die Fläche, wo es hin soll. Esc bricht ab.`);
-  }
 }
 
 function svgPunkt(e) {
@@ -200,12 +191,6 @@ let ziehen = null;
 svg.addEventListener('pointerdown', (e) => {
   const geraetEl = e.target.closest('[data-geraet]');
   const kabelEl = e.target.closest('[data-kabel]');
-  if (zustand.werkzeug === 'platzieren' && zustand.modus === 'entwurf') {
-    const p = svgPunkt(e);
-    neuesGeraet(zustand.platzieren, Math.max(0, Math.min(BREITE - 80, p.x - 36)), Math.max(0, Math.min(HOEHE - 100, p.y - 32)));
-    setzeWerkzeug('auswahl');
-    return;
-  }
   if (zustand.werkzeug === 'kabel' && zustand.modus === 'entwurf') {
     if (!geraetEl) { setzeWerkzeug('auswahl'); return; }
     const id = geraetEl.dataset.geraet;
@@ -256,12 +241,6 @@ const ueberPapierkorb = (e) => {
 };
 
 svg.addEventListener('pointermove', (e) => {
-  if (zustand.werkzeug === 'platzieren') {
-    const p = svgPunkt(e);
-    geist.setAttribute('x', p.x - 32);
-    geist.setAttribute('y', p.y - 32);
-    geist.hidden = false;
-  }
   if (zustand.kabelStart && !vorschau.hidden) {
     const p = svgPunkt(e);
     vorschau.setAttribute('x2', p.x);
@@ -282,8 +261,6 @@ svg.addEventListener('pointermove', (e) => {
     gKabel.querySelectorAll(`[data-kabel="${k.id}"] line`).forEach((l) => { l.setAttribute(`x${ende}`, m.x); l.setAttribute(`y${ende}`, m.y); });
   }
 });
-
-svg.addEventListener('pointerleave', () => { geist.hidden = true; });
 
 svg.addEventListener('pointerup', (e) => {
   papierkorb.classList.remove('bereit');
@@ -365,7 +342,7 @@ function zeichnePanel() {
   const n = zustand.netz;
   if (!a) {
     panel.innerHTML = zustand.modus === 'entwurf'
-      ? '<p class="nw-tipp">Füge links Geräte hinzu (anklicken und dann auf die Fläche klicken – oder auf die Fläche ziehen) und verbinde sie mit dem Kabel. Ein angeklicktes Gerät stellst du hier unten ein. Dann oben auf <strong>▶ Simulation</strong>.</p>'
+      ? '<p class="nw-tipp">Füge links Geräte hinzu (anklicken oder auf die Fläche ziehen) und verbinde sie mit dem Kabel. Ein angeklicktes Gerät stellst du hier unten ein. Dann oben auf <strong>▶ Simulation</strong>.</p>'
       : '<p class="nw-tipp">Simulation läuft. Doppelklick auf einen Rechner öffnet seinen Desktop (Software installieren, Befehlszeile, Browser …); Doppelklick auf Switch oder Router zeigt, was dort passiert. Grün leuchtende Kabel übertragen gerade Daten.</p>';
     return;
   }
@@ -559,7 +536,7 @@ const fensterListe = new Map();
 let fensterZ = 10;
 
 /** Öffnet ein verschiebbares Fenster (oder holt ein schon offenes nach vorn). */
-function fenster(id, titel, { breite = 520, hoehe = 380, aufbauen, aktualisieren = null }) {
+function fenster(id, titel, { breite = 520, hoehe = 380, aufbauen, aktualisieren = null, vorSchliessen = null }) {
   const offen = fensterListe.get(id);
   if (offen) { offen.el.style.zIndex = ++fensterZ; return offen; }
   const anzahl = fensterListe.size;
@@ -567,7 +544,7 @@ function fenster(id, titel, { breite = 520, hoehe = 380, aufbauen, aktualisieren
 <header class="nw-fenster-kopf"><span>${esc(titel)}</span><button type="button" class="nw-fenster-zu" aria-label="Schließen">✕</button></header>
 <div class="nw-fenster-inhalt"></div></section>`);
   ebene.append(el);
-  const f = { el, inhalt: el.querySelector('.nw-fenster-inhalt'), aktualisieren, aufbauen };
+  const f = { el, inhalt: el.querySelector('.nw-fenster-inhalt'), aktualisieren, aufbauen, vorSchliessen };
   fensterListe.set(id, f);
   el.querySelector('.nw-fenster-zu').addEventListener('click', () => schliesse(id));
   el.addEventListener('pointerdown', () => { el.style.zIndex = ++fensterZ; });
@@ -587,16 +564,19 @@ function fenster(id, titel, { breite = 520, hoehe = 380, aufbauen, aktualisieren
   return f;
 }
 
-function schliesse(id) {
-  fensterListe.get(id)?.el.remove();
+/** Schließt ein Fenster; vorSchliessen() kann das verhindern (außer beim Moduswechsel: erzwingen) */
+function schliesse(id, erzwingen = false) {
+  const f = fensterListe.get(id);
+  if (f?.vorSchliessen && !erzwingen && f.vorSchliessen(f) === false) return;
+  f?.el.remove();
   fensterListe.delete(id);
 }
 
-function schliesseAlle() { for (const id of [...fensterListe.keys()]) schliesse(id); }
+function schliesseAlle() { for (const id of [...fensterListe.keys()]) schliesse(id, true); }
 
 // ------------------------------------------------------------------ Desktop und Software
 
-const SYMBOLE = { befehlszeile: '⌨', webbrowser: '🌐', webserver: '🗄', dnsserver: '📖', emailprogramm: '✉', emailserver: '📮', firewall: '🧱', echoserver: '🔁', client: '💬', installation: '🧩' };
+const SYMBOLE = { befehlszeile: '⌨', webbrowser: '🌐', webserver: '🗄', dnsserver: '📖', emailprogramm: '✉', emailserver: '📮', firewall: '🧱', echoserver: '🔁', client: '💬', texteditor: '📝', dateiexplorer: '🗂', installation: '🧩' };
 
 function desktop(g) {
   const id = `desktop:${g.id}`;
@@ -614,19 +594,20 @@ function desktop(g) {
 }
 
 function oeffneApp(g, app_) {
-  ({ installation, befehlszeile, webbrowser, webserver, dnsserver, emailprogramm, emailserver, firewall, echoserver, client })[app_]?.(g);
+  ({ installation, befehlszeile, webbrowser, webserver, dnsserver, emailprogramm, emailserver, firewall, echoserver, client, texteditor, dateiexplorer })[app_]?.(g);
 }
 
 function installation(g) {
   fenster(`installation:${g.id}`, `Software-Installation – ${g.name}`, {
-    breite: 400, hoehe: 470,
+    breite: 400, hoehe: 540,
     aufbauen(f) {
       f.inhalt.innerHTML = `<p class="klein">Wähle aus, welche Programme auf ${esc(g.name)} installiert sein sollen.</p>
 ${Object.entries(SOFTWARE).map(([k, name]) => `<label class="nw-check"><input type="checkbox" value="${k}"${g.software.includes(k) ? ' checked' : ''}> ${SYMBOLE[k]} ${name}</label>`).join('')}
 <div class="nw-zeile"><button type="button" class="knopf primaer">Übernehmen</button></div>`;
       f.inhalt.querySelector('button').addEventListener('click', () => {
         g.software = [...f.inhalt.querySelectorAll('input:checked')].map((c) => c.value);
-        g.daten.webserver ??= { laeuft: false, dateien: { 'index.html': STANDARD_SEITE } };
+        g.daten.webserver ??= { laeuft: false };
+        if (g.software.includes('webserver')) webseitenAnlegen(g);
         g.daten.dnsserver ??= { laeuft: false, eintraege: [] };
         // Eine frisch installierte Firewall ist eingeschaltet und lässt nur Antworten herein
         if (g.software.includes('firewall')) g.firewall ??= { aktiv: true, standard: 'verwerfen', antworten: true, regeln: [] };
@@ -727,29 +708,41 @@ function startKnopf(g, art, f, neu) {
   });
 }
 
+/** Ordner /webserver mit Startseite anlegen, falls er fehlt oder leer ist */
+function webseitenAnlegen(g) {
+  const fs = dateisystem(g);
+  if (!fs.ordner.includes('/webserver')) fs.ordner.push('/webserver');
+  if (!webDateien(g).length) fs.dateien['/webserver/index.html'] = STANDARD_SEITE;
+}
+const webDateien = (g) => alleDateien(g).filter((p) => p.startsWith('/webserver/')).map((p) => p.slice('/webserver/'.length));
+
 function webserver(g) {
-  g.daten.webserver ??= { laeuft: false, dateien: { 'index.html': STANDARD_SEITE } };
+  g.daten.webserver ??= { laeuft: false };
+  webseitenAnlegen(g);
   const aufbauen = (f) => {
-    const d = g.daten.webserver;
+    const d = { dateien: Object.fromEntries(webDateien(g).map((x) => [x, leseDatei(g, `/webserver/${x}`)])) };
     const namen = Object.keys(d.dateien);
     const gewaehlt = f.datei && d.dateien[f.datei] !== undefined ? f.datei : namen[0];
     f.datei = gewaehlt;
-    f.inhalt.innerHTML = `${serverKopf(g, 'webserver', 'Webserver', `Liefert Webseiten über HTTP (TCP-Port 80) aus. Aufruf im Browser: http://${esc(g.nics[0].ip || 'IP-Adresse')}/dateiname`)}
+    f.inhalt.innerHTML = `${serverKopf(g, 'webserver', 'Webserver', `Liefert Webseiten über HTTP (TCP-Port 80) aus. Aufruf im Browser: http://${esc(g.nics[0].ip || 'IP-Adresse')}/dateiname. Die Dateien liegen im Ordner /webserver (auch im Datei-Explorer und Text-Editor).`)}
 <div class="nw-zeile"><select class="nw-datei" aria-label="Datei">${namen.map((x) => `<option${x === gewaehlt ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>
 <button type="button" class="knopf nw-datei-neu">Neue Datei</button><button type="button" class="knopf nw-datei-weg"${namen.length <= 1 ? ' disabled' : ''}>Datei löschen</button></div>
 <textarea class="nw-quelltext" spellcheck="false" aria-label="Inhalt der Datei">${esc(gewaehlt ? d.dateien[gewaehlt] : '')}</textarea>`;
     startKnopf(g, 'webserver', f, aufbauen);
+    if (!gewaehlt) f.inhalt.querySelector('.nw-quelltext').disabled = true;
     f.inhalt.querySelector('.nw-datei').addEventListener('change', (e) => { f.datei = e.target.value; aufbauen(f); });
-    f.inhalt.querySelector('.nw-quelltext').addEventListener('input', (e) => { d.dateien[f.datei] = e.target.value; speichere(); });
+    f.inhalt.querySelector('.nw-quelltext').addEventListener('input', (e) => {
+      try { schreibeDatei(g, `/webserver/${f.datei}`, e.target.value); speichere(); } catch (err) { melde(err.message, 'fehler'); }
+    });
     f.inhalt.querySelector('.nw-datei-neu').addEventListener('click', () => {
       let i = 2;
       while (d.dateien[`seite${i}.html`] !== undefined) i++;
       f.datei = `seite${i}.html`;
-      d.dateien[f.datei] = '<html><body>\n<h1>Neue Seite</h1>\n<p><a href="index.html">Zur Startseite</a></p>\n</body></html>\n';
+      schreibeDatei(g, `/webserver/${f.datei}`, '<html><body>\n<h1>Neue Seite</h1>\n<p><a href="index.html">Zur Startseite</a></p>\n</body></html>\n');
       speichere();
       aufbauen(f);
     });
-    f.inhalt.querySelector('.nw-datei-weg').addEventListener('click', () => { delete d.dateien[f.datei]; f.datei = null; speichere(); aufbauen(f); });
+    f.inhalt.querySelector('.nw-datei-weg').addEventListener('click', () => { loesche(g, `/webserver/${f.datei}`); f.datei = null; speichere(); aufbauen(f); });
   };
   fenster(`webserver:${g.id}`, `Webserver – ${g.name}`, { breite: 560, hoehe: 420, aufbauen });
 }
@@ -1129,6 +1122,222 @@ ${t.map((r) => `<tr><td>${r.ziel}</td><td>${r.maske}</td><td>${r.gateway || '–
   });
 }
 
+// ------------------------------------------------------------------ Text-Editor und Datei-Explorer
+
+function herunterladen(name, text, typ = 'text/plain') {
+  const url = URL.createObjectURL(new Blob([text], { type: `${typ};charset=utf-8` }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: name });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+const ordnerVon = (pfad) => pfad.slice(0, pfad.lastIndexOf('/')) || '/';
+const dateiname = (pfad) => pfad.slice(pfad.lastIndexOf('/') + 1);
+
+/** Text-Editor: eine Datei öffnen, bearbeiten und speichern (pfad: gleich diese Datei öffnen) */
+function texteditor(g, pfad = null) {
+  const id = `texteditor:${g.id}`;
+  const offen = fensterListe.get(id);
+  if (offen && pfad && pfad !== offen.pfad) {
+    if (offen.geaendert) { offen.el.style.zIndex = ++fensterZ; melde('Im Text-Editor gibt es ungespeicherte Änderungen. Speichere sie zuerst.', 'fehler'); return; }
+    offen.oeffne(pfad);
+  }
+  fenster(id, `Text-Editor – ${g.name}`, {
+    breite: 580, hoehe: 420,
+    vorSchliessen(f) {
+      if (!f.geaendert || f.warnung) return true;
+      f.warnung = true;
+      f.zeigeStatus('Ungespeicherte Änderungen! Speichern – oder noch einmal ✕ klicken, um sie zu verwerfen.', true);
+      return false;
+    },
+    aufbauen(f) {
+      f.inhalt.classList.add('nw-editor');
+      f.inhalt.innerHTML = `<div class="nw-zeile nw-werkzeugleiste">
+<button type="button" class="knopf" data-t="neu">Neu</button>
+<select class="nw-oeffnen-liste" aria-label="Datei öffnen"></select>
+<button type="button" class="knopf" data-t="speichern">Speichern</button>
+<button type="button" class="knopf" data-t="unter">Speichern unter …</button></div>
+<form class="nw-zeile nw-unter" hidden><label class="klein" for="nw-unter-${g.id}">Speichern als</label>
+<input id="nw-unter-${g.id}" class="nw-pfad" spellcheck="false" autocomplete="off"><button class="knopf primaer">OK</button><button type="button" class="knopf" data-t="abbrechen">Abbrechen</button></form>
+<p class="nw-editor-status klein" aria-live="polite"></p>
+<textarea class="nw-quelltext nw-editor-text" spellcheck="false" aria-label="Text"></textarea>`;
+      const text = f.inhalt.querySelector('textarea');
+      const liste = f.inhalt.querySelector('.nw-oeffnen-liste');
+      const unter = f.inhalt.querySelector('.nw-unter');
+      const status = f.inhalt.querySelector('.nw-editor-status');
+      f.zeigeStatus = (t = '', warnung = false) => {
+        status.textContent = t || (f.pfad ? `${f.pfad}${f.geaendert ? ' – geändert, noch nicht gespeichert' : ''}` : `Neue Datei${f.geaendert ? ' (noch nicht gespeichert)' : ''}`);
+        status.classList.toggle('nw-hinweis', warnung || f.geaendert);
+      };
+      const fuelleListe = () => {
+        liste.innerHTML = `<option value="">Öffnen …</option>${alleDateien(g).map((p) => `<option value="${esc(p)}">${esc(p)}</option>`).join('')}`;
+      };
+      f.oeffne = (p) => {
+        try { text.value = p ? leseDatei(g, p) : ''; } catch (err) { melde(err.message, 'fehler'); return; }
+        f.pfad = p;
+        f.geaendert = false;
+        f.warnung = false;
+        unter.hidden = true;
+        fuelleListe();
+        f.zeigeStatus();
+        text.focus();
+      };
+      const speichernAls = (p) => {
+        try {
+          const ziel = schreibeDatei(g, p, text.value);
+          f.pfad = ziel;
+          f.geaendert = false;
+          f.warnung = false;
+          speichere();
+          unter.hidden = true;
+          fuelleListe();
+          f.zeigeStatus(`Gespeichert: ${ziel}`);
+          setTimeout(() => { if (!f.geaendert) f.zeigeStatus(); }, 2500);
+          aktualisiereExplorer(g);
+        } catch (err) { f.zeigeStatus(err.message, true); }
+      };
+      const fragePfad = () => {
+        unter.hidden = false;
+        const eingabe = unter.querySelector('input');
+        eingabe.value = f.pfad ?? '/dokumente/neu.txt';
+        eingabe.focus();
+        eingabe.setSelectionRange(eingabe.value.lastIndexOf('/') + 1, eingabe.value.length);
+      };
+      text.addEventListener('input', () => { if (!f.geaendert) { f.geaendert = true; f.zeigeStatus(); } f.warnung = false; });
+      text.addEventListener('keydown', (e) => {
+        if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); if (f.pfad) speichernAls(f.pfad); else fragePfad(); }
+      });
+      liste.addEventListener('change', () => {
+        const p = liste.value;
+        liste.value = '';
+        if (!p) return;
+        if (f.geaendert) { f.zeigeStatus('Erst speichern – sonst gehen die Änderungen verloren. (Oder „Neu“ und dann öffnen.)', true); return; }
+        f.oeffne(p);
+      });
+      f.inhalt.querySelector('[data-t="neu"]').addEventListener('click', () => {
+        if (f.geaendert && !f.warnung) { f.warnung = true; f.zeigeStatus('Ungespeicherte Änderungen! Noch einmal „Neu“ klicken, um sie zu verwerfen.', true); return; }
+        f.oeffne(null);
+      });
+      f.inhalt.querySelector('[data-t="speichern"]').addEventListener('click', () => { if (f.pfad) speichernAls(f.pfad); else fragePfad(); });
+      f.inhalt.querySelector('[data-t="unter"]').addEventListener('click', fragePfad);
+      f.inhalt.querySelector('[data-t="abbrechen"]').addEventListener('click', () => { unter.hidden = true; f.zeigeStatus(); });
+      unter.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const p = normalerPfad(unter.querySelector('input').value);
+        if (!p || p === '/') { f.zeigeStatus('Ungültiger Dateiname.', true); return; }
+        if (existiert(g, p) === 'datei' && p !== f.pfad && unter.dataset.ueberschreiben !== p) {
+          unter.dataset.ueberschreiben = p;
+          f.zeigeStatus(`${p} gibt es schon. Noch einmal OK klicken, um sie zu überschreiben.`, true);
+          return;
+        }
+        delete unter.dataset.ueberschreiben;
+        speichernAls(p);
+      });
+      f.oeffne(pfad);
+    },
+  });
+}
+
+function aktualisiereExplorer(g) {
+  const f = fensterListe.get(`dateiexplorer:${g.id}`);
+  if (f) f.aufbauen(f);
+}
+
+function dateiexplorer(g) {
+  dateisystem(g);
+  fenster(`dateiexplorer:${g.id}`, `Datei-Explorer – ${g.name}`, {
+    breite: 560, hoehe: 400,
+    aufbauen(f) {
+      f.ordner = existiert(g, f.ordner ?? '/') === 'ordner' ? f.ordner ?? '/' : '/';
+      const inhalt = ordnerInhalt(g, f.ordner);
+      const teile = f.ordner.split('/').filter(Boolean);
+      f.inhalt.classList.add('nw-explorer');
+      f.inhalt.innerHTML = `<nav class="nw-pfadleiste" aria-label="Ordner"><button type="button" class="uf-link" data-ordner="/">${esc(g.name)}</button>${teile.map((t, i) => ` / <button type="button" class="uf-link" data-ordner="/${esc(teile.slice(0, i + 1).join('/'))}">${esc(t)}</button>`).join('')}</nav>
+<div class="nw-zeile">
+<button type="button" class="knopf" data-t="hoch"${f.ordner === '/' ? ' disabled' : ''}>⬆ Ordner hoch</button>
+<button type="button" class="knopf" data-t="ordner">+ Ordner</button>
+<button type="button" class="knopf" data-t="datei">+ Textdatei</button>
+<label class="knopf">Importieren … <input type="file" multiple class="sr nw-import"></label></div>
+<form class="nw-zeile nw-name-form" hidden><label class="klein"></label><input spellcheck="false" autocomplete="off" maxlength="60"><button class="knopf primaer">OK</button><button type="button" class="knopf" data-t="abbrechen">Abbrechen</button></form>
+<table class="nw-tabelle nw-dateiliste"><thead><tr><th>Name</th><th>Größe</th><th><span class="sr">Aktionen</span></th></tr></thead><tbody>
+${inhalt.map((e) => `<tr data-pfad="${esc(e.pfad)}"><td><button type="button" class="uf-link nw-eintrag" data-art="${e.ordner ? 'ordner' : 'datei'}">${e.ordner ? '📁' : '📄'} ${esc(e.name)}</button></td>
+<td class="klein">${e.ordner ? 'Ordner' : `${e.groesse} Zeichen`}</td>
+<td class="nw-aktionen">${e.ordner ? '' : '<button type="button" class="uf-link" data-t="laden" title="Auf deinen Computer herunterladen">⬇</button>'}
+<button type="button" class="uf-link" data-t="umbenennen" title="Umbenennen">✎</button>
+<button type="button" class="uf-link" data-t="loeschen" title="Löschen">✕</button></td></tr>`).join('')}
+</tbody></table>
+${inhalt.length ? '' : '<p class="klein nw-tipp">Dieser Ordner ist leer.</p>'}
+<p class="klein nw-tipp">Klick auf einen Ordner öffnet ihn, Klick auf eine Datei öffnet sie im Text-Editor. „Importieren“ holt Textdateien (z. B. .html, .txt) von deinem Computer in diesen Ordner.</p>`;
+      const form = f.inhalt.querySelector('.nw-name-form');
+      const frageName = (beschriftung, wert, ok) => {
+        form.hidden = false;
+        form.querySelector('label').textContent = beschriftung;
+        const eingabe = form.querySelector('input');
+        eingabe.value = wert;
+        eingabe.focus();
+        eingabe.setSelectionRange(0, wert.includes('.') ? wert.lastIndexOf('.') : wert.length);
+        form.onsubmit = (e) => {
+          e.preventDefault();
+          try { ok(eingabe.value.trim()); speichere(); f.aufbauen(f); } catch (err) { melde(err.message, 'fehler'); }
+        };
+      };
+      const pfadIn = (name) => (f.ordner === '/' ? `/${name}` : `${f.ordner}/${name}`);
+      f.inhalt.querySelectorAll('[data-ordner]').forEach((b) => b.addEventListener('click', () => { f.ordner = b.dataset.ordner; f.aufbauen(f); }));
+      f.inhalt.querySelector('[data-t="hoch"]').addEventListener('click', () => { f.ordner = ordnerVon(f.ordner); f.aufbauen(f); });
+      f.inhalt.querySelector('[data-t="ordner"]').addEventListener('click', () => frageName('Name des neuen Ordners', 'Neuer Ordner', (n) => neuerOrdner(g, pfadIn(n))));
+      f.inhalt.querySelector('[data-t="datei"]').addEventListener('click', () => frageName('Name der neuen Datei', 'neu.txt', (n) => {
+        if (existiert(g, pfadIn(n))) throw new Error(`${n} gibt es hier schon.`);
+        schreibeDatei(g, pfadIn(n), '');
+      }));
+      form.querySelector('[data-t="abbrechen"]').addEventListener('click', () => { form.hidden = true; });
+      f.inhalt.querySelectorAll('.nw-eintrag').forEach((b) => b.addEventListener('click', () => {
+        const p = b.closest('tr').dataset.pfad;
+        if (b.dataset.art === 'ordner') { f.ordner = p; f.aufbauen(f); return; }
+        if (!g.software.includes('texteditor')) { melde('Installiere den Text-Editor (Software-Installation), um Dateien zu öffnen.', 'fehler'); return; }
+        texteditor(g, p);
+      }));
+      f.inhalt.querySelectorAll('[data-t="laden"]').forEach((b) => b.addEventListener('click', () => {
+        const p = b.closest('tr').dataset.pfad;
+        herunterladen(dateiname(p), leseDatei(g, p), p.endsWith('.html') ? 'text/html' : 'text/plain');
+      }));
+      f.inhalt.querySelectorAll('[data-t="umbenennen"]').forEach((b) => b.addEventListener('click', () => {
+        const p = b.closest('tr').dataset.pfad;
+        frageName(`Neuer Name für ${dateiname(p)}`, dateiname(p), (n) => {
+          const neu = benenneUm(g, p, n);
+          const editor = fensterListe.get(`texteditor:${g.id}`);
+          if (editor?.pfad === p) { editor.pfad = neu; editor.zeigeStatus(); }
+        });
+      }));
+      f.inhalt.querySelectorAll('[data-t="loeschen"]').forEach((b) => b.addEventListener('click', () => {
+        const p = b.closest('tr').dataset.pfad;
+        const vorher = JSON.parse(JSON.stringify(dateisystem(g)));
+        loesche(g, p);
+        speichere();
+        f.aufbauen(f);
+        melde(`„${dateiname(p)}“ gelöscht.`, 'info', () => { g.daten.dateisystem = vorher; speichere(); aktualisiereExplorer(g); });
+      }));
+      f.inhalt.querySelector('.nw-import').addEventListener('change', async (e) => {
+        const dateien = [...e.target.files];
+        e.target.value = '';
+        let anzahl = 0;
+        for (const datei of dateien) {
+          const text = await datei.text();
+          if (text.length > MAX_DATEI || text.includes('\u0000')) { melde(`„${datei.name}“ ist keine Textdatei oder zu groß (höchstens ${MAX_DATEI / 1000} 000 Zeichen).`, 'fehler'); continue; }
+          // Name bereinigen und nichts überschreiben: „name (2).txt“
+          const basis = datei.name.replace(/[\\/:*?"<>|]/g, '_').slice(0, 55) || 'datei.txt';
+          const punkt = basis.lastIndexOf('.') > 0 ? basis.lastIndexOf('.') : basis.length;
+          let name = basis;
+          for (let i = 2; existiert(g, pfadIn(name)); i++) name = `${basis.slice(0, punkt)} (${i})${basis.slice(punkt)}`;
+          try { schreibeDatei(g, pfadIn(name), text); anzahl++; } catch (err) { melde(err.message, 'fehler'); }
+        }
+        if (anzahl) { speichere(); f.aufbauen(f); melde(`${anzahl} Datei${anzahl > 1 ? 'en' : ''} importiert.`); }
+      });
+    },
+  });
+}
+
 // ------------------------------------------------------------------ Modem (Verbindung zu einer anderen Simulation)
 
 const modems = new Map(); // Geräte-ID → {code, token, seite, partner, raus, gesendet, empfangen, timer, laeuft, fehler}
@@ -1436,7 +1645,9 @@ const BEISPIELE = {
     const web = n.neuesGeraet('rechner', { x: 1040, y: 400, name: 'Webserver' });
     web.nics[0].ip = '10.0.0.80'; web.gateway = '10.0.0.1';
     web.software = ['befehlszeile', 'webserver'];
-    web.daten.webserver = { laeuft: true, dateien: { 'index.html': '<html><body>\n<h1>Willkommen!</h1>\n<p>Diese Seite kam über DNS, Router und TCP zu dir.</p>\n<p><a href="impressum.html">Impressum</a></p>\n</body></html>\n', 'impressum.html': '<html><body><h1>Impressum</h1><p><a href="index.html">Zurück</a></p></body></html>\n' } };
+    web.daten.webserver = { laeuft: true };
+    Object.entries({ 'index.html': '<html><body>\n<h1>Willkommen!</h1>\n<p>Diese Seite kam über DNS, Router und TCP zu dir.</p>\n<p><a href="impressum.html">Impressum</a></p>\n</body></html>\n', 'impressum.html': '<html><body><h1>Impressum</h1><p><a href="index.html">Zurück</a></p></body></html>\n' })
+      .forEach(([name, text]) => schreibeDatei(web, `/webserver/${name}`, text));
     n.verbinde(dns.id, s2.id); n.verbinde(web.id, s2.id);
     return n;
   },
@@ -1483,13 +1694,14 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
   aufbauen(f) {
     f.inhalt.classList.add('nw-hilfe');
     f.inhalt.innerHTML = `<h4>Entwurf ✎</h4>
-<ul><li>Links ein Gerät anklicken und dann auf die Fläche klicken, wo es hin soll (Esc bricht ab) – oder es direkt auf die Fläche ziehen. Geräte lassen sich verschieben.</li>
+<ul><li>Links ein Gerät anklicken oder auf die Fläche ziehen. Geräte lassen sich verschieben.</li>
 <li><strong>Kabel:</strong> Kabel-Werkzeug wählen, dann nacheinander zwei Geräte anklicken. Rechner haben einen Anschluss, Switch und Router bekommen bei Bedarf weitere.</li>
 <li>Ein angeklicktes Gerät stellst du unten ein (IP-Adresse, Netzmaske, Gateway, DNS-Server, DHCP). Beim Router: Anschlüsse und Weiterleitungstabelle.</li>
 <li>Löschen: Gerät in den <strong>Papierkorb</strong> ziehen – oder Gerät bzw. Kabel anklicken und dann Entf drücken oder auf den Papierkorb klicken. Versehentlich gelöscht? In der Meldung auf <em>Rückgängig</em> klicken (oder Strg+Z).</li></ul>
 <h4>Simulation ▶</h4>
-<ul><li>Doppelklick auf einen Rechner öffnet den Desktop. Über <em>Software-Installation</em> kommen Programme dazu: Befehlszeile, Webbrowser, Webserver, DNS-Server, E-Mail-Programm, E-Mail-Server.</li>
+<ul><li>Doppelklick auf einen Rechner öffnet den Desktop. Über <em>Software-Installation</em> kommen Programme dazu: Befehlszeile, Webbrowser, Webserver, DNS-Server, E-Mail-Programm, E-Mail-Server, Firewall, Echo-Server, einfacher Client, Text-Editor, Datei-Explorer.</li>
 <li><strong>Echo-Server und einfacher Client:</strong> Der Echo-Server (Port 55555) schickt jede Nachricht zurück; mit dem einfachen Client baust du eine TCP-Verbindung auf, schickst Nachrichten und trennst wieder – im Datenaustausch sieht man Verbindungsaufbau, Daten und Abbau.</li>
+<li><strong>Datei-Explorer und Text-Editor:</strong> Jeder Rechner hat Ordner und Textdateien. Im Datei-Explorer legst du Ordner und Dateien an, benennst sie um, löschst sie, importierst Textdateien von deinem Computer oder lädst sie herunter. Im Text-Editor schreibst du Dateien und speicherst sie (Strg+S). Der Webserver liefert die Dateien im Ordner <code>/webserver</code> aus. In der Befehlszeile zeigen <code>dir</code> und <code>type</code> Ordner und Dateien an.</li>
 <li><strong>Firewall:</strong> auf Rechnern als Software (prüft ankommende Pakete), auf Routern über „Firewall“ (prüft alles, was durchläuft). Verworfene Pakete erscheinen im Datenaustausch.</li>
 <li><strong>E-Mail:</strong> Der E-Mail-Server verwaltet eine Domain mit Konten. Das E-Mail-Programm verschickt über SMTP (Postausgangsserver) und holt über POP3 ab (Posteingangsserver). Für fremde Domains braucht der DNS-Server einen MX-Eintrag, der auf deren Mailserver zeigt.</li>
 <li>Befehlszeile: <code>ipconfig</code>, <code>ping</code>, <code>traceroute</code>, <code>host</code>, <code>arp</code>, <code>route</code>, <code>netstat</code> – <code>help</code> zeigt alle.</li>

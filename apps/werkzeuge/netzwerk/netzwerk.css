@@ -168,9 +168,7 @@
 .nw-verlauf .nw-status { color: var(--muted); font-size: .82rem; font-style: italic; }
 .nw-nachricht input { flex: 1; }
 
-/* Gerät anwählen und platzieren, Papierkorb, Rückgängig */
-.nw-flaeche.platzieren-modus { cursor: copy; }
-.nw-geist { opacity: .55; pointer-events: none; }
+/* Papierkorb, Rückgängig */
 .nw-papierkorb { margin-top: auto; cursor: pointer; border-style: dashed; border-color: var(--border); }
 .nw-papierkorb.bereit { border-color: var(--bad); border-style: solid; background: var(--bad-soft); transform: scale(1.06); }
 .nw-meldung.mit-knopf { pointer-events: auto; }
@@ -184,3 +182,17 @@
 .nw-modem-code { font: 700 2.2rem var(--schrift-titel); letter-spacing: .15em; color: var(--fach); margin: 0 0 6px; }
 .nw-modem-zustand { font-weight: 700; color: #8a5a00; }
 .nw-modem-zustand.ok { color: #1d7a30; }
+
+/* Text-Editor und Datei-Explorer */
+.nw-editor { display: flex; flex-direction: column; }
+.nw-editor .nw-zeile { margin: 0 0 6px; }
+.nw-oeffnen-liste { max-width: 220px; }
+.nw-pfad { flex: 1; min-width: 180px; font-family: Consolas, "Cascadia Mono", Menlo, monospace !important; }
+.nw-editor-status { margin: 0 0 6px; min-height: 1.2em; color: var(--muted); }
+.nw-editor-status.nw-hinweis { color: #8a5a00; }
+.nw-editor-text { flex: 1; min-height: 160px; resize: none; }
+.nw-pfadleiste { margin-bottom: 6px; font-weight: 600; }
+.nw-dateiliste .nw-eintrag { color: var(--text); text-align: left; }
+.nw-dateiliste .nw-eintrag:hover { color: var(--fach); text-decoration: underline; }
+.nw-aktionen { white-space: nowrap; text-align: right !important; }
+.nw-aktionen .uf-link { padding: 0 5px; }
