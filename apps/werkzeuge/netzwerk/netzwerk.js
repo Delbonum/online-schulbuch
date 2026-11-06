@@ -18,7 +18,7 @@ const wurzel = document.getElementById('netzwerk');
 const BASIS_BILDER = new URL('./bilder/', import.meta.url).href.replace(/\?.*$/, '');
 const BILDER = { rechner: 'rechner.svg', notebook: 'notebook.svg', smartphone: 'smartphone.svg', switch: 'switch.svg', router: 'router.svg', modem: 'modem.svg' };
 const bild = (typ) => `${BASIS_BILDER}${BILDER[typ]}`;
-const NAMEN = { rechner: 'Rechner', notebook: 'Notebook', smartphone: 'Smartphone', switch: 'Switch', router: 'Router', modem: 'Modem' };
+const NAMEN = { rechner: 'Rechner', notebook: 'Notebook', smartphone: 'Handy', switch: 'Switch', router: 'Router', modem: 'Modem' };
 const API = '/api';
 const SPEICHER = 'netzwerk-simulation:entwurf';
 // Dokumentation: Bereiche [Füllung, Rand/Schrift], Textfarben
@@ -33,13 +33,14 @@ const HOEHE = 1200;
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const html = (t) => { const e = document.createElement('template'); e.innerHTML = t.trim(); return e.content.firstElementChild; };
 const istHost = istEndgeraet;
-/** Verbindungen zu einem Smartphone sind kabellos (WLAN) und werden gestrichelt gezeichnet */
+/** Verbindungen zu einem Handy sind kabellos (WLAN) und werden gestrichelt gezeichnet */
 const istFunk = (k) => [k.a.g, k.b.g].some((id) => zustand.netz.geraete.get(id)?.typ === 'smartphone');
 
 const zustand = {
   netz: new Netz(),
   modus: 'entwurf',
-  werkzeug: 'auswahl', // oder 'kabel'
+  werkzeug: 'auswahl', // oder 'kabel', 'platzieren'
+  platzieren: null, // Gerätetyp, der beim nächsten Klick auf die Fläche entsteht
   auswahl: null, // {art: 'geraet'|'kabel', id}
   kabelStart: null,
   tempo: 2,
@@ -68,8 +69,9 @@ wurzel.innerHTML = `<div class="nw" tabindex="-1">
 <button type="button" class="knopf nw-vollbild">Vollbild</button>
 </div>
 <div class="nw-haupt">
+<button type="button" class="nw-speicher-warnung" hidden>⚠ Nicht gespeichert</button>
 <aside class="nw-palette" aria-label="Bauteile"></aside>
-<div class="nw-flaeche-rahmen"><svg class="nw-flaeche" viewBox="0 0 ${BREITE} ${HOEHE}" width="${BREITE}" height="${HOEHE}" role="application" aria-label="Netzwerk"><g class="nw-doku-unten"></g><g class="nw-kabel"></g><line class="nw-kabel-vorschau" hidden/><g class="nw-geraete"></g><g class="nw-doku-oben"></g></svg></div>
+<div class="nw-flaeche-rahmen"><svg class="nw-flaeche" viewBox="0 0 ${BREITE} ${HOEHE}" width="${BREITE}" height="${HOEHE}" role="application" aria-label="Netzwerk"><g class="nw-doku-unten"></g><g class="nw-kabel"></g><line class="nw-kabel-vorschau" hidden/><g class="nw-geraete"></g><g class="nw-doku-oben"></g><image class="nw-geist" width="64" height="64" hidden/></svg></div>
 </div>
 <div class="nw-panel"></div>
 <div class="nw-meldung" role="status" aria-live="polite"></div>
@@ -77,12 +79,14 @@ wurzel.innerHTML = `<div class="nw" tabindex="-1">
 </div>`;
 
 const app = wurzel.querySelector('.nw');
+app.querySelector('.nw-speicher-warnung').addEventListener('click', speicherWarnung);
 const svg = app.querySelector('.nw-flaeche');
 const gKabel = svg.querySelector('.nw-kabel');
 const gGeraete = svg.querySelector('.nw-geraete');
 const vorschau = svg.querySelector('.nw-kabel-vorschau');
 const gDokuUnten = svg.querySelector('.nw-doku-unten');
 const gDokuOben = svg.querySelector('.nw-doku-oben');
+const geist = svg.querySelector('.nw-geist');
 const panel = app.querySelector('.nw-panel');
 const ebene = app.querySelector('.nw-fenster-ebene');
 
@@ -100,14 +104,26 @@ function melde(text, art = 'info', rueckgaengig = null) {
   melde.timer = setTimeout(() => { el.classList.remove('sichtbar'); melde.rueckgaengig = null; }, rueckgaengig ? 8000 : 4000);
 }
 
+/** Entwurf im Browser sichern. Ist der Speicher voll (ca. 5 MB, z. B. durch große Dateien), deutlich warnen. */
 function speichere() {
-  try { localStorage.setItem(SPEICHER, JSON.stringify(zustand.netz)); } catch { /* ohne Speicher */ }
+  let ok = true;
+  try { localStorage.setItem(SPEICHER, JSON.stringify(zustand.netz)); } catch { ok = false; }
+  const warnung = app.querySelector('.nw-speicher-warnung');
+  if (!ok && warnung.hidden) speicherWarnung();
+  warnung.hidden = ok;
+}
+const SPEICHER_TEXT = 'Achtung: Der Speicher dieses Browsers ist voll (oder gesperrt) – Änderungen gehen beim Schließen verloren. Sichere dein Netz mit „Speichern“ als Datei und lösche große Dateien, die du nicht mehr brauchst.';
+function speicherWarnung() {
+  const el = app.querySelector('.nw-meldung');
+  melde(SPEICHER_TEXT, 'fehler');
+  clearTimeout(melde.timer);
+  melde.timer = setTimeout(() => el.classList.remove('sichtbar'), 12000);
 }
 
 // ------------------------------------------------------------------ Palette (Entwurf)
 
 const palette = app.querySelector('.nw-palette');
-palette.innerHTML = `${Object.keys(BILDER).map((typ) => `<button type="button" class="nw-bauteil" data-typ="${typ}" draggable="true" title="${NAMEN[typ]} hinzufügen (klicken oder auf die Fläche ziehen)"><img src="${bild(typ)}" alt=""><span>${NAMEN[typ]}</span></button>`).join('')}
+palette.innerHTML = `${Object.keys(BILDER).map((typ) => `<button type="button" class="nw-bauteil" data-typ="${typ}" draggable="true" aria-pressed="false" title="${NAMEN[typ]}: anklicken, dann auf die Fläche klicken (Strg+Klick: sofort einfügen) – oder auf die Fläche ziehen"><img src="${bild(typ)}" alt=""><span>${NAMEN[typ]}</span></button>`).join('')}
 <button type="button" class="nw-bauteil nw-kabel-werkzeug" title="Kabel: erst ein Gerät, dann das andere anklicken"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40C18 40 14 8 30 8h12" fill="none" stroke="#3d4a5c" stroke-width="4" stroke-linecap="round"/><circle cx="6" cy="40" r="4" fill="#0b6b72"/><circle cx="42" cy="8" r="4" fill="#0b6b72"/></svg><span>Kabel</span></button>
 <button type="button" class="nw-bauteil nw-doku-werkzeug" data-neu="text" title="Textfeld hinzufügen"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 10h28M24 10v30M17 40h14" fill="none" stroke="#3d4a5c" stroke-width="4" stroke-linecap="round"/></svg><span>Textfeld</span></button>
 <button type="button" class="nw-bauteil nw-doku-werkzeug" data-neu="bereich" title="Farbigen Bereich hinzufügen (z. B. für ein Teilnetz)"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="10" width="36" height="28" rx="5" fill="#dbe8ff" stroke="#4a6fb5" stroke-width="3"/><path d="M11 17h14" stroke="#4a6fb5" stroke-width="3" stroke-linecap="round"/></svg><span>Bereich</span></button>
@@ -149,10 +165,17 @@ palette.addEventListener('click', (e) => {
   }
   if (zustand.modus !== 'entwurf') return;
   if (knopf.classList.contains('nw-kabel-werkzeug')) { setzeWerkzeug(zustand.werkzeug === 'kabel' ? 'auswahl' : 'kabel'); return; }
-  // in die Mitte des sichtbaren Bereichs, leicht versetzt
-  const rahmen = app.querySelector('.nw-flaeche-rahmen');
-  const n = zustand.netz.geraete.size % 6;
-  neuesGeraet(knopf.dataset.typ, rahmen.scrollLeft + rahmen.clientWidth / 2 - 60 + n * 30, rahmen.scrollTop + rahmen.clientHeight / 2 - 60 + n * 30);
+  if (e.ctrlKey || e.metaKey) {
+    // Strg+Klick: sofort in die Mitte des sichtbaren Bereichs, leicht versetzt
+    setzeWerkzeug('auswahl');
+    const rahmen = app.querySelector('.nw-flaeche-rahmen');
+    const n = zustand.netz.geraete.size % 6;
+    neuesGeraet(knopf.dataset.typ, rahmen.scrollLeft + rahmen.clientWidth / 2 - 60 + n * 30, rahmen.scrollTop + rahmen.clientHeight / 2 - 60 + n * 30);
+    return;
+  }
+  // Anwählen; das Gerät entsteht beim Klick auf die Fläche (nochmals anklicken: abwählen, mehrfaches Klicken schadet nicht)
+  if (zustand.werkzeug === 'platzieren' && zustand.platzieren === knopf.dataset.typ) setzeWerkzeug('auswahl');
+  else setzeWerkzeug('platzieren', knopf.dataset.typ);
 });
 palette.addEventListener('dragstart', (e) => {
   const knopf = e.target.closest('.nw-bauteil[data-typ]');
@@ -167,13 +190,24 @@ svg.addEventListener('drop', (e) => {
   neuesGeraet(typ, p.x, p.y);
 });
 
-function setzeWerkzeug(w) {
+function setzeWerkzeug(w, typ = null) {
   zustand.werkzeug = w;
+  zustand.platzieren = w === 'platzieren' ? typ : null;
   zustand.kabelStart = null;
   vorschau.hidden = true;
+  geist.hidden = true;
   palette.querySelector('.nw-kabel-werkzeug').classList.toggle('aktiv', w === 'kabel');
+  palette.querySelectorAll('[data-typ]').forEach((b) => {
+    b.classList.toggle('aktiv', b.dataset.typ === zustand.platzieren);
+    b.setAttribute('aria-pressed', String(b.dataset.typ === zustand.platzieren));
+  });
   svg.classList.toggle('kabel-modus', w === 'kabel');
+  svg.classList.toggle('platzieren-modus', w === 'platzieren');
   if (w === 'kabel') melde('Kabel verlegen: Klicke nacheinander auf die beiden Geräte. Esc beendet.');
+  if (w === 'platzieren') {
+    geist.setAttribute('href', bild(typ));
+    melde(`${NAMEN[typ]} gewählt: Klicke auf die Fläche, wo es hin soll. Mit gedrückter Umschalttaste setzt du mehrere ab, Esc bricht ab.`);
+  }
 }
 
 function svgPunkt(e) {
@@ -317,6 +351,13 @@ svg.addEventListener('pointerdown', (e) => {
   }
   const geraetEl = e.target.closest('[data-geraet]');
   const kabelEl = e.target.closest('[data-kabel]');
+  if (zustand.werkzeug === 'platzieren' && zustand.modus === 'entwurf') {
+    const p = svgPunkt(e);
+    const typ = zustand.platzieren;
+    neuesGeraet(typ, Math.max(0, Math.min(BREITE - 80, p.x - 36)), Math.max(0, Math.min(HOEHE - 100, p.y - 32)));
+    if (!e.shiftKey) setzeWerkzeug('auswahl'); // Umschalttaste: Werkzeug bleibt für das nächste Gerät
+    return;
+  }
   if (zustand.werkzeug === 'kabel' && zustand.modus === 'entwurf') {
     if (!geraetEl) { setzeWerkzeug('auswahl'); return; }
     const id = geraetEl.dataset.geraet;
@@ -367,6 +408,12 @@ const ueberPapierkorb = (e) => {
 };
 
 svg.addEventListener('pointermove', (e) => {
+  if (zustand.werkzeug === 'platzieren') {
+    const p = svgPunkt(e);
+    geist.setAttribute('x', p.x - 32);
+    geist.setAttribute('y', p.y - 32);
+    geist.hidden = false;
+  }
   if (ziehenNotiz) {
     const p = svgPunkt(e);
     const n = ziehenNotiz.n;
@@ -402,6 +449,8 @@ svg.addEventListener('pointermove', (e) => {
     gKabel.querySelectorAll(`[data-kabel="${k.id}"] line`).forEach((l) => { l.setAttribute(`x${ende}`, m.x); l.setAttribute(`y${ende}`, m.y); });
   }
 });
+
+svg.addEventListener('pointerleave', () => { geist.hidden = true; });
 
 svg.addEventListener('pointerup', (e) => {
   papierkorb.classList.remove('bereit');
@@ -497,7 +546,7 @@ function zeichnePanel() {
     panel.innerHTML = zustand.modus === 'dokumentation'
       ? '<p class="nw-tipp">Dokumentation: Beschrifte dein Netz mit Textfeldern und farbigen Bereichen (z. B. „Netz der Schule“, „Internet“). Ziehen verschiebt, die Ecke unten rechts ändert die Größe eines Bereichs. „Als Bild speichern“ lädt das Netz als PNG herunter, etwa für ein Arbeitsblatt.</p>'
       : zustand.modus === 'entwurf'
-      ? '<p class="nw-tipp">Füge links Geräte hinzu (anklicken oder auf die Fläche ziehen) und verbinde sie mit dem Kabel. Ein angeklicktes Gerät stellst du hier unten ein. Dann oben auf <strong>▶ Simulation</strong>.</p>'
+      ? '<p class="nw-tipp">Füge links Geräte hinzu (anklicken und dann auf die Fläche klicken – oder auf die Fläche ziehen) und verbinde sie mit dem Kabel. Ein angeklicktes Gerät stellst du hier unten ein. Dann oben auf <strong>▶ Simulation</strong>.</p>'
       : '<p class="nw-tipp">Simulation läuft. Doppelklick auf einen Rechner öffnet seinen Desktop (Software installieren, Befehlszeile, Browser …); Doppelklick auf Switch oder Router zeigt, was dort passiert. Grün leuchtende Kabel übertragen gerade Daten.</p>';
     return;
   }
@@ -513,7 +562,7 @@ function zeichnePanel() {
     panel.innerHTML = istFunk(k)
       ? `<div class="nw-panel-kopf"><strong>WLAN-Verbindung</strong> zwischen ${esc(n.geraete.get(k.a.g).name)} und ${esc(n.geraete.get(k.b.g).name)}
 <button type="button" class="knopf nw-loeschen">Verbindung entfernen</button></div>
-<p class="nw-tipp">Das Smartphone ist kabellos verbunden (gestrichelt). In der Simulation verhält sich die Funkverbindung wie ein Kabel.</p>`
+<p class="nw-tipp">Das Handy ist kabellos verbunden (gestrichelt). In der Simulation verhält sich die Funkverbindung wie ein Kabel.</p>`
       : `<div class="nw-panel-kopf"><strong>Kabel</strong> zwischen ${esc(n.geraete.get(k.a.g).name)} und ${esc(n.geraete.get(k.b.g).name)}
 <button type="button" class="knopf nw-loeschen">Kabel entfernen</button></div>`;
     panel.querySelector('.nw-loeschen').addEventListener('click', loescheAuswahl);
@@ -1613,7 +1662,8 @@ function peertopeer(g) {
 // ------------------------------------------------------------------ Modem (Verbindung zu einer anderen Simulation)
 
 const modems = new Map(); // Geräte-ID → {code, token, seite, partner, raus, gesendet, empfangen, timer, laeuft, fehler}
-const MODEM_ABFRAGE = 1000; // ms zwischen zwei Abfragen beim Server
+// ms zwischen zwei Abfragen beim Server: kurz, solange Daten fließen (weniger Verzögerung), sonst seltener
+const MODEM_ABFRAGE = { aktiv: 350, ruhig: 1200, nachlauf: 5000 };
 
 async function modemApi(methode, pfad, daten) {
   let antwort;
@@ -1643,6 +1693,7 @@ function modemAusgang(g, rahmen) {
   const v = modems.get(g.id);
   if (!v?.token) return;
   v.raus.push(rahmen);
+  v.aktivBis = Date.now() + MODEM_ABFRAGE.nachlauf;
   if (v.raus.length > 300) v.raus.splice(0, v.raus.length - 300); // Leitung überlastet: Älteste gehen verloren
   if (!v.sendetBald) { v.sendetBald = true; setTimeout(() => modemSenden(g.id), 150); }
 }
@@ -1678,6 +1729,7 @@ async function modemAbfragen(gid) {
     v.fehler = '';
     for (const rahmen of r.rahmen ?? []) zustand.netz.modemEingang(gid, rahmen);
     v.empfangen += r.rahmen?.length ?? 0;
+    if (r.rahmen?.length) v.aktivBis = Date.now() + MODEM_ABFRAGE.nachlauf;
     if (vorher !== v.partner) { zeichneGeraetText(); melde(v.partner ? `${zustand.netz.geraete.get(gid)?.name}: Verbindung zur Gegenseite steht.` : `${zustand.netz.geraete.get(gid)?.name}: Gegenseite nicht mehr erreichbar.`); }
   } catch (err) {
     if (modems.get(gid) !== v) return;
@@ -1685,7 +1737,7 @@ async function modemAbfragen(gid) {
     v.fehler = err.message;
   }
   fensterListe.get(`modem:${gid}`)?.aktualisieren?.(fensterListe.get(`modem:${gid}`));
-  if (modems.get(gid) === v && v.laeuft) v.timer = setTimeout(() => modemAbfragen(gid), MODEM_ABFRAGE);
+  if (modems.get(gid) === v && v.laeuft) v.timer = setTimeout(() => modemAbfragen(gid), (v.aktivBis ?? 0) > Date.now() ? MODEM_ABFRAGE.aktiv : MODEM_ABFRAGE.ruhig);
 }
 
 async function modemVerbinden(g, code) {
@@ -1970,8 +2022,8 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
   aufbauen(f) {
     f.inhalt.classList.add('nw-hilfe');
     f.inhalt.innerHTML = `<h4>Entwurf ✎</h4>
-<ul><li>Links ein Gerät anklicken oder auf die Fläche ziehen. Geräte lassen sich verschieben.</li>
-<li><strong>Kabel:</strong> Kabel-Werkzeug wählen, dann nacheinander zwei Geräte anklicken. Rechner, Notebooks und Smartphones haben einen Anschluss, Switch und Router bekommen bei Bedarf weitere. Ein Smartphone verbindest du genauso; die Linie ist dann gestrichelt, weil es kabellos (WLAN) verbunden ist.</li>
+<ul><li>Links ein Gerät anklicken und dann auf die Fläche klicken, wo es hin soll (Esc bricht ab) – oder es auf die Fläche ziehen. Mit gedrückter <kbd>Umschalttaste</kbd> setzt du mehrere gleiche Geräte nacheinander ab; <kbd>Strg</kbd>+Klick auf ein Gerät fügt es sofort in der Mitte ein. Geräte lassen sich verschieben.</li>
+<li><strong>Kabel:</strong> Kabel-Werkzeug wählen, dann nacheinander zwei Geräte anklicken. Rechner, Notebooks und Handys haben einen Anschluss, Switch und Router bekommen bei Bedarf weitere. Ein Handy verbindest du genauso; die Linie ist dann gestrichelt, weil es kabellos (WLAN) verbunden ist.</li>
 <li>Ein angeklicktes Gerät stellst du unten ein (IP-Adresse, Netzmaske, Gateway, DNS-Server, DHCP). Beim Router: Anschlüsse und Weiterleitungstabelle.</li>
 <li>Löschen: Gerät in den <strong>Papierkorb</strong> ziehen – oder Gerät bzw. Kabel anklicken und dann Entf drücken oder unten auf „löschen“ bzw. „entfernen“ klicken. Versehentlich gelöscht? In der Meldung auf <em>Rückgängig</em> klicken (oder Strg+Z).</li></ul>
 <h4>Simulation ▶</h4>

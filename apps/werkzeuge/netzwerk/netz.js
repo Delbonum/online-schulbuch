@@ -18,7 +18,7 @@
 
 export const BROADCAST_MAC = 'FF:FF:FF:FF:FF:FF';
 export const TYPEN = ['rechner', 'notebook', 'smartphone', 'switch', 'router', 'modem'];
-/** Endgeräte mit eigener IP-Adresse, Software und Dateien; das Smartphone hängt per WLAN am Netz (wie ein Kabel) */
+/** Endgeräte mit eigener IP-Adresse, Software und Dateien; das Handy (intern: smartphone) hängt per WLAN am Netz (wie ein Kabel) */
 export const ENDGERAETE = ['rechner', 'notebook', 'smartphone'];
 export const istEndgeraet = (g) => ENDGERAETE.includes(g?.typ);
 export const SOFTWARE = {
@@ -230,7 +230,7 @@ export class Netz {
     if (!TYPEN.includes(typ)) throw new Error(`Unbekannter Gerätetyp: ${typ}`);
     const id = `g${this.zaehler++}`;
     const nummer = [...this.geraete.values()].filter((g) => g.typ === typ).length + 1;
-    const grund = { rechner: 'Rechner', notebook: 'Notebook', smartphone: 'Smartphone', switch: 'Switch', router: 'Router', modem: 'Modem' }[typ];
+    const grund = { rechner: 'Rechner', notebook: 'Notebook', smartphone: 'Handy', switch: 'Switch', router: 'Router', modem: 'Modem' }[typ];
     const g = {
       id, typ, name: name ?? `${grund} ${nummer}`, x, y,
       nics: [],

@@ -22,7 +22,7 @@
 .nw:not(.simulation) .nw-tempo, .nw:not(.simulation) .nw-zeit { display: none; }
 
 /* Palette und Fläche */
-.nw-haupt { flex: 1; display: flex; min-height: 0; }
+.nw-haupt { flex: 1; display: flex; min-height: 0; position: relative; }
 .nw-palette { display: flex; flex-direction: column; gap: 5px; padding: 6px 8px; border-right: 1px solid var(--border); background: var(--surface-2); overflow-y: auto; }
 .nw.simulation .nw-palette { display: none; }
 .nw-bauteil { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 84px; padding: 4px; border: 2px solid transparent; border-radius: 10px; background: var(--surface); font: 600 .8rem var(--schrift-text); color: var(--text); cursor: grab; }
@@ -169,7 +169,10 @@
 .nw-verlauf .nw-status { color: var(--muted); font-size: .82rem; font-style: italic; }
 .nw-nachricht input { flex: 1; }
 
-/* Papierkorb, Rückgängig */
+/* Gerät anwählen und platzieren, Papierkorb, Rückgängig, Speicher voll */
+.nw-flaeche.platzieren-modus { cursor: copy; }
+.nw-geist { opacity: .55; pointer-events: none; }
+.nw-speicher-warnung { position: absolute; top: 10px; right: 28px; z-index: 20; box-shadow: 0 4px 14px rgb(0 0 0 / 15%); font: 700 .88rem var(--schrift-text); padding: 6px 10px; border: 2px solid var(--bad); border-radius: 10px; background: var(--bad-soft); color: var(--bad); cursor: pointer; }
 .nw-papierkorb { margin-top: auto; cursor: pointer; border-style: dashed; border-color: var(--border); }
 .nw-papierkorb.bereit { border-color: var(--bad); border-style: solid; background: var(--bad-soft); transform: scale(1.06); }
 .nw-meldung.mit-knopf { pointer-events: auto; }
