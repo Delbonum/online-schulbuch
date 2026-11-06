@@ -15,6 +15,17 @@
 //       <p>Aussage</p> </div>
 //   <ul class="abhaken" data-id="id"> <li>…</li> … </ul>
 //       Liste zum Abhaken (z. B. Leseplan). Gespeichert wird, welche Einträge erledigt sind.
+//   <table class="verlauf ausfuell"> … <td><textarea class="notiz" data-notiz="id" aria-label="…"></textarea></td> …
+//       Ausfülltabelle: je Zelle ein Antwortfeld; auf dem Handy werden die Zeilen zu Karten.
+//   <div class="felder [zwei]"> <div><label for="id">…</label><textarea class="notiz" id="id" data-notiz="id"></textarea></div> … </div>
+//       Geführte Felder untereinander, mit „zwei“ nebeneinander (Pro und Contra).
+//   <div class="notiz-rueckblick" data-notiz="alte-id" data-alt hidden></div>
+//       Zeigt eine frühere Antwort, wenn ein Feld durch eine andere Form ersetzt wurde (sonst unsichtbar).
+//   <div class="markieren" data-id="id" data-titel="…" data-farben="A|B|C"> Text </div>
+//       Text, in dem Wörter nach Kategorien markiert werden.
+//   <div class="kurve" data-id="id" data-titel="…" data-oben="…" data-unten="…" data-schritte="1|2|3"></div>
+//       Eigene Verlaufskurve, mit einem Regler je Schritt (Werte 0 bis 10).
+//   <details class="aufklapp" data-blatt>  bleibt auch ohne Antwortfeld auf dem gedruckten Arbeitsblatt.
 //
 // Ohne JavaScript bleiben alle Bausteine lesbar (Listen, Textfelder).
 
@@ -64,6 +75,7 @@ document.addEventListener('toggle', (e) => e.target.querySelectorAll?.('.notiz')
 for (const box of document.querySelectorAll('.notiz-rueckblick[data-notiz]')) {
   const wert = speicher.lies(box.dataset.notiz);
   if (wert) {
+    box.hidden = false;
     box.classList.add('gefuellt');
     box.textContent = wert;
   }
@@ -115,12 +127,19 @@ Sichere deine Antworten als Datei, wenn du sie abgeben oder auf einem anderen Ge
     if (art === 'loeschen' && confirm('Alle Antworten auf dieser Seite löschen? Das lässt sich nicht rückgängig machen.')) {
       for (const feld of notizen) { feld.value = ''; speicher.schreib(feld.dataset.notiz, ''); hoehe(feld); }
       abhakenLeeren();
+      document.querySelectorAll('.markieren[data-id], .kurve[data-id]').forEach((b) => b.leeren?.());
+      document.querySelectorAll('.notiz-rueckblick[data-alt]').forEach((b) => { speicher.schreib(b.dataset.notiz, ''); b.hidden = true; b.textContent = ''; });
     }
     if (art === 'datei') {
       const titel = document.querySelector('.seitenkopf h1')?.textContent.trim() ?? document.title;
       const datum = new Date().toLocaleDateString('de-DE');
       const teile = [`${titel}`, `Online-Schulbuch · ${location.href} · ${datum}`, ''];
       for (const feld of notizen) teile.push(`## ${beschriftung(feld)}`, feld.value.trim() || '(noch nichts eingetragen)', '');
+      for (const b of document.querySelectorAll('.markieren[data-id], .kurve[data-id]')) {
+        const zeilen = b.auswertung?.() ?? [];
+        if (zeilen.length) teile.push(`## ${b.dataset.titel ?? b.dataset.id}`, ...zeilen, '');
+      }
+      for (const b of document.querySelectorAll('.notiz-rueckblick[data-alt]:not([hidden])')) teile.push('## Frühere Antwort', b.textContent, '');
       const blob = new Blob([teile.join('\n')], { type: 'text/plain;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -137,7 +156,7 @@ Sichere deine Antworten als Datei, wenn du sie abgeben oder auf einem anderen Ge
 
 const ohneFelder = (el) => {
   const kopie = el.cloneNode(true);
-  kopie.querySelectorAll('.notiz, textarea, input, select, button, .abhaken-stand').forEach((x) => x.remove());
+  kopie.querySelectorAll('.notiz, textarea, input, select, button, .abhaken-stand, table.ausfuell, .felder, .position, .kurve, .markieren, .notiz-rueckblick[data-alt], details, p.quelle').forEach((x) => x.remove());
   return kopie.innerHTML.trim();
 };
 
@@ -146,7 +165,15 @@ function aufgabeZu(feld) {
   const li = feld.closest('li');
   if (li && li.parentElement?.tagName === 'OL') {
     const nr = Number(li.parentElement.getAttribute('start') ?? 1) + [...li.parentElement.children].indexOf(li);
-    return { titel: '', text: `<span class="ab-nr">${nr}.</span> ${ohneFelder(li)}` };
+    const aufgabe = `<span class="ab-nr">${nr}.</span> ${ohneFelder(li)}`;
+    const felderDerAufgabe = li.querySelectorAll('.notiz');
+    // Mehrere Felder (Tabelle, geführte Felder): Aufgabentext nur einmal, jedes Feld mit eigener Beschriftung
+    if (felderDerAufgabe.length > 1) {
+      return felderDerAufgabe[0] === feld
+        ? { titel: '', text: `${aufgabe}<p class="ab-druck-titel">${esc(beschriftung(feld))}</p>` }
+        : { titel: beschriftung(feld), text: '' };
+    }
+    return { titel: '', text: aufgabe };
   }
   const zeile = feld.closest('tr');
   if (zeile) {
@@ -168,10 +195,14 @@ function antwortblatt() {
     `<p class="ab-druck-meta">${ort ? `${esc(ort)} · ` : ''}Online-Schulbuch · ${new Date().toLocaleDateString('de-DE')}</p>`,
     '<p class="ab-druck-name">Name: <span></span></p>'];
   let letzter = null;
-  for (const el of inhalt.querySelectorAll('.notiz[data-notiz], .position[data-id], ul.abhaken[data-id]')) {
+  for (const el of inhalt.querySelectorAll('.notiz[data-notiz], .position[data-id], ul.abhaken[data-id], .markieren[data-id], .kurve[data-id]')) {
     const h2 = abschnitt(el);
     if (h2 && h2 !== letzter) { teile.push(`<h2>${esc(h2.textContent.trim())}</h2>`); letzter = h2; }
-    if (el.matches('.notiz')) {
+    if (el.matches('.markieren, .kurve')) {
+      const zeilen = el.auswertung?.() ?? [];
+      teile.push(`<div class="ab-druck-aufgabe"><p class="ab-druck-titel">${esc(el.dataset.titel ?? 'Übung')}</p>
+<div class="ab-druck-antwort${zeilen.length ? '' : ' leer'}">${zeilen.length ? zeilen.map(esc).join('<br>') : '(noch nichts eingetragen)'}</div></div>`);
+    } else if (el.matches('.notiz')) {
       const { titel: t, text } = aufgabeZu(el);
       const wert = el.value.trim();
       // Kurze Eingabefelder (Termine, Rollen …) passen in eine Zeile
@@ -246,7 +277,7 @@ function analogesBlatt(mitLoesung) {
 
   // Aufklappbare Kästen: mit Antwortfeldern (z. B. Tagebucheinträge) oder mit Lösungen offen, sonst weg
   k.querySelectorAll('details').forEach((d) => {
-    if (!mitLoesung && !d.querySelector('.notiz')) { d.remove(); return; }
+    if (!mitLoesung && !d.querySelector('.notiz') && !d.hasAttribute('data-blatt')) { d.remove(); return; }
     const div = el('div', 'ab-blatt-aufklapp');
     const s = d.querySelector(':scope > summary');
     if (s) { div.append(el('p', 'ab-blatt-summary', s.innerHTML)); s.remove(); }
@@ -254,6 +285,7 @@ function analogesBlatt(mitLoesung) {
     d.replaceWith(div);
   });
 
+  k.querySelectorAll('.notiz-rueckblick[data-alt]').forEach((x) => x.remove());
   k.querySelectorAll('textarea.notiz').forEach((f) => f.replaceWith(linien(Math.max(Number(f.getAttribute('rows')) || 3, 3))));
   k.querySelectorAll('input.notiz').forEach((f) => f.replaceWith(el('span', 'ab-linie-kurz')));
   k.querySelectorAll('.notiz-rueckblick').forEach((f) => f.replaceWith(linien(2)));
@@ -299,6 +331,19 @@ function analogesBlatt(mitLoesung) {
     p.replaceWith(el('div', 'ab-blatt-position', `<div class="ab-blatt-aussage">${p.innerHTML}</div>
 <p class="klein">Kreuze an, wie sehr du zustimmst.</p><ol class="ab-skala">${skala}</ol>
 <div class="ab-pole"><span>${esc(p.dataset.links ?? 'stimme gar nicht zu')}</span><span>${esc(p.dataset.rechts ?? 'stimme voll zu')}</span></div>`));
+  });
+
+  k.querySelectorAll('.markieren').forEach((m) => {
+    const arten = (m.dataset.farben ?? '').split('|').map((x) => x.trim()).filter(Boolean);
+    m.prepend(el('p', '', `<strong>Markiere im Text:</strong> ${arten.map(esc).join(' · ')}`));
+  });
+
+  k.querySelectorAll('.kurve').forEach((b) => {
+    const schritte = (b.dataset.schritte ?? '').split('|').map((x) => x.trim());
+    const leer = schritte.map(() => '<td class="leer" style="height:8mm"></td>').join('');
+    const zeilen = [b.dataset.oben ?? 'hoch', '', '', '', b.dataset.unten ?? 'niedrig'].map((t) => `<tr><th>${esc(t)}</th>${leer}</tr>`).join('');
+    b.replaceWith(el('div', 'ab-blatt-kurve', `<p><strong>Zeichne die Kurve:</strong> Setze je Schritt ein Kreuz und verbinde die Kreuze.</p>
+<table class="ab-blatt-tabelle"><tr><th></th>${schritte.map((s) => `<th>${esc(s)}</th>`).join('')}</tr>${zeilen}</table>`));
   });
 
   k.querySelectorAll('ul.abhaken').forEach((ul) => {
@@ -591,6 +636,171 @@ ${frueher ? `<span class="position-frueher" style="--wert:${frueher}" title="dei
   };
   zeige(Boolean(gespeichert));
   regler.addEventListener('input', () => { speicher.schreib(`position:${id}`, regler.value); zeige(true); });
+});
+
+// ---------------------------------------------------------------- Ausfülltabelle
+
+// Spaltennamen für die Kartenansicht auf dem Handy
+document.querySelectorAll('table.ausfuell').forEach((t) => {
+  const kopf = [...(t.tHead?.rows[0]?.cells ?? [])].map((c) => c.textContent.trim());
+  for (const zeile of t.tBodies[0]?.rows ?? []) [...zeile.cells].forEach((c, i) => { if (kopf[i]) c.dataset.spalte = kopf[i]; });
+});
+
+// ---------------------------------------------------------------- Text markieren
+
+document.querySelectorAll('.markieren[data-id]').forEach((box) => {
+  const schluessel = `markieren:${box.dataset.id}`;
+  const arten = (box.dataset.farben ?? 'markiert').split('|').map((x) => x.trim());
+  const marken = new Map(speicher.lies(schluessel).split(',').filter(Boolean).map((x) => x.split(':').map(Number)));
+  let aktiv = 0;
+
+  // Jedes Wort wird anklickbar; Tags und Leerraum im Text bleiben, wie sie sind.
+  const woerter = [];
+  const knoten = [];
+  const lauf = document.createTreeWalker(box, NodeFilter.SHOW_TEXT);
+  while (lauf.nextNode()) knoten.push(lauf.currentNode);
+  for (const t of knoten) {
+    if (!t.textContent.trim()) continue;
+    const stueck = document.createDocumentFragment();
+    for (const teil of t.textContent.split(/(\s+)/)) {
+      if (!teil) continue;
+      if (!teil.trim()) { stueck.append(teil); continue; }
+      const w = document.createElement('span');
+      w.className = 'mk-wort';
+      w.textContent = teil;
+      w.tabIndex = 0;
+      w.setAttribute('role', 'button');
+      w.dataset.i = woerter.length;
+      woerter.push(w);
+      stueck.append(w);
+    }
+    t.replaceWith(stueck);
+  }
+
+  const zeichne = (w) => {
+    const art = marken.get(Number(w.dataset.i));
+    w.className = art === undefined ? 'mk-wort' : `mk-wort mk-${art}`;
+    w.setAttribute('aria-pressed', String(art !== undefined));
+  };
+  const sichere = () => speicher.schreib(schluessel, [...marken].sort((a, b) => a[0] - b[0]).map((x) => x.join(':')).join(','));
+  const setze = (w, art) => {
+    if (art === null) marken.delete(Number(w.dataset.i)); else marken.set(Number(w.dataset.i), art);
+    zeichne(w);
+  };
+  woerter.forEach(zeichne);
+
+  const leiste = el('div', 'mk-leiste', `${arten.map((a, i) => `<button type="button" class="knopf mk-art mk-${i}" data-art="${i}" aria-pressed="${i === 0}">${esc(a)}</button>`).join('')}
+<button type="button" class="knopf" data-mk="leeren">Markierungen löschen</button>
+<p class="sort-hilfe">${arten.length > 1 ? 'Wähle eine Farbe und klicke' : 'Klicke'} die Wörter an, mit der Maus kannst du auch darüberziehen. Ein zweiter Klick nimmt die Markierung weg.</p>`);
+  box.prepend(leiste);
+  box.classList.add('werkzeug');
+
+  box.leeren = () => { marken.clear(); woerter.forEach(zeichne); sichere(); };
+  box.auswertung = () => arten.flatMap((a, art) => {
+    const stellen = [];
+    let laufend = [];
+    woerter.forEach((w, i) => {
+      if (marken.get(i) === art) laufend.push(w.textContent);
+      else if (laufend.length) { stellen.push(laufend.join(' ')); laufend = []; }
+    });
+    if (laufend.length) stellen.push(laufend.join(' '));
+    return stellen.length ? [`${a}: ${stellen.join(' | ')}`] : [];
+  });
+
+  leiste.addEventListener('click', (e) => {
+    const art = e.target.closest('[data-art]');
+    if (art) {
+      aktiv = Number(art.dataset.art);
+      leiste.querySelectorAll('[data-art]').forEach((b) => b.setAttribute('aria-pressed', String(b === art)));
+    }
+    if (e.target.closest('[data-mk="leeren"]')) box.leeren();
+  });
+
+  // Maus: Ziehen markiert mehrere Wörter. Finger: nur Antippen, damit die Seite weiter scrollt.
+  let zieht = false;
+  let wert = null;
+  let letzterZeiger = '';
+  const umschalten = (w) => (marken.get(Number(w.dataset.i)) === aktiv ? null : aktiv);
+  box.addEventListener('pointerdown', (e) => {
+    letzterZeiger = e.pointerType;
+    const w = e.target.closest('.mk-wort');
+    if (!w || e.pointerType !== 'mouse' || e.button !== 0) return;
+    wert = umschalten(w);
+    zieht = true;
+    setze(w, wert);
+    e.preventDefault();
+  });
+  box.addEventListener('pointerover', (e) => {
+    const w = e.target.closest('.mk-wort');
+    if (zieht && w) setze(w, wert);
+  });
+  window.addEventListener('pointerup', () => { if (zieht) { zieht = false; sichere(); } });
+  box.addEventListener('click', (e) => {
+    const w = e.target.closest('.mk-wort');
+    if (!w || letzterZeiger === 'mouse') return;
+    setze(w, umschalten(w));
+    sichere();
+  });
+  box.addEventListener('keydown', (e) => {
+    const w = e.target.closest('.mk-wort');
+    if (!w || (e.key !== 'Enter' && e.key !== ' ')) return;
+    e.preventDefault();
+    setze(w, umschalten(w));
+    sichere();
+  });
+});
+
+// ---------------------------------------------------------------- Eigene Kurve
+
+document.querySelectorAll('.kurve[data-id]').forEach((box) => {
+  const schluessel = `kurve:${box.dataset.id}`;
+  const schritte = (box.dataset.schritte ?? '').split('|').map((x) => x.trim());
+  const gespeichert = speicher.lies(schluessel).split(',').filter(Boolean).map(Number);
+  let gesetzt = gespeichert.length === schritte.length;
+  const werte = gesetzt ? gespeichert : schritte.map(() => 5);
+  const x = (i) => 70 + i * (630 / Math.max(schritte.length - 1, 1));
+  const y = (v) => 210 - v * 17;
+
+  box.classList.add('werkzeug');
+  box.insertAdjacentHTML('beforeend', `<figure class="skizze"><svg viewBox="0 0 720 262" role="img" aria-label="${esc(box.dataset.titel ?? 'Kurve')}">
+<line class="linie-grau" x1="50" y1="30" x2="50" y2="218"/><line class="linie-grau" x1="50" y1="218" x2="710" y2="218"/>
+<text class="klein" x="56" y="24">${esc(box.dataset.oben ?? '')}</text><text class="klein" x="56" y="234">${esc(box.dataset.unten ?? '')}</text>
+<polyline class="linie kurve-linie" points=""/>
+${schritte.map((s, i) => `<circle class="akzent kurve-punkt" r="5" cx="${x(i)}"/><text class="klein" x="${x(i)}" y="254" text-anchor="middle">${esc(s)}</text>`).join('')}
+</svg></figure>
+<div class="kurve-regler">${schritte.map((s, i) => `<label><span>${esc(s)}</span><input type="range" min="0" max="10" step="1" value="${werte[i]}" data-i="${i}"></label>`).join('')}</div>
+<p class="position-stand klein"></p>
+<p><button type="button" class="knopf" data-kurve="neu">Kurve zurücksetzen</button></p>`);
+  const linie = box.querySelector('.kurve-linie');
+  const punkte = [...box.querySelectorAll('.kurve-punkt')];
+  const regler = [...box.querySelectorAll('input[type="range"]')];
+  const stand = box.querySelector('.position-stand');
+  const zeichne = () => {
+    linie.setAttribute('points', werte.map((v, i) => `${x(i)},${y(v)}`).join(' '));
+    linie.style.strokeDasharray = gesetzt ? '' : '5 4';
+    punkte.forEach((p, i) => p.setAttribute('cy', y(werte[i])));
+    regler.forEach((r, i) => { r.value = werte[i]; });
+    stand.textContent = gesetzt ? 'Deine Kurve ist gespeichert.' : 'Noch nichts eingestellt: Die gestrichelte Linie ist nur der Ausgangspunkt.';
+  };
+  const aendere = (i, v) => {
+    werte[i] = v;
+    gesetzt = true;
+    speicher.schreib(schluessel, werte.join(','));
+    zeichne();
+  };
+  box.leeren = () => { werte.fill(5); gesetzt = false; speicher.schreib(schluessel, ''); zeichne(); };
+  box.auswertung = () => (gesetzt ? schritte.map((s, i) => `${s}: ${werte[i]} von 10`) : []);
+  box.addEventListener('input', (e) => { if (e.target.dataset.i) aendere(Number(e.target.dataset.i), Number(e.target.value)); });
+  box.querySelector('svg').addEventListener('click', (e) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const px = ((e.clientX - r.left) / r.width) * 720;
+    const py = ((e.clientY - r.top) / r.height) * 262;
+    let i = 0;
+    schritte.forEach((_, n) => { if (Math.abs(x(n) - px) < Math.abs(x(i) - px)) i = n; });
+    aendere(i, Math.max(0, Math.min(10, Math.round((210 - py) / 17))));
+  });
+  box.querySelector('[data-kurve]').addEventListener('click', () => box.leeren());
+  zeichne();
 });
 
 // ---------------------------------------------------------------- Abhaken (Leseplan o. Ä.)

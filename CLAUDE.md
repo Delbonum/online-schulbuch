@@ -42,6 +42,7 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
   zu Beginn nicht gelesen, Leseseiten spoilerfrei) und **Seitenangaben = gedruckte Buchseiten**, nie PDF-Seiten.
   Reihen sind **flexibel planbar** (Kern- und Zusatzseiten, Kasten „Einsatz dieser Seite“, Kurzfassungen, Leseplan,
   Planungsmodelle) und bekommen passende Bilder (eigene SVG-Skizzen, Fotos nur frei lizenziert mit Nachweis).
+- **Zitierweise und Aufgabenformen** (Lektüren, verbindlich, README „Lektüren“): wörtliche Zitate in Anführungszeichen ohne „vgl.“, alles Indirekte mit „vgl.“. Nicht nur Freitextfelder: Ausfülltabelle, geführte Felder, Pro/Contra, Meinungslinie mit Begründung, „Markieren“, „Kurve“.
 - **Live-Umfragen mitdenken** (alle Fächer, auch künftige Reihen): Meinungslinien und Lesechecks/Verständnisquizze
   für die Klassendiagnose bekommen in einem `<lehrkraft>`-Kasten direkt dahinter den Knopf
   „Als Live-Umfrage durchführen“ (`<als-umfrage ids="…" titel="…" modus="…">`, README „Live-Umfragen aus dem Schulbuch“).

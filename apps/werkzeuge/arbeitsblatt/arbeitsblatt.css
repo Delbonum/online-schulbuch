@@ -123,6 +123,51 @@ input.notiz { max-width: 420px; }
 .position-pole { display: flex; justify-content: space-between; gap: 16px; font-size: .85rem; color: var(--muted); }
 .position-stand { margin: .4em 0 0 !important; color: var(--muted); }
 
+/* ------------------------------------------------------------ Ausfülltabelle, geführte Felder */
+
+table.ausfuell { display: table; width: 100%; table-layout: fixed; overflow: visible; }
+table.ausfuell td, table.ausfuell th { padding: 5px 6px; }
+table.ausfuell .notiz { font-size: .92rem; line-height: 1.4; }
+@media (max-width: 640px) {
+  table.ausfuell, table.ausfuell tbody, table.ausfuell tr, table.ausfuell td, table.ausfuell th { display: block; width: 100%; }
+  table.ausfuell thead { display: none; }
+  table.ausfuell tr { margin-bottom: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  table.ausfuell td, table.ausfuell th { border: 0; }
+  table.ausfuell td::before { content: attr(data-spalte); display: block; margin-bottom: 2px; font-size: .82rem; font-weight: 700; color: var(--muted); }
+}
+.felder { margin: .4em 0 1em; }
+.felder label { display: block; margin-bottom: 2px; }
+.felder .notiz { margin: 0 0 .7em; }
+.felder.zwei { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
+@media (max-width: 640px) { .felder.zwei { grid-template-columns: minmax(0, 1fr); } }
+.box li > label { display: block; }
+.notiz-rueckblick[data-alt]::before { content: "Deine frühere Antwort: "; font-weight: 700; }
+.box li .position.werkzeug { margin: .6em 0; }
+
+/* ------------------------------------------------------------ Text markieren */
+
+.markieren.werkzeug { margin: .6em 0; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+.markieren p { margin: 0 0 .5em; }
+.mk-leiste { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; }
+.mk-leiste .sort-hilfe { flex-basis: 100%; margin: 2px 0 0; }
+.mk-art[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--fach); font-weight: 700; }
+.mk-wort { cursor: pointer; border-radius: 3px; -webkit-user-select: none; user-select: none; }
+.mk-wort:hover { outline: 1px dashed var(--fach); }
+.mk-0 { background: #fff0a0; text-decoration: underline solid #a88a00; }
+.mk-1 { background: #bfe6f5; text-decoration: underline dashed #1b6f92; }
+.mk-2 { background: #f6cfe0; text-decoration: underline dotted #a12d63; }
+.mk-art.mk-0, .mk-art.mk-1, .mk-art.mk-2 { text-decoration: none; }
+
+/* ------------------------------------------------------------ Eigene Kurve */
+
+.kurve.werkzeug { margin: .6em 0; }
+.kurve .skizze { margin: .4em 0; }
+.kurve svg { cursor: pointer; }
+.kurve-regler { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 4px 16px; }
+.kurve-regler label { display: block; font-size: .88rem; }
+.kurve-regler span { display: block; }
+.kurve-regler input { width: 100%; accent-color: var(--fach); }
+
 /* ------------------------------------------------------------ Abhaken (Leseplan) */
 
 .abhaken { list-style: none; padding: 0 !important; margin: 1em 0 .4em; display: grid; gap: 6px; }

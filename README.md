@@ -110,6 +110,11 @@ interaktiv und wird vom Build automatisch eingebunden, sobald einer davon auf ei
 <ol class="reihenfolge"><li>erstes</li><li>zweites</li></ol>           <!-- in richtiger Reihenfolge notieren -->
 <div class="position" data-id="sezuan-pos-1" data-vergleich="…"><p>Aussage</p></div>   <!-- Meinungslinie -->
 <ul class="abhaken" data-id="sezuan-gelesen"><li>…</li></ul>   <!-- Liste zum Abhaken, z. B. Leseplan -->
+<table class="verlauf ausfuell">…<td><textarea class="notiz" data-notiz="…" aria-label="…"></textarea></td>…</table>   <!-- Ausfülltabelle: Feld je Zelle, auf dem Handy Karten -->
+<div class="felder zwei"><div><label for="x">Dafür:</label><textarea class="notiz" id="x" data-notiz="x"></textarea></div>…</div>   <!-- geführte Felder; „zwei“ = nebeneinander -->
+<div class="markieren" data-id="…" data-titel="…" data-farben="A|B|C">Text</div>   <!-- Wörter nach Kategorien markieren -->
+<div class="kurve" data-id="…" data-titel="…" data-oben="…" data-unten="…" data-schritte="1|2|3"></div>   <!-- eigene Kurve, ein Regler je Schritt -->
+<div class="notiz-rueckblick" data-notiz="alte-id" data-alt hidden></div>   <!-- frühere Antwort zeigen, wenn ein Feld ersetzt wurde -->
 <figure class="skizze"><svg …>…</svg><figcaption>…</figcaption></figure>   <!-- eigene Grafik, Farben per CSS-Klassen -->
 <einbinden datei="teile/zuschauer-theater.html">   <!-- Baustein aus content/teile/, z. B. eine Skizze auf mehreren Seiten -->
 ```
@@ -212,6 +217,9 @@ Jede Lektüre bekommt eine Reihe unter `content/deutsch/lektueren/<autor>/<werk>
 4. **Seitenangaben beziehen sich immer auf die gedruckten Seitenzahlen der Buchausgabe**, nie auf die
    Seitennummer einer PDF-Datei. Die Ausgabe steht auf der Werkseite; zusätzlich die Szene/das Kapitel nennen,
    damit man die Stelle auch in anderen Ausgaben findet. Zitate wörtlich aus dem Buch übernehmen.
+   **Zitierweise:** Nur wörtliche Zitate stehen in Anführungszeichen und bekommen die Seite ohne „vgl.“ (`„Leid läutert!“ (S. 94)`);
+   indirekte Zitate und Textstellenangaben bekommen „vgl.“ (`(vgl. S. 94)`), auch in Quiz-Erklärungen und Grafiken.
+   Ohne „vgl.“ bleiben nur Leseaufträge („Lies das Lied (S. 91 f.)“) und reine Inhaltsangaben wie Leseplan, Zeitleisten und Planungstabellen.
 5. **Lösungen und Lehrerhinweise** stehen in `<lehrkraft>` am Ende des Abschnitts, zu dem die Aufgaben gehören
    (ein Kasten je Abschnitt, siehe „Inhalte für Lehrkräfte“) – nie alle gesammelt am Seitenende.
 6. **Modern und mehrperspektivisch:** handlungs- und produktionsorientierte Aufgaben, kooperative Formen,
@@ -236,6 +244,9 @@ Jede Lektüre bekommt eine Reihe unter `content/deutsch/lektueren/<autor>/<werk>
 11. **Das Buch selbst** (z. B. als PDF) gehört nach `materialien/` und wird nie committet. Text lässt sich mit
    `pdftotext` herausziehen; dabei die PDF-Seiten den gedruckten Seitenzahlen zuordnen (die Zahl steht meist
    unten auf der Seite) und jede Seitenangabe danach prüfen.
+12. **Abwechslungsreiche Aufgabenformen:** Nicht jede Aufgabe bekommt ein einzelnes Freitextfeld. Tabellen als Ausfülltabelle,
+   Bestimmungsaufgaben als geführte Felder, Abwägungen als Pro/Contra mit Fazit, Standpunkte als Meinungslinie mit Begründung
+   (und Live-Umfrage), Textuntersuchungen mit „Markieren“, Verläufe mit „Kurve“. Reine Schreibaufgaben bleiben Freitext.
 
 ## Befehle
 
