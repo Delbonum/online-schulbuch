@@ -193,6 +193,7 @@ svg.addEventListener('drop', (e) => {
 function setzeWerkzeug(w, typ = null) {
   zustand.werkzeug = w;
   zustand.platzieren = w === 'platzieren' ? typ : null;
+  zustand.mehrfach = false;
   zustand.kabelStart = null;
   vorschau.hidden = true;
   geist.hidden = true;
@@ -355,7 +356,8 @@ svg.addEventListener('pointerdown', (e) => {
     const p = svgPunkt(e);
     const typ = zustand.platzieren;
     neuesGeraet(typ, Math.max(0, Math.min(BREITE - 80, p.x - 36)), Math.max(0, Math.min(HOEHE - 100, p.y - 32)));
-    if (!e.shiftKey) setzeWerkzeug('auswahl'); // Umschalttaste: Werkzeug bleibt für das nächste Gerät
+    // Umschalttaste: Werkzeug bleibt für das nächste Gerät – bis die Taste losgelassen wird
+    if (e.shiftKey) zustand.mehrfach = true; else setzeWerkzeug('auswahl');
     return;
   }
   if (zustand.werkzeug === 'kabel' && zustand.modus === 'entwurf') {
@@ -492,6 +494,11 @@ function zeichneAuswahl() {
   gKabel.querySelectorAll('[data-kabel]').forEach((el) => el.classList.toggle('gewaehlt', zustand.auswahl?.art === 'kabel' && el.dataset.kabel === zustand.auswahl.id));
   zeichnePanel();
 }
+
+// Mehrere Geräte mit Umschalttaste: Loslassen beendet das Platzieren (auch wenn das Fenster den Fokus verliert)
+const mehrfachEnde = () => { if (zustand.werkzeug === 'platzieren' && zustand.mehrfach) setzeWerkzeug('auswahl'); };
+window.addEventListener('keyup', (e) => { if (e.key === 'Shift') mehrfachEnde(); });
+window.addEventListener('blur', mehrfachEnde);
 
 app.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { if (zustand.werkzeug !== 'auswahl') setzeWerkzeug('auswahl'); return; }
