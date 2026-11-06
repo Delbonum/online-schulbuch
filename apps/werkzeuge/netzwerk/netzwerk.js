@@ -9,16 +9,16 @@
 // (andere Endung: BILDER unten anpassen).
 
 import {
-  Netz, SOFTWARE, STANDARD_SEITE, gueltigeIp, gueltigeMaske, imSelbenNetz, adressbereich, ECHO_PORT,
+  Netz, SOFTWARE, istEndgeraet, STANDARD_SEITE, gueltigeIp, gueltigeMaske, imSelbenNetz, adressbereich, ECHO_PORT,
   P2P_PORT, P2P_ORDNER, dateisystem, ordnerInhalt, alleDateien, existiert, leseDatei, schreibeDatei, neuerOrdner, loesche, benenneUm, normalerPfad, MAX_DATEI,
 } from './netz.js';
 import { fuehreAus } from './befehle.js';
 
 const wurzel = document.getElementById('netzwerk');
 const BASIS_BILDER = new URL('./bilder/', import.meta.url).href.replace(/\?.*$/, '');
-const BILDER = { rechner: 'rechner.svg', notebook: 'notebook.svg', switch: 'switch.svg', router: 'router.svg', modem: 'modem.svg' };
+const BILDER = { rechner: 'rechner.svg', notebook: 'notebook.svg', smartphone: 'smartphone.svg', switch: 'switch.svg', router: 'router.svg', modem: 'modem.svg' };
 const bild = (typ) => `${BASIS_BILDER}${BILDER[typ]}`;
-const NAMEN = { rechner: 'Rechner', notebook: 'Notebook', switch: 'Switch', router: 'Router', modem: 'Modem' };
+const NAMEN = { rechner: 'Rechner', notebook: 'Notebook', smartphone: 'Smartphone', switch: 'Switch', router: 'Router', modem: 'Modem' };
 const API = '/api';
 const SPEICHER = 'netzwerk-simulation:entwurf';
 // Dokumentation: Bereiche [Füllung, Rand/Schrift], Textfarben
@@ -32,7 +32,9 @@ const HOEHE = 1200;
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const html = (t) => { const e = document.createElement('template'); e.innerHTML = t.trim(); return e.content.firstElementChild; };
-const istHost = (g) => g.typ === 'rechner' || g.typ === 'notebook';
+const istHost = istEndgeraet;
+/** Verbindungen zu einem Smartphone sind kabellos (WLAN) und werden gestrichelt gezeichnet */
+const istFunk = (k) => [k.a.g, k.b.g].some((id) => zustand.netz.geraete.get(id)?.typ === 'smartphone');
 
 const zustand = {
   netz: new Netz(),
@@ -110,7 +112,7 @@ palette.innerHTML = `${Object.keys(BILDER).map((typ) => `<button type="button" c
 <button type="button" class="nw-bauteil nw-doku-werkzeug" data-neu="text" title="Textfeld hinzufügen"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 10h28M24 10v30M17 40h14" fill="none" stroke="#3d4a5c" stroke-width="4" stroke-linecap="round"/></svg><span>Textfeld</span></button>
 <button type="button" class="nw-bauteil nw-doku-werkzeug" data-neu="bereich" title="Farbigen Bereich hinzufügen (z. B. für ein Teilnetz)"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="10" width="36" height="28" rx="5" fill="#dbe8ff" stroke="#4a6fb5" stroke-width="3"/><path d="M11 17h14" stroke="#4a6fb5" stroke-width="3" stroke-linecap="round"/></svg><span>Bereich</span></button>
 <button type="button" class="nw-bauteil nw-doku-werkzeug nw-bild-export" title="Netz mit Beschriftung als PNG-Bild herunterladen"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="8" width="36" height="28" rx="4" fill="none" stroke="#3d4a5c" stroke-width="3"/><path d="M10 32l9-10 7 7 5-5 7 8" fill="none" stroke="#0b6b72" stroke-width="3" stroke-linejoin="round"/><path d="M24 38v6M19 40l5 5 5-5" fill="none" stroke="#3d4a5c" stroke-width="3" stroke-linecap="round"/></svg><span>Als Bild speichern</span></button>
-<button type="button" class="nw-bauteil nw-papierkorb" title="Papierkorb: Gerät hierher ziehen – oder Gerät bzw. Kabel anklicken und dann hier klicken"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 13h28M19 13V8h10v5M13 13l2 28h18l2-28" fill="none" stroke="#3d4a5c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 19v16M28 19v16" stroke="#3d4a5c" stroke-width="3" stroke-linecap="round"/></svg><span>Papierkorb</span></button>`;
+<button type="button" class="nw-bauteil nw-papierkorb" title="Papierkorb: zum Löschen ein Gerät hierher ziehen"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 13h28M19 13V8h10v5M13 13l2 28h18l2-28" fill="none" stroke="#3d4a5c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 19v16M28 19v16" stroke="#3d4a5c" stroke-width="3" stroke-linecap="round"/></svg><span>Papierkorb</span></button>`;
 const papierkorb = palette.querySelector('.nw-papierkorb');
 
 function neuesGeraet(typ, x, y) {
@@ -124,8 +126,8 @@ palette.addEventListener('click', (e) => {
   const knopf = e.target.closest('.nw-bauteil');
   if (!knopf || zustand.modus === 'simulation') return;
   if (knopf === papierkorb) {
-    if (zustand.auswahl) loescheAuswahl();
-    else melde(zustand.modus === 'dokumentation' ? 'Ziehe ein Textfeld oder einen Bereich in den Papierkorb – oder klicke es erst an und dann den Papierkorb.' : 'Ziehe ein Gerät in den Papierkorb – oder klicke erst ein Gerät oder Kabel an und dann den Papierkorb.');
+    // Klicken löscht nichts (sonst ginge ein gewähltes Gerät versehentlich verloren) – nur Ziehen
+    melde(zustand.modus === 'dokumentation' ? 'Zum Löschen ein Textfeld oder einen Bereich in den Papierkorb ziehen.' : 'Zum Löschen ein Gerät in den Papierkorb ziehen – oder es anklicken und unten „Gerät löschen“ wählen.');
     return;
   }
   if (zustand.modus === 'dokumentation') {
@@ -192,7 +194,7 @@ function zeichne() {
     const b = n.geraete.get(k.b.g);
     const [pa, pb] = [mitte(a), mitte(b)];
     const gewaehlt = zustand.auswahl?.art === 'kabel' && zustand.auswahl.id === k.id;
-    return `<g class="nw-kabel-linie${gewaehlt ? ' gewaehlt' : ''}" data-kabel="${k.id}"><line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" class="nw-kabel-treffer"/><line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" class="nw-kabel-strich"/></g>`;
+    return `<g class="nw-kabel-linie${gewaehlt ? ' gewaehlt' : ''}${istFunk(k) ? ' funk' : ''}" data-kabel="${k.id}"><line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" class="nw-kabel-treffer"/><line x1="${pa.x}" y1="${pa.y}" x2="${pb.x}" y2="${pb.y}" class="nw-kabel-strich"/></g>`;
   }).join('');
   gGeraete.innerHTML = [...n.geraete.values()].map((g) => {
     const gewaehlt = zustand.auswahl?.art === 'geraet' && zustand.auswahl.id === g.id;
@@ -257,7 +259,7 @@ async function bildExport() {
     }
     const kabel = n.kabel.map((k) => {
       const [a, b] = [mitte(n.geraete.get(k.a.g)), mitte(n.geraete.get(k.b.g))];
-      return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#3d4a5c" stroke-width="3"/>`;
+      return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#3d4a5c" stroke-width="3"${istFunk(k) ? ' stroke-dasharray="10 7"' : ''}/>`;
     }).join('');
     const geraeteSvg = geraete.map((g) => {
       const ips = g.typ === 'switch' || g.typ === 'modem' ? '' : g.nics.map((x) => x.ip).filter(Boolean).join(', ');
@@ -508,7 +510,11 @@ function zeichnePanel() {
   if (a.art === 'kabel') {
     const k = n.kabel.find((x) => x.id === a.id);
     if (!k) { zustand.auswahl = null; zeichnePanel(); return; }
-    panel.innerHTML = `<div class="nw-panel-kopf"><strong>Kabel</strong> zwischen ${esc(n.geraete.get(k.a.g).name)} und ${esc(n.geraete.get(k.b.g).name)}
+    panel.innerHTML = istFunk(k)
+      ? `<div class="nw-panel-kopf"><strong>WLAN-Verbindung</strong> zwischen ${esc(n.geraete.get(k.a.g).name)} und ${esc(n.geraete.get(k.b.g).name)}
+<button type="button" class="knopf nw-loeschen">Verbindung entfernen</button></div>
+<p class="nw-tipp">Das Smartphone ist kabellos verbunden (gestrichelt). In der Simulation verhält sich die Funkverbindung wie ein Kabel.</p>`
+      : `<div class="nw-panel-kopf"><strong>Kabel</strong> zwischen ${esc(n.geraete.get(k.a.g).name)} und ${esc(n.geraete.get(k.b.g).name)}
 <button type="button" class="knopf nw-loeschen">Kabel entfernen</button></div>`;
     panel.querySelector('.nw-loeschen').addEventListener('click', loescheAuswahl);
     return;
@@ -1965,9 +1971,9 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
     f.inhalt.classList.add('nw-hilfe');
     f.inhalt.innerHTML = `<h4>Entwurf ✎</h4>
 <ul><li>Links ein Gerät anklicken oder auf die Fläche ziehen. Geräte lassen sich verschieben.</li>
-<li><strong>Kabel:</strong> Kabel-Werkzeug wählen, dann nacheinander zwei Geräte anklicken. Rechner haben einen Anschluss, Switch und Router bekommen bei Bedarf weitere.</li>
+<li><strong>Kabel:</strong> Kabel-Werkzeug wählen, dann nacheinander zwei Geräte anklicken. Rechner, Notebooks und Smartphones haben einen Anschluss, Switch und Router bekommen bei Bedarf weitere. Ein Smartphone verbindest du genauso; die Linie ist dann gestrichelt, weil es kabellos (WLAN) verbunden ist.</li>
 <li>Ein angeklicktes Gerät stellst du unten ein (IP-Adresse, Netzmaske, Gateway, DNS-Server, DHCP). Beim Router: Anschlüsse und Weiterleitungstabelle.</li>
-<li>Löschen: Gerät in den <strong>Papierkorb</strong> ziehen – oder Gerät bzw. Kabel anklicken und dann Entf drücken oder auf den Papierkorb klicken. Versehentlich gelöscht? In der Meldung auf <em>Rückgängig</em> klicken (oder Strg+Z).</li></ul>
+<li>Löschen: Gerät in den <strong>Papierkorb</strong> ziehen – oder Gerät bzw. Kabel anklicken und dann Entf drücken oder unten auf „löschen“ bzw. „entfernen“ klicken. Versehentlich gelöscht? In der Meldung auf <em>Rückgängig</em> klicken (oder Strg+Z).</li></ul>
 <h4>Simulation ▶</h4>
 <ul><li>Doppelklick auf einen Rechner öffnet den Desktop. Über <em>Software-Installation</em> kommen Programme dazu: Befehlszeile, Webbrowser, Webserver, DNS-Server, E-Mail-Programm, E-Mail-Server, Firewall, Echo-Server, einfacher Client, Text-Editor, Datei-Explorer, Peer-to-Peer.</li>
 <li><strong>Echo-Server und einfacher Client:</strong> Der Echo-Server (Port 55555) schickt jede Nachricht zurück; mit dem einfachen Client baust du eine TCP-Verbindung auf, schickst Nachrichten und trennst wieder – im Datenaustausch sieht man Verbindungsaufbau, Daten und Abbau.</li>
@@ -1982,7 +1988,7 @@ app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hi
 <li>Grün leuchtende Kabel übertragen gerade Daten; das Tempo stellst du oben ein.</li></ul>
 <h4>Dokumentation ✍</h4>
 <ul><li>Links <em>Textfeld</em> oder <em>Bereich</em> anklicken: Es erscheint in der Mitte. Ziehen verschiebt es; die Ecke unten rechts ändert die Größe eines Bereichs. Text, Größe und Farbe stellst du unten ein.</li>
-<li>Löschen wie bei Geräten: in den Papierkorb ziehen, oder auswählen und Entf drücken bzw. den Papierkorb anklicken.</li>
+<li>Löschen wie bei Geräten: in den Papierkorb ziehen, oder auswählen und Entf drücken bzw. unten auf „löschen“ klicken.</li>
 <li><em>Als Bild speichern</em> lädt das Netz mit allen Beschriftungen als PNG-Bild herunter.</li></ul>
 <h4>Speichern</h4><p>Der Entwurf bleibt in diesem Browser erhalten (samt Beschriftungen). Mit „Speichern“ lädst du ihn als Datei herunter, mit „Öffnen …“ lädst du sie wieder.</p>`;
   },

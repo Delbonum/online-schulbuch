@@ -23,10 +23,10 @@
 
 /* Palette und Fläche */
 .nw-haupt { flex: 1; display: flex; min-height: 0; }
-.nw-palette { display: flex; flex-direction: column; gap: 6px; padding: 8px; border-right: 1px solid var(--border); background: var(--surface-2); overflow-y: auto; }
+.nw-palette { display: flex; flex-direction: column; gap: 5px; padding: 6px 8px; border-right: 1px solid var(--border); background: var(--surface-2); overflow-y: auto; }
 .nw.simulation .nw-palette { display: none; }
-.nw-bauteil { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 84px; padding: 6px 4px; border: 2px solid transparent; border-radius: 10px; background: var(--surface); font: 600 .8rem var(--schrift-text); color: var(--text); cursor: grab; }
-.nw-bauteil img, .nw-bauteil svg { width: 38px; height: 38px; }
+.nw-bauteil { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 84px; padding: 4px; border: 2px solid transparent; border-radius: 10px; background: var(--surface); font: 600 .8rem var(--schrift-text); color: var(--text); cursor: grab; }
+.nw-bauteil img, .nw-bauteil svg { width: 34px; height: 34px; }
 .nw-bauteil:hover { border-color: var(--border); }
 .nw-bauteil.aktiv { border-color: var(--fach); background: var(--fach-soft); }
 .nw-flaeche-rahmen { flex: 1; overflow: auto; background-color: #fbfcfb; background-image: radial-gradient(#dfe4e1 1px, transparent 1px); background-size: 24px 24px; }
@@ -48,6 +48,7 @@
 .nw-kabel-treffer { stroke: transparent; stroke-width: 14; cursor: pointer; }
 .nw-kabel-linie.gewaehlt .nw-kabel-strich { stroke: var(--fach); stroke-width: 5; }
 .nw-kabel-linie.aktiv .nw-kabel-strich { stroke: #22a83b; stroke-width: 6; }
+.nw-kabel-linie.funk .nw-kabel-strich { stroke-dasharray: 10 7; }
 .nw-kabel-vorschau { stroke: #c7930a; stroke-width: 3; stroke-dasharray: 6 5; pointer-events: none; }
 
 /* Panel unten */

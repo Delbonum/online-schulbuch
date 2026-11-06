@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Platzhalter: Smartphone mit WLAN-Zeichen -->
+  <rect x="21" y="14" width="22" height="42" rx="4" fill="#3d4a5c"/>
+  <rect x="24" y="19" width="16" height="30" rx="1.5" fill="#cfe9be"/>
+  <path d="M27 25h10M27 29h7M27 33h9" stroke="#0b6b72" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="32" cy="52.5" r="1.8" fill="#9aa3ad"/>
+  <path d="M44 12a7 7 0 0 1 7 7M44 6a13 13 0 0 1 13 13" stroke="#0b6b72" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <circle cx="45" cy="18" r="1.8" fill="#0b6b72"/>
+</svg>

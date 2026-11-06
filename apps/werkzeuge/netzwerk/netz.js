@@ -17,7 +17,10 @@
 // während der Simulation (ARP-Tabellen, Verbindungen, Protokolle) entsteht bei start() neu.
 
 export const BROADCAST_MAC = 'FF:FF:FF:FF:FF:FF';
-export const TYPEN = ['rechner', 'notebook', 'switch', 'router', 'modem'];
+export const TYPEN = ['rechner', 'notebook', 'smartphone', 'switch', 'router', 'modem'];
+/** Endgeräte mit eigener IP-Adresse, Software und Dateien; das Smartphone hängt per WLAN am Netz (wie ein Kabel) */
+export const ENDGERAETE = ['rechner', 'notebook', 'smartphone'];
+export const istEndgeraet = (g) => ENDGERAETE.includes(g?.typ);
 export const SOFTWARE = {
   befehlszeile: 'Befehlszeile',
   webbrowser: 'Webbrowser',
@@ -227,7 +230,7 @@ export class Netz {
     if (!TYPEN.includes(typ)) throw new Error(`Unbekannter Gerätetyp: ${typ}`);
     const id = `g${this.zaehler++}`;
     const nummer = [...this.geraete.values()].filter((g) => g.typ === typ).length + 1;
-    const grund = { rechner: 'Rechner', notebook: 'Notebook', switch: 'Switch', router: 'Router', modem: 'Modem' }[typ];
+    const grund = { rechner: 'Rechner', notebook: 'Notebook', smartphone: 'Smartphone', switch: 'Switch', router: 'Router', modem: 'Modem' }[typ];
     const g = {
       id, typ, name: name ?? `${grund} ${nummer}`, x, y,
       nics: [],
@@ -239,7 +242,7 @@ export class Netz {
     };
     if (typ === 'router') { g.nics.push(this.neueNic(), this.neueNic()); g.routenAuto = true; }
     if (typ === 'modem') g.nics.push(this.neueNic());
-    if (typ === 'rechner' || typ === 'notebook') {
+    if (ENDGERAETE.includes(typ)) {
       g.nics.push({ ...this.neueNic(), ip: `192.168.0.${10 + this.geraete.size}`, maske: '255.255.255.0' });
       g.software = ['befehlszeile'];
       dateisystem(g);
@@ -322,7 +325,7 @@ export class Netz {
         dhcpServer: { aktiv: false, von: '', bis: '', gateway: '', dns: '' }, routen: [], software: [], daten: {}, gateway: '', dns: '', dhcp: false,
         ...kopie(g),
       });
-      if (g.typ === 'rechner' || g.typ === 'notebook') dateisystem(n.geraete.get(g.id));
+      if (istEndgeraet(g)) dateisystem(n.geraete.get(g.id));
     }
     n.kabel = (daten.kabel ?? []).filter((k) => n.geraete.has(k.a?.g) && n.geraete.has(k.b?.g));
     const zahl = (w, std, min, max) => (Number.isFinite(Number(w)) ? Math.max(min, Math.min(max, Math.round(Number(w)))) : std);
@@ -374,12 +377,12 @@ export class Netz {
     this.portZaehler = 49152;
     for (const g of this.geraete.values()) {
       this.zustand.set(g.id, { arp: new Map(), wartet: new Map(), sat: new Map(), log: [], logNr: 0, udp: new Map(), tcp: new Map(), icmp: new Set(), dhcpVergeben: new Map() });
-      if (g.typ === 'rechner' || g.typ === 'notebook') {
+      if (istEndgeraet(g)) {
         if (g.dhcp) { g.nics[0].ip = ''; g.gateway = ''; g.dns = ''; }
         this.dienste(g);
       }
     }
-    for (const g of this.geraete.values()) if (g.dhcp && (g.typ === 'rechner' || g.typ === 'notebook')) this.dhcpAnfragen(g);
+    for (const g of this.geraete.values()) if (g.dhcp && istEndgeraet(g)) this.dhcpAnfragen(g);
   }
 
   stop() { this.laeuft = false; this.unterwegs = []; this.timer = []; }

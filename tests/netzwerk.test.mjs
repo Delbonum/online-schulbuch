@@ -434,3 +434,18 @@ test('Dokumentation: Notizen werden gespeichert, geladen und geprüft', () => {
   delete daten.notizen;
   assert.deepEqual(Netz.ausJSON(daten).notizen, []);
 });
+
+test('Smartphone: Endgerät mit Software, per WLAN (wie ein Kabel) am Switch', async () => {
+  const { istEndgeraet, ordnerInhalt } = await import('../apps/werkzeuge/netzwerk/netz.js');
+  const n = new Netz();
+  const s = n.neuesGeraet('switch');
+  const a = rechner(n, 'A', '192.168.0.1');
+  const h = n.neuesGeraet('smartphone');
+  assert.equal(h.name, 'Smartphone 1');
+  assert.ok(istEndgeraet(h) && h.software.includes('befehlszeile') && ordnerInhalt(h, '/').length === 2);
+  h.nics[0].ip = '192.168.0.50';
+  n.verbinde(a.id, s.id); n.verbinde(h.id, s.id);
+  assert.throws(() => n.verbinde(h.id, a.id), /nur einen Netzwerkanschluss/);
+  n.start();
+  assert.match(ping(n, h, '192.168.0.1').at(-1), /4 empfangen/);
+});
