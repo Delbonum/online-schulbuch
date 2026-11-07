@@ -111,6 +111,7 @@ interaktiv und wird vom Build automatisch eingebunden, sobald einer davon auf ei
 <div class="position" data-id="sezuan-pos-1" data-vergleich="…"><p>Aussage</p></div>   <!-- Meinungslinie -->
 <ul class="abhaken" data-id="sezuan-gelesen"><li>…</li></ul>   <!-- Liste zum Abhaken, z. B. Leseplan -->
 <table class="verlauf ausfuell">…<td><textarea class="notiz" data-notiz="…" aria-label="…"></textarea></td>…</table>   <!-- Ausfülltabelle: Feld je Zelle, auf dem Handy Karten -->
+<!-- … mit data-erweiterbar="id" am table: Knopf „+ Zeile“, wenn die Zeilenzahl offen ist. Felder der letzten Zeile: data-notiz="id-Zeile-Spalte", aria-label mit „Zeile N“ -->
 <div class="felder zwei"><div><label for="x">Dafür:</label><textarea class="notiz" id="x" data-notiz="x"></textarea></div>…</div>   <!-- geführte Felder; „zwei“ = nebeneinander -->
 <div class="markieren" data-id="…" data-titel="…" data-farben="A|B|C">Text</div>   <!-- Wörter nach Kategorien markieren -->
 <div class="kurve" data-id="…" data-titel="…" data-oben="…" data-unten="…" data-schritte="1|2|3"></div>   <!-- eigene Kurve, ein Regler je Schritt -->
@@ -193,6 +194,8 @@ jeweils am Ende des Abschnitts (`<h2>`), zu dem die Aufgaben gehören – ein Ka
 zu allen Aufgaben dieses Abschnitts, z. B. `<lehrkraft titel="Lösungsvorschlag zu Aufgabe 3 und 4">` direkt vor der
 nächsten Überschrift. Hat ein Abschnitt keine Aufgaben mit Lösung, entfällt der Kasten. Der Kasten „Einsatz dieser
 Seite“ steht am Seitenanfang.
+
+**Keine Anrede (verbindlich, alle Fächer):** Hinweise und Lösungen für Lehrkräfte sprechen niemanden an, also kein „Sie“. Stattdessen indirekt („indem plakativ formuliert wird“), mit „man“ oder nominal („durch plakatives Formulieren“).
 
 Hinweis: Das Repository ist öffentlich – im Quelltext unter `content/` sind die Lösungen lesbar. Geschützt ist nur
 die Website.

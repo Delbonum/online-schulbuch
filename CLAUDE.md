@@ -48,6 +48,7 @@ Freies digitales Schulbuch (Deutsch, Informatik), live unter https://online-schu
   „Als Live-Umfrage durchführen“ (`<als-umfrage ids="…" titel="…" modus="…">`, README „Live-Umfragen aus dem Schulbuch“).
 - Live-Tools (Umfragen, Wortwolke, Quiz, Evaluation) teilen `apps/werkzeuge/live/`; Schüler:innen nie mit Konto.
   Evaluation: Anonymität nicht aufweichen (keine Live-Statistik, Mindestzahl, keine Zeitpunkte/Kennungen an Antworten).
+- Hinweise für Lehrkräfte **ohne Anrede** (kein „Sie“): indirekt, mit „man“ oder nominal formulieren.
 - Lösungen/Lehrerhinweise in `<lehrkraft>`, **abschnittsweise**: hinter jedem `<h2>`-Abschnitt ein Kasten mit den
   Lösungen zu dessen Aufgaben, nie alle gesammelt am Seitenende (README „Inhalte für Lehrkräfte“). Lehrkräfte melden sich mit eigenem Konto an; der
   Schlüssel steht in `.lehrkraft-schluessel` (lokal, nie committen) und gleich auf dem Server in `api/config.php`.

@@ -17,6 +17,8 @@
 //       Liste zum Abhaken (z. B. Leseplan). Gespeichert wird, welche Einträge erledigt sind.
 //   <table class="verlauf ausfuell"> … <td><textarea class="notiz" data-notiz="id" aria-label="…"></textarea></td> …
 //       Ausfülltabelle: je Zelle ein Antwortfeld; auf dem Handy werden die Zeilen zu Karten.
+//       Mit data-erweiterbar="id" gibt es „+ Zeile“. Dann muss die letzte Zeile nur aus Feldern bestehen,
+//       deren data-notiz auf „-Zeile-Spalte“ endet und deren aria-label „Zeile N“ enthält.
 //   <div class="felder [zwei]"> <div><label for="id">…</label><textarea class="notiz" id="id" data-notiz="id"></textarea></div> … </div>
 //       Geführte Felder untereinander, mit „zwei“ nebeneinander (Pro und Contra).
 //   <div class="notiz-rueckblick" data-notiz="alte-id" data-alt hidden></div>
@@ -58,7 +60,7 @@ function hoehe(feld) {
 }
 
 const notizen = [...document.querySelectorAll('.notiz[data-notiz]')];
-for (const feld of notizen) {
+function bindeFeld(feld) {
   feld.value = speicher.lies(feld.dataset.notiz);
   if (feld.tagName === 'TEXTAREA' && !feld.rows) feld.rows = 3;
   hoehe(feld);
@@ -69,6 +71,7 @@ for (const feld of notizen) {
     zeit = setTimeout(() => speicher.schreib(feld.dataset.notiz, feld.value.trim() ? feld.value : ''), 300);
   });
 }
+notizen.forEach(bindeFeld);
 window.addEventListener('beforeprint', () => notizen.forEach(hoehe));
 document.addEventListener('toggle', (e) => e.target.querySelectorAll?.('.notiz').forEach(hoehe), true);
 
@@ -128,13 +131,14 @@ Sichere deine Antworten als Datei, wenn du sie abgeben oder auf einem anderen Ge
       for (const feld of notizen) { feld.value = ''; speicher.schreib(feld.dataset.notiz, ''); hoehe(feld); }
       abhakenLeeren();
       document.querySelectorAll('.markieren[data-id], .kurve[data-id]').forEach((b) => b.leeren?.());
+      document.querySelectorAll('table.ausfuell[data-erweiterbar]').forEach((t) => t.zeilenLeeren?.());
       document.querySelectorAll('.notiz-rueckblick[data-alt]').forEach((b) => { speicher.schreib(b.dataset.notiz, ''); b.hidden = true; b.textContent = ''; });
     }
     if (art === 'datei') {
       const titel = document.querySelector('.seitenkopf h1')?.textContent.trim() ?? document.title;
       const datum = new Date().toLocaleDateString('de-DE');
       const teile = [`${titel}`, `Online-Schulbuch · ${location.href} · ${datum}`, ''];
-      for (const feld of notizen) teile.push(`## ${beschriftung(feld)}`, feld.value.trim() || '(noch nichts eingetragen)', '');
+      for (const feld of document.querySelectorAll('.notiz[data-notiz]')) teile.push(`## ${beschriftung(feld)}`, feld.value.trim() || '(noch nichts eingetragen)', '');
       for (const b of document.querySelectorAll('.markieren[data-id], .kurve[data-id]')) {
         const zeilen = b.auswertung?.() ?? [];
         if (zeilen.length) teile.push(`## ${b.dataset.titel ?? b.dataset.id}`, ...zeilen, '');
@@ -644,6 +648,52 @@ ${frueher ? `<span class="position-frueher" style="--wert:${frueher}" title="dei
 document.querySelectorAll('table.ausfuell').forEach((t) => {
   const kopf = [...(t.tHead?.rows[0]?.cells ?? [])].map((c) => c.textContent.trim());
   for (const zeile of t.tBodies[0]?.rows ?? []) [...zeile.cells].forEach((c, i) => { if (kopf[i]) c.dataset.spalte = kopf[i]; });
+});
+
+// „+ Zeile“: Die letzte Zeile dient als Vorlage; ihre Felder heißen „…-Zeile-Spalte“.
+document.querySelectorAll('table.ausfuell[data-erweiterbar]').forEach((t) => {
+  const schluessel = `zeilen:${t.dataset.erweiterbar}`;
+  const koerper = t.tBodies[0];
+  const grund = koerper.rows.length;
+  const knoepfe = el('p', 'ausfuell-knoepfe', '<button type="button" class="knopf" data-zeile="plus">+ Zeile</button> <button type="button" class="knopf" data-zeile="minus" hidden>− letzte Zeile</button>');
+  t.after(knoepfe);
+  const minus = knoepfe.querySelector('[data-zeile="minus"]');
+  const stand = () => {
+    minus.hidden = koerper.rows.length <= grund;
+    speicher.schreib(schluessel, koerper.rows.length > grund ? String(koerper.rows.length - grund) : '');
+  };
+  const neu = () => {
+    const nr = koerper.rows.length + 1;
+    const z = koerper.rows[koerper.rows.length - 1].cloneNode(true);
+    z.querySelectorAll('.notiz').forEach((f) => {
+      f.dataset.notiz = f.dataset.notiz.replace(/-\d+-(\d+)$/, `-${nr}-$1`);
+      f.setAttribute('aria-label', f.getAttribute('aria-label').replace(/Zeile \d+/, `Zeile ${nr}`));
+      f.style.height = '';
+      bindeFeld(f);
+      notizen.push(f);
+    });
+    koerper.append(z);
+    z.querySelectorAll('.notiz').forEach(hoehe);
+  };
+  const weg = () => {
+    const z = koerper.rows[koerper.rows.length - 1];
+    z.querySelectorAll('.notiz').forEach((f) => {
+      speicher.schreib(f.dataset.notiz, '');
+      notizen.splice(notizen.indexOf(f), 1);
+    });
+    z.remove();
+  };
+  for (let i = Number(speicher.lies(schluessel)) || 0; i > 0; i--) neu();
+  stand();
+  t.zeilenLeeren = () => { while (koerper.rows.length > grund) weg(); stand(); };
+  knoepfe.addEventListener('click', (e) => {
+    const art = e.target.closest('[data-zeile]')?.dataset.zeile;
+    if (art === 'plus') { neu(); stand(); koerper.rows[koerper.rows.length - 1].querySelector('.notiz')?.focus(); }
+    if (art === 'minus' && koerper.rows.length > grund) {
+      const voll = [...koerper.rows[koerper.rows.length - 1].querySelectorAll('.notiz')].some((f) => f.value.trim());
+      if (!voll || confirm('Die letzte Zeile enthält Text. Trotzdem entfernen?')) { weg(); stand(); }
+    }
+  });
 });
 
 // ---------------------------------------------------------------- Text markieren

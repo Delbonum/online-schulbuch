@@ -135,6 +135,7 @@ table.ausfuell .notiz { font-size: .92rem; line-height: 1.4; }
   table.ausfuell td, table.ausfuell th { border: 0; }
   table.ausfuell td::before { content: attr(data-spalte); display: block; margin-bottom: 2px; font-size: .82rem; font-weight: 700; color: var(--muted); }
 }
+.ausfuell-knoepfe { display: flex; flex-wrap: wrap; gap: 6px; margin: -.8em 0 1em; }
 .felder { margin: .4em 0 1em; }
 .felder label { display: block; margin-bottom: 2px; }
 .felder .notiz { margin: 0 0 .7em; }
