@@ -160,7 +160,7 @@ Sichere deine Antworten als Datei, wenn du sie abgeben oder auf einem anderen Ge
 
 const ohneFelder = (el) => {
   const kopie = el.cloneNode(true);
-  kopie.querySelectorAll('.notiz, textarea, input, select, button, .abhaken-stand, table.ausfuell, .felder, .position, .kurve, .markieren, .notiz-rueckblick[data-alt], details, p.quelle').forEach((x) => x.remove());
+  kopie.querySelectorAll('.notiz, textarea, input, select, button, .abhaken-stand, table.ausfuell, .felder, .position, .kurve, .markieren, .sortieren, .notiz-rueckblick[data-alt], details, p.quelle').forEach((x) => x.remove());
   return kopie.innerHTML.trim();
 };
 
