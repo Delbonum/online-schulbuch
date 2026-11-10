@@ -586,7 +586,13 @@ function schreibe(pfad, html) {
   writeFileSync(ziel, html);
 }
 
-rmSync(ZIEL, { recursive: true, force: true });
+try {
+  rmSync(ZIEL, { recursive: true, force: true });
+} catch (err) {
+  // Windows: Ist der Ordner gerade in einem anderen Programm geöffnet, lässt er sich nicht löschen – dann nur leeren
+  if (!['EPERM', 'EBUSY'].includes(err.code)) throw err;
+  for (const name of readdirSync(ZIEL)) rmSync(join(ZIEL, name), { recursive: true, force: true });
+}
 mkdirSync(ZIEL, { recursive: true });
 cpSync(join(ROOT, 'site'), ZIEL, { recursive: true });
 
