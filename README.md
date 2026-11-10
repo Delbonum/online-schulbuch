@@ -153,6 +153,21 @@ Anonymität der Evaluation (serverseitig, `PollController`): Antworten werden un
 Zeitpunkt gespeichert, getrennt davon nur, *dass* eine Kennung abgegeben hat; Ergebnisse und Export gibt es erst
 nach dem Ende und ab der Mindestzahl.
 
+#### Terminbuchung
+
+`/werkzeuge/termine/` (Kurzadresse `/termine`, Dateien `apps/werkzeuge/termine/`, Server `TerminController`, Tabellen
+`termin_events` und `termin_bookings`): Die Lehrkraft legt Zeiträume (Datum, von, bis), die Dauer eines Termins, eine
+Pause dazwischen und die Plätze je Termin fest; daraus entstehen die Termine (Rest am Ende eines Zeitraums entfällt,
+dieselbe Rechnung in `slots.js` und `TerminController::slots`). Die Klasse bucht **ohne Konto** mit sechsstelligem Code
+bzw. QR-Code und Namen; Vergabe nach dem Prinzip „Wer zuerst bucht, bekommt den Termin“ (Modus `fifo`, Spalte `mode` für
+spätere Modi wie Wunschlisten mit Prioritäten). Je Browser-Kennung eine Buchung; der Primärschlüssel (Termin, Platz)
+verhindert Doppelbuchungen bei gleichzeitigen Klicks. Einstellbar: Umbuchen/Stornieren, Namen für alle sichtbar,
+Buchungsschluss, Buchung offen/geschlossen, einzelne Termine sperren. Die Lehrkraft trägt Namen nach oder entfernt sie,
+speichert die Liste als CSV, druckt sie und zeigt eine Beamer-Ansicht. Schülerinnen und Schüler können ihren Termin als
+`.ics` in den Kalender übernehmen. Zeiten sind Ortszeit (Europe/Berlin); Terminbuchungen werden samt Namen **30 Tage nach
+dem letzten Termin** gelöscht. Codes sind über Terminbuchung und Live-Tools hinweg eindeutig; ein Terminbuchungs-Code auf
+einer Live-Tool-Seite leitet weiter (und umgekehrt).
+
 #### Live-Umfragen aus dem Schulbuch
 
 Meinungslinien und Quizze im Schulbuch lassen sich in den Hinweisen für Lehrkräfte direkt als Umfrage starten – die
@@ -290,6 +305,8 @@ Es gibt keine Abhängigkeiten außer Node.js (ab Version 20).
   `start`, `phase`, `kick`, `end`), ohne Konto: `GET /api/join/{code}`, `POST /api/join/{code}/answers`,
   `POST /api/join/{code}/name` (Quiz). Countdown und Ablauf einer Quizfrage rücken beim Abruf serverseitig weiter;
   Durchführungen enden nach 12 Stunden automatisch.
+- **Terminbuchung** (Tabellen `termin_*`): `/api/termine` (Lehrkraft: anlegen, bearbeiten, löschen; `POST …/{id}/buchungen`,
+  `DELETE …/{id}/buchungen/{slot}/{platz}`), ohne Konto: `GET /api/termin/{code}`, `POST …/buchen`, `POST …/stornieren`.
 - **Modem der Netzwerk-Simulation** (Tabellen `modem_*`, ohne Konto): `POST /api/modem` (Verbindung anbieten →
   sechsstelliger Code und geheimer `token`), `POST /api/modem/{code}/join` (einwählen), `POST …/send` und
   `GET /api/modem/{code}?token=…` (Ethernet-Rahmen weiterreichen bzw. abholen, danach gelöscht),

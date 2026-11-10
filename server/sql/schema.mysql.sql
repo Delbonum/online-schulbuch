@@ -190,3 +190,37 @@ CREATE TABLE IF NOT EXISTS modem_frames (
     KEY idx_modem_frames (code, to_side, id),
     CONSTRAINT fk_modem_frames FOREIGN KEY (code) REFERENCES modem_links (code) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Terminbuchung (/werkzeuge/termine/): Lehrkräfte bieten Zeiträume an, Schülerinnen und Schüler buchen ohne Konto
+-- einen Termin. Termine samt Namen werden 30 Tage nach dem letzten Tag gelöscht.
+CREATE TABLE IF NOT EXISTS termin_events (
+    id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    teacher_id  INT UNSIGNED NOT NULL,
+    code        CHAR(6)      NOT NULL,
+    title       VARCHAR(200) NOT NULL,
+    description TEXT         NOT NULL,
+    mode        VARCHAR(16)  NOT NULL DEFAULT 'fifo',
+    settings    TEXT         NOT NULL,
+    periods     TEXT         NOT NULL,
+    blocked     TEXT         NOT NULL,
+    is_open     TINYINT(1)   NOT NULL DEFAULT 1,
+    last_day    CHAR(10)     NOT NULL,
+    created_at  DATETIME(3)  NOT NULL,
+    updated_at  DATETIME(3)  NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_termin_code (code),
+    KEY idx_termin_teacher (teacher_id),
+    CONSTRAINT fk_termin_teacher FOREIGN KEY (teacher_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS termin_bookings (
+    event_id    INT UNSIGNED      NOT NULL,
+    slot        CHAR(13)          NOT NULL,
+    seat        SMALLINT UNSIGNED NOT NULL,
+    participant CHAR(16)          NULL,
+    name        VARCHAR(80)       NOT NULL,
+    created_at  DATETIME(3)       NOT NULL,
+    PRIMARY KEY (event_id, slot, seat),
+    UNIQUE KEY uq_termin_participant (event_id, participant),
+    CONSTRAINT fk_termin_booking FOREIGN KEY (event_id) REFERENCES termin_events (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

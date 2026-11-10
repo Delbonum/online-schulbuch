@@ -23,6 +23,12 @@
       "beschreibung": "Quiz-Spiel für die ganze Klasse: Spielnamen, Zeitlimit, Punkte für Tempo, Rangliste und Siegerpodest."
     },
     {
+      "titel": "Terminbuchung",
+      "slug": "termine",
+      "icon": "kalender",
+      "beschreibung": "Termine für mündliche Prüfungen, Referate oder Sprechstunden anbieten – die Klasse bucht per Code, wer zuerst kommt, bekommt den Termin."
+    },
+    {
       "titel": "Evaluation",
       "slug": "evaluation",
       "icon": "evaluation",

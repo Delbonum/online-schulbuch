@@ -123,7 +123,8 @@ final class PollRepository
         $now = Database::now();
         for ($try = 0; ; $try++) {
             $code = (string) random_int(100000, 999999);
-            if ($this->db->fetchOne('SELECT id FROM poll_runs WHERE code = ?', [$code]) === null || $try > 50) {
+            if (($this->db->fetchOne('SELECT id FROM poll_runs WHERE code = ?', [$code]) === null
+                && $this->db->fetchOne('SELECT id FROM termin_events WHERE code = ?', [$code]) === null) || $try > 50) {
                 break;
             }
         }

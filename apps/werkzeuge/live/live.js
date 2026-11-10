@@ -15,6 +15,8 @@ export const WERKZEUGE = {
   wordcloud: { name: 'Wortwolke', mehrzahl: 'Wortwolken', artikel: 'eine Wortwolke', pfad: 'werkzeuge/wortwolke/', kurz: 'wortwolke' },
   quiz: { name: 'Quiz', mehrzahl: 'Quiz', artikel: 'ein Quiz', pfad: 'werkzeuge/quiz/', kurz: 'quiz' },
   evaluation: { name: 'Evaluation', mehrzahl: 'Evaluationen', artikel: 'eine Evaluation', pfad: 'werkzeuge/evaluation/', kurz: 'evaluation' },
+  // eigene Tabellen und Endpunkte (/api/termine, /api/termin/{code}); hier nur für Code-Eingabe, QR-Code und Kurzadresse
+  booking: { name: 'Terminbuchung', mehrzahl: 'Terminbuchungen', artikel: 'eine Terminbuchung', pfad: 'werkzeuge/termine/', kurz: 'termine' },
 };
 export const toolUrl = (kind) => `${location.origin}${BASIS}${WERKZEUGE[kind].pfad}`;
 // Kurze Adresse zum Abtippen (die Umleitungen /umfrage usw. gibt es nur auf der echten Seite)
@@ -142,6 +144,11 @@ export function werkzeug(w) {
     try {
       stand = await api('GET', `/join/${code}?participant=${kennung(code)}`);
     } catch (err) {
+      // Vielleicht ein Code der Terminbuchung (eigene Endpunkte) → dorthin
+      if (err.status === 404 && await api('GET', `/termin/${code}`).then(() => true, () => false)) {
+        location.replace(`${toolUrl('booking')}?code=${code}`);
+        return;
+      }
       const text = err.status === 404 ? 'Zu diesem Code läuft gerade nichts.' : err.message;
       if (fehlerZiel) { meldung(fehlerZiel, text); return; }
       await startseite();

@@ -165,5 +165,6 @@
   "/werkzeuge/umfragen/": "50.1",
   "/werkzeuge/wortwolke/": "50.2",
   "/werkzeuge/quiz/": "50.3",
-  "/werkzeuge/evaluation/": "50.4"
+  "/werkzeuge/evaluation/": "50.4",
+  "/werkzeuge/termine/": "50.5"
 }

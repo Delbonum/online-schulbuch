@@ -12,6 +12,7 @@ use Schulbuch\Controller\QuizController;
 use Schulbuch\Controller\RegistrationController;
 use Schulbuch\Controller\TeacherContentController;
 use Schulbuch\Controller\TeacherController;
+use Schulbuch\Controller\TerminController;
 use Schulbuch\Controller\StatisticsController;
 use Schulbuch\Controller\StudentController;
 use Schulbuch\Http\HttpException;
@@ -71,6 +72,7 @@ final class App
         $teacherContentController = new TeacherContentController($auth, $contentKey);
         $pollController = new PollController($auth, new PollRepository($db));
         $modemController = new ModemController($db);
+        $terminController = new TerminController($auth, $db);
 
         $this->router = new Router();
         $r = $this->router;
@@ -98,6 +100,18 @@ final class App
         $r->add('GET', '/join/{code}', [$pollController, 'join']);
         $r->add('POST', '/join/{code}/answers', [$pollController, 'answer']);
         $r->add('POST', '/join/{code}/name', [$pollController, 'nickname']);
+
+        // Terminbuchung: Lehrkräfte legen Zeiträume an, gebucht wird ohne Konto per Code
+        $r->add('GET', '/termine', [$terminController, 'index']);
+        $r->add('POST', '/termine', [$terminController, 'create']);
+        $r->add('GET', '/termine/{id}', [$terminController, 'show']);
+        $r->add('PATCH', '/termine/{id}', [$terminController, 'update']);
+        $r->add('DELETE', '/termine/{id}', [$terminController, 'delete']);
+        $r->add('POST', '/termine/{id}/buchungen', [$terminController, 'assign']);
+        $r->add('DELETE', '/termine/{id}/buchungen/{slot}/{seat}', [$terminController, 'unassign']);
+        $r->add('GET', '/termin/{code}', [$terminController, 'join']);
+        $r->add('POST', '/termin/{code}/buchen', [$terminController, 'book']);
+        $r->add('POST', '/termin/{code}/stornieren', [$terminController, 'cancel']);
 
         // Netzwerk-Simulation: Modem (Verbindung zweier Simulationen, ohne Konto)
         $r->add('POST', '/modem', [$modemController, 'anbieten']);

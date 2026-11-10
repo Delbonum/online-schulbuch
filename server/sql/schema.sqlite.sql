@@ -157,3 +157,33 @@ CREATE TABLE IF NOT EXISTS modem_frames (
     created_at TEXT    NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_modem_frames ON modem_frames (code, to_side, id);
+
+-- Terminbuchung (/werkzeuge/termine/): Lehrkräfte bieten Zeiträume an, Schülerinnen und Schüler buchen ohne Konto
+-- einen Termin. Termine samt Namen werden 30 Tage nach dem letzten Tag gelöscht.
+CREATE TABLE IF NOT EXISTS termin_events (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    teacher_id  INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    code        TEXT    NOT NULL UNIQUE,
+    title       TEXT    NOT NULL,
+    description TEXT    NOT NULL DEFAULT '',
+    mode        TEXT    NOT NULL DEFAULT 'fifo',
+    settings    TEXT    NOT NULL,
+    periods     TEXT    NOT NULL,
+    blocked     TEXT    NOT NULL DEFAULT '[]',
+    is_open     INTEGER NOT NULL DEFAULT 1,
+    last_day    TEXT    NOT NULL,
+    created_at  TEXT    NOT NULL,
+    updated_at  TEXT    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_termin_teacher ON termin_events (teacher_id);
+
+CREATE TABLE IF NOT EXISTS termin_bookings (
+    event_id    INTEGER NOT NULL REFERENCES termin_events (id) ON DELETE CASCADE,
+    slot        TEXT    NOT NULL,
+    seat        INTEGER NOT NULL,
+    participant TEXT    NULL,
+    name        TEXT    NOT NULL,
+    created_at  TEXT    NOT NULL,
+    PRIMARY KEY (event_id, slot, seat),
+    UNIQUE (event_id, participant)
+);

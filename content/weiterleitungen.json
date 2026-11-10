@@ -31,6 +31,22 @@
     [
       "/evaluation/",
       "/werkzeuge/evaluation/"
+    ],
+    [
+      "/termine",
+      "/werkzeuge/termine/"
+    ],
+    [
+      "/termine/",
+      "/werkzeuge/termine/"
+    ],
+    [
+      "/termin",
+      "/werkzeuge/termine/"
+    ],
+    [
+      "/termin/",
+      "/werkzeuge/termine/"
     ]
   ],
   "entfernt": [

@@ -116,7 +116,7 @@ function freshDatabase(): Database
         'password' => getenv('SCHULBUCH_TEST_PASSWORD') ?: null]);
     if ($db->driver() === 'mysql') {
         $db->pdo()->exec('SET FOREIGN_KEY_CHECKS = 0');
-        foreach (['modem_frames', 'modem_links', 'poll_submissions', 'poll_players', 'poll_answers', 'poll_runs', 'poll_polls', 'login_attempts', 'progress_log', 'quiz_attempts', 'level_progress', 'users'] as $table) {
+        foreach (['termin_bookings', 'termin_events', 'modem_frames', 'modem_links', 'poll_submissions', 'poll_players', 'poll_answers', 'poll_runs', 'poll_polls', 'login_attempts', 'progress_log', 'quiz_attempts', 'level_progress', 'users'] as $table) {
             $db->pdo()->exec("DROP TABLE IF EXISTS {$table}");
         }
         $db->pdo()->exec('SET FOREIGN_KEY_CHECKS = 1');
@@ -1055,6 +1055,153 @@ test('Modem: anbieten, einwählen, Rahmen in beide Richtungen, auflegen', functi
     check($dritter->callWithQuery('GET', "/modem/{$code}", ['token' => str_repeat('0', 32)])->status() === 403, 'fremder Schlüssel abgelehnt');
     check($a->call('POST', "/modem/{$code}/hangup", ['token' => $angebot['token']])->status() === 204, 'aufgelegt');
     check($b->callWithQuery('GET', "/modem/{$code}", ['token' => $ein['token']])->status() === 404, 'Verbindung weg');
+});
+
+/** Terminbuchung mit Zeiträumen in der Zukunft (Tage ab heute) */
+function beispielTermine(int $plaetze = 1, bool $umbuchen = true): array
+{
+    $tag = static fn (int $n): string => (new DateTimeImmutable('now', new DateTimeZone('Europe/Berlin')))->modify("+{$n} days")->format('Y-m-d');
+    return ['title' => 'Mündliche Prüfung', 'description' => 'Raum 204',
+        'settings' => ['dauer' => 15, 'pause' => 0, 'plaetze' => $plaetze, 'namenSichtbar' => false, 'umbuchen' => $umbuchen, 'schluss' => null],
+        'periods' => [['datum' => $tag(5), 'von' => '11:40', 'bis' => '13:15'], ['datum' => $tag(3), 'von' => '08:00', 'bis' => '09:35']]];
+}
+
+test('Terminbuchung: Zeiträume ergeben Slots, Prüfung der Angaben, nur eigene', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $users->create('lehrerin', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $users->create('kollege', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $client = new Client($db, $catalog);
+    check($client->call('GET', '/termine')->status() === 401, 'ohne Anmeldung nichts');
+    $client->login('lehrerin', 'geheim123');
+    $res = $client->call('POST', '/termine', beispielTermine());
+    check($res->status() === 201, 'angelegt');
+    $e = asArray($res)['event'];
+    check(preg_match('/^\d{6}$/', $e['code']) === 1, 'sechsstelliger Code');
+    check($e['periods'][0]['von'] === '08:00', 'Zeiträume nach Datum sortiert');
+    check(count($e['slots']) === 12, '2 × 6 Termine zu 15 Minuten (je 5 Minuten Rest)');
+    check($e['slots'][5]['von'] === '09:15' && $e['slots'][5]['bis'] === '09:30', 'letzter Termin des ersten Zeitraums');
+    check($e['slots'][6]['von'] === '11:40', 'zweiter Zeitraum beginnt pünktlich');
+    check($e['plaetzeGesamt'] === 12 && $e['gebucht'] === 0, 'Plätze gezählt');
+
+    $mitPause = beispielTermine();
+    $mitPause['settings']['pause'] = 5;
+    check(count(asArray($client->call('POST', '/termine', $mitPause))['event']['slots']) === 10, 'mit 5 Minuten Pause 2 × 5 Termine');
+
+    $falsch = beispielTermine();
+    $falsch['periods'][] = ['datum' => $falsch['periods'][1]['datum'], 'von' => '09:00', 'bis' => '10:00'];
+    check($client->call('POST', '/termine', $falsch)->status() === 400, 'überschneidende Zeiträume abgelehnt');
+    $falsch = beispielTermine();
+    $falsch['periods'][0]['bis'] = '11:45';
+    check($client->call('POST', '/termine', $falsch)->status() === 400, 'Zeitraum kürzer als ein Termin abgelehnt');
+    $falsch = beispielTermine();
+    $falsch['settings']['dauer'] = 2;
+    check($client->call('POST', '/termine', $falsch)->status() === 400, 'zu kurze Dauer abgelehnt');
+    $falsch = beispielTermine();
+    $falsch['periods'][0]['datum'] = '2026-02-30';
+    check($client->call('POST', '/termine', $falsch)->status() === 400, 'ungültiges Datum abgelehnt');
+
+    $other = new Client($db, $catalog);
+    $other->login('kollege', 'geheim123');
+    check($other->call('GET', "/termine/{$e['id']}")->status() === 404, 'fremde Terminbuchung unsichtbar');
+    check(asArray($other->call('GET', '/termine'))['events'] === [], 'Kollege sieht nichts');
+    check(count(asArray($client->call('GET', '/termine'))['events']) === 2, 'eigene Liste');
+    check($client->call('DELETE', "/termine/{$e['id']}")->status() === 204, 'gelöscht');
+});
+
+test('Terminbuchung: wer zuerst bucht, bekommt den Termin; umbuchen, stornieren, Namen', function () use ($catalog): void {
+    $db = freshDatabase();
+    (new UserRepository($db))->create('lehrerin', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $lk = new Client($db, $catalog);
+    $lk->login('lehrerin', 'geheim123');
+    $e = asArray($lk->call('POST', '/termine', beispielTermine()))['event'];
+    $code = $e['code'];
+    $slot = $e['slots'][0]['key'];
+    $anna = str_repeat('a', 16);
+    $ben = str_repeat('b', 16);
+    $schueler = new Client($db, $catalog);
+
+    $stand = asArray($schueler->callWithQuery('GET', "/termin/{$code}", ['participant' => $anna]))['event'];
+    check($stand['title'] === 'Mündliche Prüfung' && $stand['buchbar'] && $stand['meine'] === null, 'Teilnahme ohne Konto');
+    check(!isset($stand['id']) && !isset($stand['slots'][0]['buchungen']), 'keine Lehrkraft-Daten');
+    check($schueler->call('GET', '/termin/999999')->status() === 404, 'falscher Code');
+
+    $res = $schueler->call('POST', "/termin/{$code}/buchen", ['participant' => $anna, 'name' => 'Anna Muster', 'slot' => $slot]);
+    check($res->status() === 201 && asArray($res)['event']['meine']['slot'] === $slot, 'Anna bucht');
+    check(asArray($res)['event']['slots'][0]['meiner'] === true, 'eigener Termin markiert');
+    $res = $schueler->call('POST', "/termin/{$code}/buchen", ['participant' => $ben, 'name' => 'Ben', 'slot' => $slot]);
+    check($res->status() === 409, 'Ben ist zu spät: Termin vergeben');
+    check(!isset(asArray($schueler->callWithQuery('GET', "/termin/{$code}", ['participant' => $ben]))['event']['slots'][0]['namen']), 'Namen standardmäßig verborgen');
+    check($schueler->call('POST', "/termin/{$code}/buchen", ['participant' => $ben, 'name' => 'anna muster', 'slot' => $e['slots'][1]['key']])->status() === 409, 'gleicher Name zweimal abgelehnt');
+    check($schueler->call('POST', "/termin/{$code}/buchen", ['participant' => $ben, 'name' => 'B', 'slot' => $e['slots'][1]['key']])->status() === 400, 'Name zu kurz');
+    check($schueler->call('POST', "/termin/{$code}/buchen", ['participant' => $ben, 'name' => 'Ben', 'slot' => '20990101-0800'])->status() === 400, 'unbekannter Termin');
+    check($schueler->call('POST', "/termin/{$code}/buchen", ['participant' => $ben, 'name' => 'Ben', 'slot' => $e['slots'][1]['key']])->status() === 201, 'Ben nimmt den nächsten');
+
+    // Umbuchen: Anna wechselt, ihr alter Termin wird frei
+    $res = asArray($schueler->call('POST', "/termin/{$code}/buchen", ['participant' => $anna, 'name' => 'Anna Muster', 'slot' => $e['slots'][2]['key']]))['event'];
+    check($res['meine']['slot'] === $e['slots'][2]['key'] && $res['slots'][0]['belegt'] === 0, 'umgebucht, alter Termin frei');
+    check($res['gebucht'] === 2, 'eine Buchung je Person');
+    check($schueler->call('POST', "/termin/{$code}/stornieren", ['participant' => $anna])->status() === 200, 'storniert');
+
+    // Lehrkraft sieht Namen, trägt ein, entfernt, sperrt, schließt
+    $voll = asArray($lk->call('GET', "/termine/{$e['id']}"))['event'];
+    check($voll['slots'][1]['buchungen'][0]['name'] === 'Ben' && $voll['slots'][1]['buchungen'][0]['selbst'], 'Lehrkraft sieht Namen');
+    check($lk->call('POST', "/termine/{$e['id']}/buchungen", ['slot' => $slot, 'name' => 'Carla (nachgetragen)'])->status() === 201, 'Lehrkraft trägt ein');
+    check($lk->call('POST', "/termine/{$e['id']}/buchungen", ['slot' => $slot, 'name' => 'Dora'])->status() === 409, 'auch für die Lehrkraft gilt: belegt');
+    $nachher = asArray($lk->call('DELETE', "/termine/{$e['id']}/buchungen/{$slot}/0"))['event'];
+    check($nachher['slots'][0]['buchungen'] === [], 'Buchung entfernt');
+    $lk->call('PATCH', "/termine/{$e['id']}", ['blocked' => [$e['slots'][3]['key']]]);
+    check($schueler->call('POST', "/termin/{$code}/buchen", ['participant' => $anna, 'name' => 'Anna Muster', 'slot' => $e['slots'][3]['key']])->status() === 409, 'gesperrter Termin');
+    $zu = asArray($lk->call('PATCH', "/termine/{$e['id']}", ['open' => false]))['event'];
+    check($zu['open'] === false && $zu['blocked'] === [$e['slots'][3]['key']] && count($zu['slots']) === 12, 'Teiländerung behält den Rest');
+    check($schueler->call('POST', "/termin/{$code}/buchen", ['participant' => $anna, 'name' => 'Anna Muster', 'slot' => $slot])->status() === 409, 'geschlossen');
+    check(asArray($schueler->callWithQuery('GET', "/termin/{$code}", ['participant' => $anna]))['event']['buchbar'] === false, 'als geschlossen angezeigt');
+
+    // Zeitraum ändern, der einen gebuchten Termin entfernen würde → abgelehnt
+    $neu = beispielTermine();
+    $neu['periods'] = [$neu['periods'][0]];
+    check($lk->call('PATCH', "/termine/{$e['id']}", $neu)->status() === 409, 'gebuchter Termin kann nicht wegfallen');
+});
+
+test('Terminbuchung: mehrere Plätze, Namen sichtbar, ohne Umbuchen, Buchungsschluss, Löschen nach 30 Tagen', function () use ($catalog): void {
+    $db = freshDatabase();
+    (new UserRepository($db))->create('lehrerin', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $lk = new Client($db, $catalog);
+    $lk->login('lehrerin', 'geheim123');
+    $daten = beispielTermine(2, false);
+    $daten['settings']['namenSichtbar'] = true;
+    $e = asArray($lk->call('POST', '/termine', $daten))['event'];
+    $code = $e['code'];
+    $slot = $e['slots'][0]['key'];
+    $s = new Client($db, $catalog);
+    foreach (['a', 'b'] as $k) {
+        check($s->call('POST', "/termin/{$code}/buchen", ['participant' => str_repeat($k, 16), 'name' => "Person {$k}", 'slot' => $slot])->status() === 201, "Platz für {$k}");
+    }
+    check($s->call('POST', "/termin/{$code}/buchen", ['participant' => str_repeat('c', 16), 'name' => 'Person c', 'slot' => $slot])->status() === 409, 'beide Plätze belegt');
+    $stand = asArray($s->callWithQuery('GET', "/termin/{$code}", ['participant' => str_repeat('c', 16)]))['event'];
+    check($stand['slots'][0]['namen'] === ['Person a', 'Person b'], 'Namen sichtbar, wenn eingestellt');
+    check($s->call('POST', "/termin/{$code}/buchen", ['participant' => str_repeat('a', 16), 'name' => 'Person a', 'slot' => $e['slots'][1]['key']])->status() === 409, 'ohne Umbuchen kein Wechsel');
+    check($s->call('POST', "/termin/{$code}/stornieren", ['participant' => str_repeat('a', 16)])->status() === 409, 'ohne Umbuchen kein Stornieren');
+    $weniger = $daten;
+    $weniger['settings']['plaetze'] = 1;
+    check($lk->call('PATCH', "/termine/{$e['id']}", $weniger)->status() === 409, 'weniger Plätze als Buchungen abgelehnt');
+
+    $schluss = $daten;
+    $schluss['settings']['schluss'] = (new DateTimeImmutable('now', new DateTimeZone('Europe/Berlin')))->modify('-1 hour')->format('Y-m-d\TH:i');
+    check($lk->call('PATCH', "/termine/{$e['id']}", $schluss)->status() === 200, 'Buchungsschluss gesetzt');
+    check($s->call('POST', "/termin/{$code}/buchen", ['participant' => str_repeat('c', 16), 'name' => 'Person c', 'slot' => $e['slots'][1]['key']])->status() === 409, 'nach Buchungsschluss keine Buchung');
+    check($lk->call('POST', "/termine/{$e['id']}/buchungen", ['slot' => $e['slots'][1]['key'], 'name' => 'Person c'])->status() === 201, 'Lehrkraft trägt trotzdem ein');
+
+    $tag = static fn (int $n): string => (new DateTimeImmutable('now', new DateTimeZone('Europe/Berlin')))->modify("{$n} days")->format('Y-m-d');
+    $vergangen = beispielTermine();
+    $vergangen['periods'] = [['datum' => $tag(-1), 'von' => '08:00', 'bis' => '09:00']];
+    $alt = asArray($lk->call('POST', '/termine', $vergangen))['event'];
+    check($alt['slots'][0]['vorbei'] === true, 'vergangene Termine markiert');
+    check($s->call('POST', "/termin/{$alt['code']}/buchen", ['participant' => str_repeat('d', 16), 'name' => 'Dora', 'slot' => $alt['slots'][0]['key']])->status() === 409, 'vergangener Termin nicht buchbar');
+    $db->execute('UPDATE termin_events SET last_day = ? WHERE id = ?', [$tag(-31), $alt['id']]);
+    $ids = array_column(asArray($lk->call('GET', '/termine'))['events'], 'id');
+    check($ids === [$e['id']], '30 Tage nach dem letzten Tag gelöscht');
+    check((int) $db->fetchOne('SELECT COUNT(*) AS n FROM termin_bookings WHERE event_id = ?', [$alt['id']])['n'] === 0, 'Buchungen mitgelöscht');
 });
 
 fwrite(STDOUT, "\n{$passes} Prüfungen bestanden, {$failures} fehlgeschlagen.\n");

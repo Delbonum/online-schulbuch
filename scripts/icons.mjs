@@ -44,6 +44,7 @@ const P = {
   umfrage: '<path d="M3 20.5h18"/><rect x="4.5" y="11" width="3.6" height="9.5" rx=".8"/><rect x="10.2" y="4" width="3.6" height="16.5" rx=".8"/><rect x="15.9" y="14" width="3.6" height="6.5" rx=".8"/>',
   quiz: '<path d="M12 2.5l2.6 5.6 6 .7-4.5 4.1 1.2 6-5.3-3-5.3 3 1.2-6L3.4 8.8l6-.7z"/>',
   evaluation: '<rect x="5" y="3.5" width="14" height="18" rx="1.5"/><path d="M9 3.5V2.5h6v1"/><path d="M8 9l1.3 1.3L11.5 8M8 14l1.3 1.3 2.2-2.3M13.5 9.5H16M13.5 14.5H16"/>',
+  kalender: '<rect x="3.5" y="5" width="17" height="15.5" rx="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M7.5 13.5h2M11 13.5h2M14.5 13.5h2M7.5 17h2M11 17h2"/>',
   sprechblase: '<path d="M4 5.5h12a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H9l-4 3.5v-3.5H4A1.5 1.5 0 0 1 2.5 14V7A1.5 1.5 0 0 1 4 5.5z"/><path d="M20 9.5h.5A1.5 1.5 0 0 1 22 11v6a1.5 1.5 0 0 1-1.5 1.5H20V21l-3-2.5h-4"/>',
 }
 

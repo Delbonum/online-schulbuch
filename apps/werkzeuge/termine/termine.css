@@ -1,0 +1,72 @@
+/* Terminbuchung (/werkzeuge/termine/) – ergänzt live.css */
+.termine [hidden] { display: none !important; }
+
+/* Editor */
+.tb-zeile { display: flex; flex-wrap: wrap; gap: 10px 22px; }
+.tb-zeile label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; font-size: .92rem; }
+.tb-zeile label span { font-weight: 400; display: flex; align-items: center; gap: 6px; }
+.tb-zeile input[type=number] { width: 6em; }
+.tb-zeitraeume { border-collapse: collapse; margin: 6px 0; }
+.tb-zeitraeume th { text-align: left; font-size: .85rem; color: var(--muted); padding: 0 10px 4px 0; }
+.tb-zeitraeume td { padding: 3px 10px 3px 0; }
+.tb-vorschau p { margin: .4em 0; }
+.tb-vorschau-liste { margin: 0; padding-left: 1.2em; font-size: .9rem; line-height: 1.6; }
+.tb-schluss input { max-width: 16em; }
+.tb-editor .uf-feld .klein { font-weight: 400; }
+.tb-abz-offen { background: var(--good); color: #fff; }
+
+/* Übersicht der Lehrkraft */
+.tb-zugang { display: grid; grid-template-columns: 170px 1fr; gap: 18px; align-items: start; margin: 8px 0 14px; }
+.tb-zugang .uf-qr svg { max-width: 170px; }
+.tb-zugang .uf-code { margin: 0 0 4px; }
+.tb-zugang p { margin: 0 0 6px; }
+@media (max-width: 600px) { .tb-zugang { grid-template-columns: 1fr; } .tb-zugang .uf-qr svg { max-width: 150px; } }
+.tb-ok { color: var(--good); font-weight: 700; }
+.tb-zu { color: var(--bad); font-weight: 700; }
+.tb-tag { margin: 1.2em 0 .4em; font-size: 1.05rem; }
+.tb-slots { border-collapse: collapse; width: 100%; font-size: .95rem; }
+.tb-slots th, .tb-slots td { border-top: 1px solid var(--border); padding: 6px 10px 6px 0; text-align: left; vertical-align: top; }
+.tb-slots th { white-space: nowrap; width: 8em; font-variant-numeric: tabular-nums; }
+.tb-slots td span { display: inline-block; margin-right: 14px; }
+.tb-name { font-weight: 600; }
+.tb-frei { color: var(--muted); }
+.tb-aktion { text-align: right !important; white-space: nowrap; width: 6em; }
+.tb-gesperrt th, .tb-gesperrt .tb-frei { color: var(--neutral); text-decoration: line-through; }
+.tb-vorbei th { color: var(--muted); }
+.tb-eintragen-form { display: inline-flex; gap: 6px; align-items: center; }
+.tb-eintragen-form input { padding: 4px 8px; border: 2px solid var(--border); border-radius: 6px; font: inherit; width: 14em; }
+.tb-eintragen-form .knopf { padding: 3px 10px; }
+
+/* Buchen (Schülerinnen und Schüler) und Beamer */
+.tb-hinweis { white-space: pre-line; background: var(--surface-2); padding: 10px 14px; border-radius: 8px; }
+.tb-bestaetigung { background: var(--good-soft); border-left: 6px solid var(--good); padding: 10px 16px 4px; border-radius: 0 8px 8px 0; margin: 12px 0; }
+.tb-bestaetigung p { margin: 0 0 6px; }
+.tb-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; }
+.tb-kachel { font: inherit; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 9px 12px; border-radius: 10px; border: 2px solid var(--border); background: var(--surface-2); color: var(--text); text-align: left; min-height: 3.6em; }
+.tb-kachel strong { font-variant-numeric: tabular-nums; }
+.tb-kachel span { font-size: .85rem; color: var(--muted); overflow-wrap: anywhere; }
+.tb-k-frei { border-color: var(--good); background: var(--good-soft); }
+.tb-k-frei span { color: var(--good); font-weight: 600; }
+button.tb-k-frei { cursor: pointer; }
+button.tb-k-frei:hover, button.tb-k-frei:focus-visible { background: #c9ebd2; }
+.tb-k-meiner { border-color: var(--fach); background: var(--fach-soft); }
+.tb-k-meiner span { color: var(--fach); font-weight: 700; }
+.tb-k-aus { opacity: .55; }
+.tb-vorgemerkt { outline: 3px solid var(--fach); }
+.tb-beamer-slots { overflow-y: auto; }
+.tb-beamer .tb-raster { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.tb-beamer .tb-kachel { font-size: 1.15rem; }
+.tb-beamer .tb-kachel span { font-size: 1rem; }
+
+/* Drucken der Liste */
+.tb-druck { display: none; }
+@media print {
+  html.tb-drucken body > *:not(.tb-druck) { display: none !important; }
+  html.tb-drucken .tb-druck { display: block; font-size: 11pt; }
+  .tb-druck h1 { font-size: 16pt; margin: 0 0 6pt; }
+  .tb-druck h2 { font-size: 12pt; margin: 12pt 0 4pt; }
+  .tb-druck table { border-collapse: collapse; width: 100%; }
+  .tb-druck th, .tb-druck td { border: 1px solid #999; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+  .tb-druck th { width: 7em; white-space: nowrap; }
+  .tb-druck tr { break-inside: avoid; }
+}
