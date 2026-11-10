@@ -27,7 +27,8 @@ apps/
                           befehle.js = Befehlszeile, netzwerk.js = Oberfläche, beispiele.js = Beispielnetze, per Link
                           ladbar mit ?beispiel=<slug>; Geräte-Bilder in bilder/ sind
                           Platzhalter und lassen sich durch Dateien gleichen Namens ersetzen),
-                          rollenspiel/ (Rollenkarten für das Netzwerk-Rollenspiel aus einem Code, ohne Server),
+                          rollenspiel/ (Rollenkarten für das Netzwerk-Rollenspiel: per QR-Code zufällig vergeben
+                          über die API oder als Druckvorlage; wahlweise vereinfachte Adressen),
                           subnetze/ (Subnetz-Trainer)
   kryptogame/             KryptoGAME – eigenständige React-App mit eigenem Build (Backend: server/)
   autocell/               AutoCell – fertig gebaute Web-Version aus eigenem Repository (→ /informatik/autocell/,
@@ -213,6 +214,12 @@ zu allen Aufgaben dieses Abschnitts, z. B. `<lehrkraft titel="Lösungsvorschlag 
 nächsten Überschrift. Hat ein Abschnitt keine Aufgaben mit Lösung, entfällt der Kasten. Der Kasten „Einsatz dieser
 Seite“ steht am Seitenanfang.
 
+**Keine Bezüge auf Ausgangsmaterial (verbindlich, alle Fächer und Reihen):** Hinweise für Lehrkräfte müssen für eine
+beliebige Lehrkraft verständlich sein. Material, das nur als Vorlage oder Anregung für eine Reihe diente (Präsentationen,
+Arbeitsblätter, Notizen, frühere Fassungen eines Projekts, andere Software wie Filius), wird nicht erwähnt – keine
+„Abweichung von der Vorlage“, kein „ersetzt das Arbeitsblatt …“, kein „steht in den Notizen“. Veröffentlichte Quellen
+(Bücher, Websites, Unterrichtsideen anderer) gehören mit Nachweis unter „Literatur und Links“ bzw. in die Bildnachweise.
+
 **Keine Anrede (verbindlich, alle Fächer):** Hinweise und Lösungen für Lehrkräfte sprechen niemanden an, also kein „Sie“. Stattdessen indirekt („indem plakativ formuliert wird“), mit „man“ oder nominal („durch plakatives Formulieren“).
 
 Hinweis: Das Repository ist öffentlich – im Quelltext unter `content/` sind die Lösungen lesbar. Geschützt ist nur
@@ -307,6 +314,11 @@ Es gibt keine Abhängigkeiten außer Node.js (ab Version 20).
   Durchführungen enden nach 12 Stunden automatisch.
 - **Terminbuchung** (Tabellen `termin_*`): `/api/termine` (Lehrkraft: anlegen, bearbeiten, löschen; `POST …/{id}/buchungen`,
   `DELETE …/{id}/buchungen/{slot}/{platz}`), ohne Konto: `GET /api/termin/{code}`, `POST …/buchen`, `POST …/stornieren`.
+- **Netzwerk-Rollenspiel** (Tabellen `rollenspiel_*`): `/api/rollenspiele` (Lehrkraft: Runde anlegen, Stufe/Darstellung
+  ändern, löschen; `DELETE …/{id}/rollen[/{nr}]` gibt Rollen frei), ohne Konto: `POST /api/rollenspiel/{code}/rolle`
+  (zufällige freie Rolle, Gruppen gleichmäßig, Router und DNS-Server zuerst; gleiche Kennung = gleiche Rolle) und
+  `GET /api/rollenspiel/{code}?participant=…`. Gespeichert werden nur Nummer und Kennung; Löschung 60 Tage nach der
+  letzten Änderung.
 - **Modem der Netzwerk-Simulation** (Tabellen `modem_*`, ohne Konto): `POST /api/modem` (Verbindung anbieten →
   sechsstelliger Code und geheimer `token`), `POST /api/modem/{code}/join` (einwählen), `POST …/send` und
   `GET /api/modem/{code}?token=…` (Ethernet-Rahmen weiterreichen bzw. abholen, danach gelöscht),

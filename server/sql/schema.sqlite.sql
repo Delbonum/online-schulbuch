@@ -187,3 +187,25 @@ CREATE TABLE IF NOT EXISTS termin_bookings (
     PRIMARY KEY (event_id, slot, seat),
     UNIQUE (event_id, participant)
 );
+
+-- Rollenspiel „Nachrichten im Netzwerk“ (/informatik/werkzeuge/netzwerk-rollenspiel/): Wer den QR-Code scannt,
+-- bekommt zufällig eine freie Rolle. Gespeichert wird nur, welche Rollennummer welche zufällige Browser-Kennung hat
+-- (keine Namen). Runden werden 60 Tage nach der letzten Änderung gelöscht.
+CREATE TABLE IF NOT EXISTS rollenspiel_runden (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    teacher_id  INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    code        TEXT    NOT NULL UNIQUE,
+    settings    TEXT    NOT NULL,
+    created_at  TEXT    NOT NULL,
+    updated_at  TEXT    NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_rollenspiel_teacher ON rollenspiel_runden (teacher_id);
+
+CREATE TABLE IF NOT EXISTS rollenspiel_rollen (
+    runde_id    INTEGER NOT NULL REFERENCES rollenspiel_runden (id) ON DELETE CASCADE,
+    nr          INTEGER NOT NULL,
+    participant TEXT    NOT NULL,
+    created_at  TEXT    NOT NULL,
+    PRIMARY KEY (runde_id, nr),
+    UNIQUE (runde_id, participant)
+);

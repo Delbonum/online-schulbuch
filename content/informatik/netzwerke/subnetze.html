@@ -2,9 +2,8 @@
 beschreibung: Subnetze und Netzmasken: die Netzmaske als Schablone, Netz- und Broadcast-Adresse, Anzahl der Geräte, Suffix-Schreibweise und die Frage, ob zwei IP-Adressen im selben Subnetz liegen – binär und dezimal.
 -->
 <lehrkraft titel="Einsatz dieser Seite">
-<p><strong>Typ:</strong> Kernseite (enthält das Arbeitsblatt „Subnetze“). <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/lan-simulieren/">Ein LAN simulieren</a>; Binärzahlen sollten bekannt sein. <strong>Dauer:</strong> zwei Stunden; Abschnitt 4 („krumme“ Netzmasken) ist anspruchsvoller und lässt sich in einem Grundkurs auf das Prinzip beschränken.</p>
+<p><strong>Typ:</strong> Kernseite. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/lan-simulieren/">Ein LAN simulieren</a>; Binärzahlen sollten bekannt sein. <strong>Dauer:</strong> zwei Stunden; Abschnitt 4 („krumme“ Netzmasken) ist anspruchsvoller und lässt sich in einem Grundkurs auf das Prinzip beschränken.</p>
 <p><strong>Üben:</strong> Der <a href="/informatik/werkzeuge/subnetze/">Subnetz-Trainer</a> erzeugt beliebig viele Aufgaben aller Arten mit Erklärung in Binärdarstellung – geeignet für Hausaufgaben und zur Differenzierung (Schalter „krumme Netzmasken“).</p>
-<p><strong>Hinweis zur Präsentation:</strong> In den Notizen steht als Broadcast-Adresse des Netzes 192.168.0.0/24 „192.168.9.255“ – gemeint ist 192.168.0.255.</p>
 </lehrkraft>
 
 <h2>1. Wer gehört zu meinem Netz?</h2>
@@ -121,9 +120,9 @@ Gleiches Ergebnis  →  gleiches Subnetz (192.68.48.0 bis 192.68.55.255)</code><
 </aside>
 
 <lehrkraft titel="Lösungsvorschlag zu Aufgabe 3 und 4, Live-Umfrage">
-<p><strong>Aufgabe 3</strong> prüft sich selbst (Arbeitsblatt „Subnetze“, Teil 1).</p>
+<p><strong>Aufgabe 3</strong> prüft sich selbst.</p>
 <p><strong>Aufgabe 4:</strong> Dezimal: 256 − 252 = 4; 130 : 4 = 32 Rest 2, 135 : 4 = 33 Rest 3 → verschieden, also <strong>nicht</strong> im selben Subnetz (Subnetze 10.20.128.0–10.20.131.255 und 10.20.132.0–10.20.135.255). Binär: 130 = 10000010, 135 = 10000111; UND mit 11111100 ergibt 10000000 = 128 bzw. 10000100 = 132.</p>
-<p>Teil 1 lässt sich als Live-Umfrage im Modus „Frage für Frage“ durchführen; die Verteilung zeigt sofort, wo (meist bei 0.0.0.0 und /30) Unsicherheit besteht.</p>
+<p>Aufgabe 3 lässt sich als Live-Umfrage im Modus „Frage für Frage“ durchführen; die Verteilung zeigt sofort, wo (meist bei 0.0.0.0 und /30) Unsicherheit besteht.</p>
 <als-umfrage ids="netz-sub-quiz-1" titel="Netzwerke – Gleiches Subnetz?" modus="single"></als-umfrage>
 </lehrkraft>
 

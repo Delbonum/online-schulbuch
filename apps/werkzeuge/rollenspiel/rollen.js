@@ -1,14 +1,17 @@
 // Rollenspiel „Nachrichten im Netzwerk“: Rollen und Datenblätter aus einer kurzen Konfiguration erzeugen (ohne DOM, testbar).
 //
-// Alles ergibt sich aus vier Zahlen – Anzahl der Mitspielenden, Anzahl der Gruppen (= Subnetze), Stufe und Zufallszahl –,
-// zusammen der Code, z. B. „24-4-2-517“. Wer den Code und seine Nummer (1 … Anzahl) kennt, bekommt auf jedem Gerät
-// dieselbe Karte. Es wird nichts gespeichert und nichts an einen Server geschickt.
+// Alles ergibt sich aus wenigen Angaben – Anzahl der Mitspielenden, Anzahl der Gruppen (= Subnetze), Stufe,
+// Zufallszahl und Darstellung (echt oder vereinfacht). Mit der Rollennummer (1 … Anzahl) entsteht daraus auf jedem
+// Gerät dieselbe Karte. Welche Nummer ein Gerät bekommt, entscheidet bei der digitalen Verteilung der Server
+// (RollenspielController: zufällig, Gruppen gleichmäßig, Router und DNS-Server zuerst).
 //
 // Adressschema (wie im Kapitel „Netzwerksysteme“):
 //   Gruppe g = Subnetz 1.1.g.0 mit Netzmaske 255.255.255.0; Mitglied j (ab 0) hat die IP 1.1.g.(j+1).
 //   Stufe 3: Mitglied 0 jeder Gruppe ist Router (rechte Hand 1.1.g.1, linke Hand 3.3.3.g im Backbone 3.3.3.0),
 //            Mitglied 1 von Gruppe 1 ist der DNS-Server (1.1.1.2).
 //   MAC-Adressen: zwei Hex-Bytes (vereinfacht, echte haben sechs), Rundsendung (Broadcast) = FF:FF.
+//   Vereinfachte Darstellung: MAC aus drei Buchstaben (Broadcast FFF), Netzmaske 9.9.9.0 (9 = muss gleich sein,
+//   0 = beliebig). Namen und IP-Adressen sind in beiden Darstellungen gleich.
 
 export const STUFEN = {
   1: { titel: 'Stufe 1 · Ein Netz im Klassenzimmer (ohne ARP)', kurz: 'LAN ohne ARP' },
@@ -17,6 +20,11 @@ export const STUFEN = {
 };
 export const MASKE = '255.255.255.0';
 export const BROADCAST = 'FF:FF';
+export const VEREINFACHT = { maske: '9.9.9.0', broadcast: 'FFF' };
+/** Netzmaske und Broadcast-MAC je nach Darstellung */
+export const format = (konfig) => (konfig?.vereinfacht ? VEREINFACHT : { maske: MASKE, broadcast: BROADCAST });
+// Buchstaben-MACs, die nicht auf einer Karte stehen sollen
+const GESPERRT = new Set(['SEX', 'NSU', 'NPD', 'AFD', 'SAU', 'ARS', 'FCK', 'WTF', 'GAY', 'NAZ', 'HIV', 'KZL', 'HJA', 'FFF']);
 export const DNS_IP = '1.1.1.2';
 export const GRENZEN = { minPersonen: 3, maxPersonen: 64, maxGruppen: 8, minJeGruppe: 3 };
 
@@ -49,24 +57,14 @@ function mische(liste, rnd) {
 
 /** Prüft eine Konfiguration; gibt einen Fehlertext oder null zurück. */
 export function pruefe({ personen, gruppen, stufe, seed }) {
-  if (![personen, gruppen, stufe, seed].every(Number.isInteger)) return 'Der Code besteht aus vier ganzen Zahlen, z. B. 24-4-2-517.';
+  if (![personen, gruppen, stufe, seed].every(Number.isInteger)) return 'Bitte ganze Zahlen eingeben.';
   if (personen < GRENZEN.minPersonen || personen > GRENZEN.maxPersonen) return `Es können ${GRENZEN.minPersonen} bis ${GRENZEN.maxPersonen} Personen mitspielen.`;
   if (gruppen < 1 || gruppen > GRENZEN.maxGruppen) return `Es sind 1 bis ${GRENZEN.maxGruppen} Gruppen möglich.`;
   if (!STUFEN[stufe]) return 'Die Stufe muss 1, 2 oder 3 sein.';
-  if (seed < 0 || seed > 999) return 'Die letzte Zahl des Codes liegt zwischen 0 und 999.';
+  if (seed < 0 || seed > 999) return 'Die Zufallszahl liegt zwischen 0 und 999.';
   if (Math.floor(personen / gruppen) < GRENZEN.minJeGruppe) return `Jede Gruppe braucht mindestens ${GRENZEN.minJeGruppe} Personen – weniger Gruppen wählen.`;
   if (stufe === 3 && gruppen < 2) return 'Für Stufe 3 (Netze verbinden) braucht es mindestens zwei Gruppen.';
   return null;
-}
-
-export const code = ({ personen, gruppen, stufe, seed }) => `${personen}-${gruppen}-${stufe}-${seed}`;
-
-export function leseCode(text) {
-  const m = String(text ?? '').trim().match(/^(\d{1,2})\s*-\s*(\d)\s*-\s*(\d)\s*-\s*(\d{1,3})$/);
-  if (!m) return { fehler: 'Der Code hat die Form Anzahl-Gruppen-Stufe-Zahl, z. B. 24-4-2-517.' };
-  const k = { personen: Number(m[1]), gruppen: Number(m[2]), stufe: Number(m[3]), seed: Number(m[4]) };
-  const fehler = pruefe(k);
-  return fehler ? { fehler } : k;
 }
 
 /** Gruppengrößen: so gleich wie möglich, die ersten Gruppen bekommen die übrigen Personen */
@@ -82,16 +80,30 @@ export function erzeuge(konfig) {
   const fehler = pruefe(konfig);
   if (fehler) throw new Error(fehler);
   const { personen, gruppen, stufe, seed } = konfig;
+  const { maske } = format(konfig);
   const rnd = zufall(seed * 7919 + 13);
+  const rndBuchstaben = zufall(seed * 104729 + 7);
   const namen = mische(TIERE, rnd);
-  // eindeutige MAC-Adressen (zwei Hex-Bytes, ohne 00:00 und FF:FF)
+  // eindeutige MAC-Adressen: zwei Hex-Bytes (ohne 00:00 und FF:FF) oder drei verschiedene Buchstaben.
+  // Beide Folgen werden immer gezogen, damit Namen und Adressen in beiden Darstellungen gleich bleiben.
   const macs = new Set();
-  const neueMac = () => {
+  const neueHex = () => {
     for (;;) {
       const z = 0x1000 + Math.floor(rnd() * 0xee00);
       const mac = `${(z >> 8).toString(16).toUpperCase().padStart(2, '0')}:${(z & 255).toString(16).toUpperCase().padStart(2, '0')}`;
       if (!macs.has(mac) && mac !== BROADCAST) { macs.add(mac); return mac; }
     }
+  };
+  const neueBuchstaben = () => {
+    for (;;) {
+      const b = Array.from({ length: 3 }, () => String.fromCharCode(65 + Math.floor(rndBuchstaben() * 26))).join('');
+      if (new Set(b).size === 3 && !GESPERRT.has(b) && !macs.has(b)) { macs.add(b); return b; }
+    }
+  };
+  const neueMac = () => {
+    const hex = neueHex();
+    const buchstaben = neueBuchstaben();
+    return konfig.vereinfacht ? buchstaben : hex;
   };
   const groessen = gruppenGroessen(personen, gruppen);
   const karten = [];
@@ -107,13 +119,13 @@ export function erzeuge(konfig) {
       const karte = {
         nr, gruppe: g, rolle: istRouter ? 'router' : istDns ? 'dns' : 'client',
         name: namen[(nr - 1) % namen.length] + (nr > namen.length ? String(Math.ceil(nr / namen.length)) : ''),
-        nics: [{ hand: 'rechte Hand', mac: neueMac(), ip, maske: MASKE, netz: `1.1.${g}.x` }],
+        nics: [{ hand: 'rechte Hand', mac: neueMac(), ip, maske, netz: `1.1.${g}.x` }],
         gateway: stufe === 3 && !istRouter ? `1.1.${g}.1` : '',
         dns: stufe === 3 && !istRouter ? DNS_IP : '',
       };
       // die zweite MAC wird immer gezogen, damit alle Adressen in jeder Stufe gleich bleiben
       const macLinks = j === 0 ? neueMac() : '';
-      if (istRouter) karte.nics.push({ hand: 'linke Hand', mac: macLinks, ip: `3.3.3.${g}`, maske: MASKE, netz: '3.3.3.x' });
+      if (istRouter) karte.nics.push({ hand: 'linke Hand', mac: macLinks, ip: `3.3.3.${g}`, maske, netz: '3.3.3.x' });
       karten.push(karte);
       mitglieder.push(karte);
     }
@@ -135,7 +147,7 @@ export function erzeuge(konfig) {
   const dnsTabelle = karten.map((k) => ({ name: k.name, ip: k.nics[0].ip }));
   const dnsKarte = karten.find((k) => k.rolle === 'dns');
   if (dnsKarte) dnsKarte.dnsTabelle = dnsTabelle;
-  return { karten, gruppen: gruppenListe, dnsTabelle, stufe };
+  return { karten, gruppen: gruppenListe, dnsTabelle, stufe, vereinfacht: Boolean(konfig.vereinfacht), ...format(konfig) };
 }
 
 /** MAC-Liste einer Gruppe (Stufe 1: ersetzt ARP) */

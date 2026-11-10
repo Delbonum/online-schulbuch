@@ -47,6 +47,14 @@
     [
       "/termin/",
       "/werkzeuge/termine/"
+    ],
+    [
+      "/rollenspiel",
+      "/informatik/werkzeuge/netzwerk-rollenspiel/"
+    ],
+    [
+      "/rollenspiel/",
+      "/informatik/werkzeuge/netzwerk-rollenspiel/"
     ]
   ],
   "entfernt": [

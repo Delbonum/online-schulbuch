@@ -116,7 +116,7 @@ function freshDatabase(): Database
         'password' => getenv('SCHULBUCH_TEST_PASSWORD') ?: null]);
     if ($db->driver() === 'mysql') {
         $db->pdo()->exec('SET FOREIGN_KEY_CHECKS = 0');
-        foreach (['termin_bookings', 'termin_events', 'modem_frames', 'modem_links', 'poll_submissions', 'poll_players', 'poll_answers', 'poll_runs', 'poll_polls', 'login_attempts', 'progress_log', 'quiz_attempts', 'level_progress', 'users'] as $table) {
+        foreach (['rollenspiel_rollen', 'rollenspiel_runden', 'termin_bookings', 'termin_events', 'modem_frames', 'modem_links', 'poll_submissions', 'poll_players', 'poll_answers', 'poll_runs', 'poll_polls', 'login_attempts', 'progress_log', 'quiz_attempts', 'level_progress', 'users'] as $table) {
             $db->pdo()->exec("DROP TABLE IF EXISTS {$table}");
         }
         $db->pdo()->exec('SET FOREIGN_KEY_CHECKS = 1');
@@ -1202,6 +1202,69 @@ test('Terminbuchung: mehrere Plätze, Namen sichtbar, ohne Umbuchen, Buchungssch
     $ids = array_column(asArray($lk->call('GET', '/termine'))['events'], 'id');
     check($ids === [$e['id']], '30 Tage nach dem letzten Tag gelöscht');
     check((int) $db->fetchOne('SELECT COUNT(*) AS n FROM termin_bookings WHERE event_id = ?', [$alt['id']])['n'] === 0, 'Buchungen mitgelöscht');
+});
+
+test('Rollenspiel: Runde anlegen, Rollen zufällig und eindeutig vergeben, Gruppen gleichmäßig', function () use ($catalog): void {
+    $db = freshDatabase();
+    $users = new UserRepository($db);
+    $users->create('lehrerin', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $users->create('kollege', password_hash('geheim123', PASSWORD_DEFAULT), 'teacher', null);
+    $lk = new Client($db, $catalog);
+    check($lk->call('POST', '/rollenspiele', ['personen' => 12, 'gruppen' => 3, 'stufe' => 2])->status() === 401, 'nur mit Anmeldung');
+    $lk->login('lehrerin', 'geheim123');
+    check($lk->call('POST', '/rollenspiele', ['personen' => 8, 'gruppen' => 3, 'stufe' => 2])->status() === 400, 'zu kleine Gruppen abgelehnt');
+    check($lk->call('POST', '/rollenspiele', ['personen' => 12, 'gruppen' => 1, 'stufe' => 3])->status() === 400, 'Stufe 3 braucht zwei Gruppen');
+    $res = $lk->call('POST', '/rollenspiele', ['personen' => 12, 'gruppen' => 3, 'stufe' => 3, 'seed' => 517, 'vereinfacht' => true]);
+    check($res->status() === 201, 'angelegt');
+    $r = asArray($res)['runde'];
+    check(preg_match('/^\d{6}$/', $r['code']) === 1 && $r['vergeben'] === 0, 'Code, noch nichts vergeben');
+    check($r['settings']['vereinfacht'] === true && $r['settings']['seed'] === 517, 'Einstellungen gespeichert');
+    $code = $r['code'];
+
+    $s = new Client($db, $catalog);
+    check($s->call('POST', "/rollenspiel/{$code}/rolle", ['participant' => 'kurz'])->status() === 400, 'Kennung geprüft');
+    check($s->call('POST', '/rollenspiel/000000/rolle', ['participant' => str_repeat('a', 16)])->status() === 404, 'unbekannter Code');
+    $nummern = [];
+    foreach (range(1, 6) as $i) {
+        $nummern[] = asArray($s->call('POST', "/rollenspiel/{$code}/rolle", ['participant' => str_pad((string) $i, 16, 'p')]))['runde']['nr'];
+    }
+    sort($nummern);
+    check(count(array_unique($nummern)) === 6, 'sechs verschiedene Rollen');
+    // Gruppen 1–4, 5–8, 9–12: zuerst Nummer 1 jeder Gruppe (Router), in Gruppe 1 dann Nummer 2 (DNS)
+    check(array_values(array_intersect([1, 2, 5, 9], $nummern)) === [1, 2, 5, 9], 'Router und DNS-Server zuerst');
+    $jeGruppe = array_count_values(array_map(static fn (int $n): int => intdiv($n - 1, 4), $nummern));
+    check($jeGruppe === [0 => 2, 1 => 2, 2 => 2], 'Gruppen gleichmäßig gefüllt');
+    $wieder = asArray($s->call('POST', "/rollenspiel/{$code}/rolle", ['participant' => str_pad('1', 16, 'p')]))['runde'];
+    check(in_array($wieder['nr'], $nummern, true) && $wieder['vergeben'] === 6, 'gleiche Kennung behält ihre Rolle');
+    check(asArray($s->callWithQuery('GET', "/rollenspiel/{$code}", ['participant' => str_pad('1', 16, 'p')]))['runde']['nr'] === $wieder['nr'], 'Abfrage liefert die eigene Rolle');
+    check(asArray($s->callWithQuery('GET', "/rollenspiel/{$code}", []))['runde']['nr'] === null, 'ohne Kennung keine Rolle');
+    foreach (range(7, 12) as $i) {
+        $s->call('POST', "/rollenspiel/{$code}/rolle", ['participant' => str_pad((string) $i, 16, 'p')]);
+    }
+    check($s->call('POST', "/rollenspiel/{$code}/rolle", ['participant' => str_repeat('z', 16)])->status() === 409, 'alle Rollen vergeben');
+
+    // Lehrkraft: Stufe umstellen geht, Struktur nur ohne vergebene Rollen; freigeben
+    $patch = $lk->call('PATCH', "/rollenspiele/{$r['id']}", ['stufe' => 2, 'vereinfacht' => false]);
+    check($patch->status() === 200 && asArray($patch)['runde']['settings']['stufe'] === 2, 'Stufe umgestellt');
+    check(asArray($s->callWithQuery('GET', "/rollenspiel/{$code}", []))['runde']['settings']['vereinfacht'] === false, 'Schülerseite sieht die Änderung');
+    check($lk->call('PATCH', "/rollenspiele/{$r['id']}", ['personen' => 16])->status() === 409, 'Anzahl gesperrt, solange Rollen vergeben sind');
+    $frei = $lk->call('DELETE', "/rollenspiele/{$r['id']}/rollen/{$wieder['nr']}");
+    check(asArray($frei)['runde']['vergeben'] === 11, 'eine Rolle freigegeben');
+    check(asArray($s->callWithQuery('GET', "/rollenspiel/{$code}", ['participant' => str_pad('1', 16, 'p')]))['runde']['nr'] === null, 'freigegebene Rolle ist weg');
+    check(asArray($s->call('POST', "/rollenspiel/{$code}/rolle", ['participant' => str_repeat('z', 16)]))['runde']['nr'] === $wieder['nr'], 'freie Rolle neu vergeben');
+    check(asArray($lk->call('DELETE', "/rollenspiele/{$r['id']}/rollen"))['runde']['vergeben'] === 0, 'alle freigegeben');
+    check($lk->call('PATCH', "/rollenspiele/{$r['id']}", ['personen' => 16])->status() === 200, 'danach Anzahl änderbar');
+
+    $other = new Client($db, $catalog);
+    $other->login('kollege', 'geheim123');
+    check($other->call('GET', "/rollenspiele/{$r['id']}")->status() === 404, 'fremde Runde unsichtbar');
+    check(asArray($other->call('GET', '/rollenspiele'))['runden'] === [], 'Kollege sieht nichts');
+
+    $alt = asArray($lk->call('POST', '/rollenspiele', ['personen' => 6, 'gruppen' => 2, 'stufe' => 1]))['runde'];
+    $db->execute('UPDATE rollenspiel_runden SET updated_at = ? WHERE id = ?', ['2000-01-01 00:00:00.000', $alt['id']]);
+    check(array_column(asArray($lk->call('GET', '/rollenspiele'))['runden'], 'id') === [$r['id']], 'alte Runden gelöscht');
+    check($lk->call('DELETE', "/rollenspiele/{$r['id']}")->status() === 204, 'gelöscht');
+    check($s->callWithQuery('GET', "/rollenspiel/{$code}", [])->status() === 404, 'Code danach ungültig');
 });
 
 fwrite(STDOUT, "\n{$passes} Prüfungen bestanden, {$failures} fehlgeschlagen.\n");

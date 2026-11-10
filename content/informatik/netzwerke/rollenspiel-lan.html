@@ -5,20 +5,20 @@ beschreibung: Rollenspiel I: Die Klasse spielt ein lokales Netz – Nachrichten 
 <p><strong>Typ:</strong> Kernseite, Rollenspiel in zwei Stufen. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/adressen/">Adressen im Netz: MAC und IP</a>. <strong>Dauer:</strong> Stufe 1 etwa 20 Minuten, Stufe 2 etwa 30–40 Minuten, Auswertung 15 Minuten; insgesamt eine Doppelstunde.</p>
 <p><strong>Warum an dieser Stelle?</strong> Stufe 1 festigt direkt nach der Theorie das Prinzip „Umschlag im Umschlag“: innen die IP-Adressen (Ende-zu-Ende), außen die MAC-Adressen (nur bis zum nächsten Gerät). Am Ende von Stufe 1 entsteht die Frage, woher man ohne Liste die MAC-Adresse bekommt. In Stufe 2 erarbeitet die Klasse die Antwort selbst – ARP wird also <em>im</em> Spiel entdeckt und erst danach auf der Seite <a href="/informatik/netzwerke/arp/">ARP, Broadcast und Switch</a> fachlich gesichert. Die Simulation (<a href="/informatik/netzwerke/lan-simulieren/">Ein LAN simulieren</a>) prüft anschließend, ob das Konzept verstanden ist: Dort sieht man dieselben Abläufe im Datenaustausch wieder.</p>
 <p><strong>Kürzere Variante:</strong> Stufe 1 weglassen und gleich mit ARP spielen (Stufe 2). Dann die Regeln zu ARP vorab erklären. <strong>DNS und Router</strong> bleiben hier bewusst draußen; sie kommen in <a href="/informatik/netzwerke/rollenspiel-internet/">Rollenspiel II</a>.</p>
-<p><strong>Material:</strong> Rollenkarten (Werkzeug <a href="/informatik/werkzeuge/netzwerk-rollenspiel/">Rollenspiel: Nachrichten im Netzwerk</a>: digital per Code oder gedruckt), je Person ein Stift, Umschläge in zwei Größen (z. B. C6 innen, C5 außen) oder die Zettelvorlagen aus dem Werkzeug, Nachrichtenzettel, in Stufe 1 die MAC-Listen der Gruppen. Gruppen von 5–8 Personen, jede Gruppe sitzt zusammen (eine Gruppe = ein lokales Netz). Bei Bedarf in jeder Gruppe eine Person als „Paketmitschnitt“ einsetzen, die jeden Umschlag mit Quelle und Ziel protokolliert – das entspricht dem Datenaustausch in der Simulation.</p>
+<p><strong>Material:</strong> Rollenkarten (Werkzeug <a href="/informatik/werkzeuge/netzwerk-rollenspiel/">Rollenspiel: Nachrichten im Netzwerk</a>: digital per QR-Code oder gedruckt), je Person ein Stift, Umschläge in zwei Größen (z. B. C6 innen, C5 außen) oder die Zettelvorlagen aus dem Werkzeug, Nachrichtenzettel, in Stufe 1 die MAC-Listen der Gruppen. Gruppen von 5–8 Personen, jede Gruppe sitzt zusammen (eine Gruppe = ein lokales Netz). Bei Bedarf in jeder Gruppe eine Person als „Paketmitschnitt“ einsetzen, die jeden Umschlag mit Quelle und Ziel protokolliert – das entspricht dem Datenaustausch in der Simulation.</p>
 </lehrkraft>
 
 <p>Jetzt wird es praktisch: Ihr seid selbst das Netz. Jede Person spielt einen Rechner, jede Gruppe ein lokales Netz. Nachrichten werden auf Zettel geschrieben, in Umschläge gesteckt und weitergegeben – aber nur nach strengen Regeln, genau wie bei echten Rechnern.</p>
 
 <h2>1. Vorbereitung</h2>
 
-<p>Jede Person bekommt ein <strong>Datenblatt</strong> – von deiner Lehrkraft auf Papier oder digital: Dann öffnest du das Werkzeug <a href="/informatik/werkzeuge/netzwerk-rollenspiel/">Rollenspiel: Nachrichten im Netzwerk</a>, gibst den Code ein (oder scannst den QR-Code) und tippst deine Nummer ein. Auf deinem Datenblatt steht:</p>
+<p>Jede Person bekommt ein <strong>Datenblatt</strong> – von deiner Lehrkraft auf Papier oder digital: Dann scannst du den QR-Code deiner Lehrkraft (oder öffnest das Werkzeug <a href="/informatik/werkzeuge/netzwerk-rollenspiel/">Rollenspiel: Nachrichten im Netzwerk</a> und gibst den Code ein) und bekommst sofort eine zufällige Rolle. Auf deinem Datenblatt steht:</p>
 
 <ul>
 <li>dein <strong>Rechnername</strong> (ein Tiername, z. B. <em>fuchs</em>),</li>
-<li>deine <strong>MAC-Adresse</strong> – im Spiel vereinfacht auf zwei Hex-Paare, z. B. <code>3F:A2</code>,</li>
+<li>deine <strong>MAC-Adresse</strong> – im Spiel verkürzt auf zwei Hex-Paare, z. B. <code>3F:A2</code> (oder, wenn deine Lehrkraft das so einstellt, drei Buchstaben wie <code>KTV</code>),</li>
 <li>deine <strong>IP-Adresse</strong> der Form <code>1.1.Gruppe.Person</code>, z. B. <code>1.1.2.4</code> für Person 4 in Gruppe 2,</li>
-<li>deine <strong>Netzmaske</strong> <code>255.255.255.0</code>: Sie bedeutet hier, dass alle, deren IP-Adresse in den <strong>ersten drei Zahlen</strong> mit deiner übereinstimmt, zu deinem lokalen Netz gehören – also zu deiner Gruppe.</li>
+<li>deine <strong>Netzmaske</strong> <code>255.255.255.0</code> (vereinfacht: <code>9.9.9.0</code>): Sie bedeutet hier, dass alle, deren IP-Adresse in den <strong>ersten drei Zahlen</strong> mit deiner übereinstimmt, zu deinem lokalen Netz gehören – also zu deiner Gruppe.</li>
 </ul>
 
 <p>Eine Nachricht wird immer <strong>doppelt verpackt</strong>, genau wie im Schichtenmodell:</p>
@@ -43,7 +43,7 @@ beschreibung: Rollenspiel I: Die Klasse spielt ein lokales Netz – Nachrichten 
 <aside class="box merke" data-titel="Regeln für alle Stufen">
 <ol>
 <li><strong>Sprecht nur über Umschläge und Zettel.</strong> Keine Zurufe, kein „Wer ist Nummer 4?“ – echte Rechner können das auch nicht.</li>
-<li><strong>Übergeben:</strong> Ein Paket gibst du nur weiter, wenn <em>deine</em> MAC als Quell-MAC draufsteht, und nur an die Person mit der <em>Ziel-MAC</em>. Einzige Ausnahme: Ziel-MAC <code>FF:FF</code> heißt „an alle“ (Broadcast) – dann geht das Paket reihum an alle in deiner Gruppe.</li>
+<li><strong>Übergeben:</strong> Ein Paket gibst du nur weiter, wenn <em>deine</em> MAC als Quell-MAC draufsteht, und nur an die Person mit der <em>Ziel-MAC</em>. Einzige Ausnahme: Ziel-MAC <code>FF:FF</code> (bei Buchstaben-MACs <code>FFF</code>) heißt „an alle“ (Broadcast) – dann geht das Paket reihum an alle in deiner Gruppe.</li>
 <li><strong>Auspacken:</strong> Den äußeren Umschlag darfst du öffnen, wenn er an deine MAC geht (oder an <code>FF:FF</code>). Den inneren Umschlag öffnest du nur, wenn die Ziel-IP deine eigene ist.</li>
 <li><strong>Bearbeiten:</strong> Wenn du alles auspacken durftest, bearbeitest du die Nachricht nach ihrem Protokoll (siehe unten) und schickst die Antwort mit neuen Umschlägen zurück. Alte Angaben durchstreichen, Umschläge wiederverwenden.</li>
 <li><strong>Geduld:</strong> Nimm ein Paket erst an, wenn du die Hände frei hast.</li>

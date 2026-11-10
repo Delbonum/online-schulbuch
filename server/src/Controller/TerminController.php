@@ -433,7 +433,8 @@ final class TerminController
         for ($i = 0; $i < 100; $i++) {
             $code = (string) random_int(100000, 999999);
             $belegt = $this->db->fetchOne('SELECT code FROM termin_events WHERE code = ?', [$code]) !== null
-                || $this->db->fetchOne('SELECT code FROM poll_runs WHERE code = ?', [$code]) !== null;
+                || $this->db->fetchOne('SELECT code FROM poll_runs WHERE code = ?', [$code]) !== null
+                || $this->db->fetchOne('SELECT code FROM rollenspiel_runden WHERE code = ?', [$code]) !== null;
             if (!$belegt) {
                 return $code;
             }

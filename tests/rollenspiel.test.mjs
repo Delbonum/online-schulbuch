@@ -1,17 +1,33 @@
-// Rollenspiel „Nachrichten im Netzwerk“: Rollen aus dem Code
+// Rollenspiel „Nachrichten im Netzwerk“: Rollen aus den Einstellungen
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { erzeuge, leseCode, code, pruefe, gruppenGroessen, macListe, DNS_IP } from '../apps/werkzeuge/rollenspiel/rollen.js';
+import { erzeuge, pruefe, gruppenGroessen, macListe, DNS_IP, format } from '../apps/werkzeuge/rollenspiel/rollen.js';
 
-test('Code lesen und prüfen', () => {
-  assert.deepEqual(leseCode('24-4-2-517'), { personen: 24, gruppen: 4, stufe: 2, seed: 517 });
-  assert.deepEqual(leseCode(' 24 - 4 - 2 - 517 '), { personen: 24, gruppen: 4, stufe: 2, seed: 517 });
-  assert.ok(leseCode('abc').fehler);
-  assert.ok(leseCode('8-4-2-1').fehler, 'zu kleine Gruppen');
-  assert.ok(leseCode('12-1-3-1').fehler, 'Stufe 3 braucht zwei Gruppen');
-  assert.equal(code({ personen: 9, gruppen: 3, stufe: 1, seed: 0 }), '9-3-1-0');
+test('Einstellungen prüfen', () => {
   assert.equal(pruefe({ personen: 9, gruppen: 3, stufe: 1, seed: 0 }), null);
+  assert.ok(pruefe({ personen: 8, gruppen: 4, stufe: 2, seed: 1 }), 'zu kleine Gruppen');
+  assert.ok(pruefe({ personen: 12, gruppen: 1, stufe: 3, seed: 1 }), 'Stufe 3 braucht zwei Gruppen');
+  assert.ok(pruefe({ personen: 12, gruppen: 3, stufe: 2, seed: 1000 }), 'Zufallszahl zu groß');
   assert.deepEqual(gruppenGroessen(26, 4), [7, 7, 6, 6]);
+});
+
+test('Vereinfachte Adressen: drei Buchstaben, Netzmaske 9.9.9.0, sonst alles gleich', () => {
+  const k = { personen: 64, gruppen: 8, stufe: 3, seed: 517 };
+  const echt = erzeuge(k);
+  const einfach = erzeuge({ ...k, vereinfacht: true });
+  assert.deepEqual(format(k), { maske: '255.255.255.0', broadcast: 'FF:FF' });
+  assert.deepEqual(format({ vereinfacht: true }), { maske: '9.9.9.0', broadcast: 'FFF' });
+  assert.equal(einfach.broadcast, 'FFF');
+  const macs = einfach.karten.flatMap((c) => c.nics.map((n) => n.mac));
+  assert.ok(macs.every((m) => /^[A-Z]{3}$/.test(m) && new Set(m).size === 3 && m !== 'FFF'), 'drei verschiedene Buchstaben');
+  assert.equal(new Set(macs).size, macs.length, 'eindeutig');
+  assert.ok(einfach.karten.every((c) => c.nics.every((n) => n.maske === '9.9.9.0')));
+  einfach.karten.forEach((c, i) => {
+    assert.equal(c.name, echt.karten[i].name);
+    assert.deepEqual(c.nics.map((n) => n.ip), echt.karten[i].nics.map((n) => n.ip));
+  });
+  // Buchstaben-MACs hängen nur von der Zufallszahl ab, nicht von der Stufe
+  assert.deepEqual(erzeuge({ ...k, stufe: 1, vereinfacht: true }).karten.map((c) => c.nics[0].mac), einfach.karten.map((c) => c.nics[0].mac));
 });
 
 test('Rollen: eindeutige Adressen, gleiche Daten in allen Stufen, Router und DNS in Stufe 3', () => {

@@ -17,6 +17,8 @@ export const WERKZEUGE = {
   evaluation: { name: 'Evaluation', mehrzahl: 'Evaluationen', artikel: 'eine Evaluation', pfad: 'werkzeuge/evaluation/', kurz: 'evaluation' },
   // eigene Tabellen und Endpunkte (/api/termine, /api/termin/{code}); hier nur für Code-Eingabe, QR-Code und Kurzadresse
   booking: { name: 'Terminbuchung', mehrzahl: 'Terminbuchungen', artikel: 'eine Terminbuchung', pfad: 'werkzeuge/termine/', kurz: 'termine' },
+  // Rollenspiel „Nachrichten im Netzwerk“ (/api/rollenspiele, /api/rollenspiel/{code})
+  roleplay: { name: 'Rollenspiel', mehrzahl: 'Rollenspiele', artikel: 'ein Rollenspiel', pfad: 'informatik/werkzeuge/netzwerk-rollenspiel/', kurz: 'rollenspiel' },
 };
 export const toolUrl = (kind) => `${location.origin}${BASIS}${WERKZEUGE[kind].pfad}`;
 // Kurze Adresse zum Abtippen (die Umleitungen /umfrage usw. gibt es nur auf der echten Seite)
@@ -144,10 +146,14 @@ export function werkzeug(w) {
     try {
       stand = await api('GET', `/join/${code}?participant=${kennung(code)}`);
     } catch (err) {
-      // Vielleicht ein Code der Terminbuchung (eigene Endpunkte) → dorthin
-      if (err.status === 404 && await api('GET', `/termin/${code}`).then(() => true, () => false)) {
-        location.replace(`${toolUrl('booking')}?code=${code}`);
-        return;
+      // Vielleicht ein Code der Terminbuchung oder des Rollenspiels (eigene Endpunkte) → dorthin
+      if (err.status === 404) {
+        for (const [kind, pfad] of [['booking', 'termin'], ['roleplay', 'rollenspiel']]) {
+          if (await api('GET', `/${pfad}/${code}`).then(() => true, () => false)) {
+            location.replace(`${toolUrl(kind)}?code=${code}`);
+            return;
+          }
+        }
       }
       const text = err.status === 404 ? 'Zu diesem Code läuft gerade nichts.' : err.message;
       if (fehlerZiel) { meldung(fehlerZiel, text); return; }

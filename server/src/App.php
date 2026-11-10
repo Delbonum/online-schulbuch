@@ -12,6 +12,7 @@ use Schulbuch\Controller\QuizController;
 use Schulbuch\Controller\RegistrationController;
 use Schulbuch\Controller\TeacherContentController;
 use Schulbuch\Controller\TeacherController;
+use Schulbuch\Controller\RollenspielController;
 use Schulbuch\Controller\TerminController;
 use Schulbuch\Controller\StatisticsController;
 use Schulbuch\Controller\StudentController;
@@ -73,6 +74,7 @@ final class App
         $pollController = new PollController($auth, new PollRepository($db));
         $modemController = new ModemController($db);
         $terminController = new TerminController($auth, $db);
+        $rollenspielController = new RollenspielController($auth, $db);
 
         $this->router = new Router();
         $r = $this->router;
@@ -112,6 +114,15 @@ final class App
         $r->add('GET', '/termin/{code}', [$terminController, 'join']);
         $r->add('POST', '/termin/{code}/buchen', [$terminController, 'book']);
         $r->add('POST', '/termin/{code}/stornieren', [$terminController, 'cancel']);
+        $r->add('GET', '/rollenspiele', [$rollenspielController, 'index']);
+        $r->add('POST', '/rollenspiele', [$rollenspielController, 'create']);
+        $r->add('GET', '/rollenspiele/{id}', [$rollenspielController, 'show']);
+        $r->add('PATCH', '/rollenspiele/{id}', [$rollenspielController, 'update']);
+        $r->add('DELETE', '/rollenspiele/{id}', [$rollenspielController, 'delete']);
+        $r->add('DELETE', '/rollenspiele/{id}/rollen', [$rollenspielController, 'release']);
+        $r->add('DELETE', '/rollenspiele/{id}/rollen/{nr}', [$rollenspielController, 'release']);
+        $r->add('GET', '/rollenspiel/{code}', [$rollenspielController, 'join']);
+        $r->add('POST', '/rollenspiel/{code}/rolle', [$rollenspielController, 'take']);
 
         // Netzwerk-Simulation: Modem (Verbindung zweier Simulationen, ohne Konto)
         $r->add('POST', '/modem', [$modemController, 'anbieten']);

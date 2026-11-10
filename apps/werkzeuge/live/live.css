@@ -103,10 +103,10 @@
 .uf-abzeichen.live { background: var(--bad); color: #fff; }
 .uf-buehne-knoepfe { margin-left: auto; display: flex; flex-wrap: wrap; gap: 8px; }
 .uf-buehne-inhalt { flex: 1; display: flex; gap: 28px; padding: 20px clamp(16px, 3vw, 40px); min-height: 0; }
-.uf-zugang { flex: 0 0 auto; width: 220px; text-align: center; }
+.uf-zugang { flex: 0 0 auto; width: 280px; text-align: center; }
 .uf-zugang[hidden] { display: none; }
 .uf-qr svg { width: 100%; height: auto; display: block; border: 1px solid var(--border); }
-.uf-zugang-text { margin: 10px 0 0; font-weight: 600; word-break: break-all; }
+.uf-zugang-text { margin: 10px 0 0; font-weight: 600; white-space: nowrap; }
 .uf-code { margin: 4px 0 0; font: 800 2.4rem/1.1 ui-monospace, "Cascadia Mono", Consolas, monospace; letter-spacing: .08em; color: var(--fach); }
 .uf-buehne.code-gross .uf-zugang { width: min(46vw, 70vh); }
 .uf-buehne.code-gross .uf-code { font-size: clamp(3rem, 8vw, 6.5rem); }

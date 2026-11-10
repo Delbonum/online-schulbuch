@@ -1,5 +1,5 @@
 <!--
-beschreibung: Hinweise für Lehrkräfte zur Reihe Netzwerksysteme: Konzeption, Bausteine, Planungsmodelle, Organisation der Rollenspiele, Netzwerk-Simulation statt Filius, Konsole im Schulnetz, Begriffe, Differenzierung und Leistungsüberprüfung.
+beschreibung: Hinweise für Lehrkräfte zur Reihe Netzwerksysteme: Konzeption, Bausteine, Planungsmodelle, Organisation der Rollenspiele, Netzwerk-Simulation, Konsole im Schulnetz, Begriffe, Differenzierung und Leistungsüberprüfung.
 unterseiten: nein
 -->
 <p>Diese Seite enthält die Konzeption der Reihe, eine Übersicht aller Bausteine mit Kern- und Zusatzseiten, drei Planungsmodelle, Hinweise zur Organisation der Rollenspiele, zur Netzwerk-Simulation und zur Konsole im Schulnetz sowie zu Differenzierung und Leistungsüberprüfung. Die Hinweise sind nach der Anmeldung für Lehrkräfte sichtbar.</p>
@@ -61,7 +61,7 @@ unterseiten: nein
 
 <h2>Die Rollenspiele organisieren</h2>
 
-<p>Das Rollenspiel ist in <strong>drei Stufen</strong> angelegt, die aufeinander aufbauen. Alle drei nutzen dieselben Rollenkarten (gleiche Zufallszahl im Werkzeug), sodass Namen, MAC- und IP-Adressen über die Stufen gleich bleiben.</p>
+<p>Das Rollenspiel ist in <strong>drei Stufen</strong> angelegt, die aufeinander aufbauen. Alle drei nutzen dieselben Rollen (dieselbe Runde im Werkzeug bzw. dieselbe Zufallszahl beim Drucken), sodass Namen, MAC- und IP-Adressen über die Stufen gleich bleiben.</p>
 
 <table class="verlauf">
 <thead><tr><th>Stufe</th><th>Inhalt</th><th>Platzierung</th><th>Zweck</th></tr></thead>
@@ -73,37 +73,24 @@ unterseiten: nein
 </table>
 
 <ul>
-<li><strong>Rollen verteilen:</strong> Das Werkzeug <a href="/informatik/werkzeuge/netzwerk-rollenspiel/">Rollenspiel: Nachrichten im Netzwerk</a> erzeugt aus Anzahl, Gruppen, Stufe und einer Zufallszahl einen Code (z. B. 24-4-2-517). <em>Digital:</em> QR-Code zeigen, alle tragen ihre Nummer ein (durchzählen oder Nummern nach Tischgruppen vergeben); es wird nichts gespeichert und nichts an einen Server geschickt. <em>Analog:</em> Rollenkarten, MAC-Listen, Umschläge, Zettel und Spielregeln drucken. Die analoge Variante ist günstig, wenn Gruppen räumlich verteilt werden sollen oder keine Geräte zur Verfügung stehen.</li>
+<li><strong>Rollen verteilen:</strong> Das Werkzeug <a href="/informatik/werkzeuge/netzwerk-rollenspiel/">Rollenspiel: Nachrichten im Netzwerk</a> erzeugt die Rollen aus Anzahl, Gruppen, Stufe und einer Zufallszahl. <em>Digital</em> (Anmeldung mit Lehrkräfte-Konto): Runde starten und QR-Code zeigen; wer scannt, bekommt sofort eine zufällige freie Rolle. Die Gruppen füllen sich gleichmäßig, Router und DNS-Server werden zuerst vergeben, sodass jedes Netz funktioniert, auch wenn weniger Personen da sind als eingestellt. Die Übersicht zeigt, welche Rollen vergeben sind; einzelne Rollen lassen sich freigeben (z. B. nach einem Gerätewechsel), die Stufe wird für alle umgestellt. Gespeichert werden nur Rollennummer und zufällige Gerätekennung, keine Namen. <em>Analog:</em> Rollenkarten, MAC-Listen, Umschläge, Zettel und Spielregeln drucken. Die analoge Variante ist günstig, wenn Gruppen räumlich verteilt werden sollen oder keine Geräte zur Verfügung stehen.</li>
 <li><strong>Raum:</strong> Jede Gruppe (5–8 Personen) sitzt als Insel zusammen. In Stufe 3 stehen die Router in der Mitte (Backbone) und reichen mit der rechten Hand in ihre Gruppe.</li>
 <li><strong>Umschläge:</strong> zwei Größen (z. B. C6 innen, C5 außen) oder gefaltete Zettel; Werte durchstreichen und wiederverwenden. Rund drei Umschlagpaare und je zwei ARP-, DNS- und Nachrichtenzettel pro Person reichen.</li>
 <li><strong>Beobachterrolle:</strong> Eine Person je Gruppe protokolliert jede Übergabe (Quelle, Ziel, innen, außen) – entspricht dem Datenaustausch der Simulation und liefert Material für die Auswertung.</li>
 <li><strong>Typische Stolpersteine:</strong> Zurufe statt Umschläge (auf Regel 1 bestehen), Router öffnen den inneren Umschlag, Quell- und Ziel-MAC vertauscht, Staus beim DNS-Server. Stau und Fehler sind lehrreich und sollten in der Auswertung aufgegriffen werden.</li>
-<li><strong>Abweichung von der Vorlage:</strong> Die Rollenkarten der ursprünglichen Materialien verwenden als Netzmaske „9.9.9.0“; hier wird durchgehend 255.255.255.0 verwendet, damit das Spiel zur Subnetz-Seite passt. Die MAC-Adressen sind auf zwei Hex-Paare verkürzt (statt drei Buchstaben), um den hexadezimalen Charakter echter MAC-Adressen anzudeuten.</li>
+<li><strong>Echte oder vereinfachte Adressen:</strong> Standardmäßig tragen die Karten die echte Netzmaske 255.255.255.0 (passend zur Seite Subnetze) und MAC-Adressen aus zwei Hex-Paaren, die an echte MAC-Adressen erinnern. Wahlweise stellt das Werkzeug vereinfachte Adressen ein: MAC aus drei Buchstaben (an alle: FFF) und Netzmaske 9.9.9.0 (9 = diese Zahl muss gleich sein, 0 = beliebig). Das geht schneller und eignet sich, wenn Subnetze noch nicht behandelt wurden; umstellen lässt es sich auch während einer laufenden Runde.</li>
 </ul>
 
 <p><strong>Ähnliche Rollenspiele</strong> (zur Anregung): das Rollenspiel „IPvS(imple)“ von oinf.ch, auf dem Regeln und Struktogramm dieser Reihe beruhen; das „Rollenspiel Netzwerk“ der ZPG Informatik Baden-Württemberg mit Switch und „Auskunft“ (DNS); das „Internetspiel“ der TU Dresden mit Routern und Adresskarten; aus <em>CS Unplugged</em> „The Orange Game“ (Routing und Verklemmung) und „Tablets of Stone“ (Pakete und Protokolle, Grundlage des Paket-Puzzles auf der Seite zur Transportschicht).</p>
 
-<h2>Netzwerk-Simulation statt Filius</h2>
+<h2>Die Netzwerk-Simulation</h2>
 
-<p>Alle Simulationsaufgaben der Filius-Arbeitsblätter lassen sich mit der <a href="/informatik/werkzeuge/netzwerk-simulation/">Netzwerk-Simulation</a> des Schulbuchs lösen. Sie läuft im Browser (auch auf Tablets), braucht keine Installation und bildet dieselben Abläufe ab (Datenaustausch je Schicht, ARP, Lerntabelle des Switches, Weiterleitungstabellen, DNS, DHCP, Webserver, E-Mail, Firewall). Zusätzlich gibt es:</p>
+<p>Alle Simulationsaufgaben der Reihe sind für die <a href="/informatik/werkzeuge/netzwerk-simulation/">Netzwerk-Simulation</a> des Schulbuchs geschrieben. Sie läuft im Browser (auch auf Tablets), braucht keine Installation und zeigt den Datenaustausch je Schicht, ARP, die Lerntabelle des Switches, Weiterleitungstabellen, DNS, DHCP, Webserver, E-Mail und Firewall. Außerdem gibt es:</p>
 <ul>
 <li><strong>Beispielnetze per Link:</strong> <code>/informatik/werkzeuge/netzwerk-simulation/?beispiel=…</code> lädt ein Ausgangsnetz direkt (<code>switch</code>, <code>router</code>, <code>internet</code>, <code>email</code>, <code>rollenspiel</code>, <code>fehlersuche-lan</code>, <code>drei-netze</code>, <code>heimnetz</code>, <code>provider</code>). Das bisherige Netz lässt sich dort mit „Rückgängig“ zurückholen.</li>
-<li><strong>Modems:</strong> verbinden Simulationen auf verschiedenen Geräten – Grundlage für das Projekt <a href="/informatik/netzwerke/klassen-internet/">Klassen-Internet</a> (in Filius nur eingeschränkt möglich).</li>
+<li><strong>Modems:</strong> verbinden Simulationen auf verschiedenen Geräten – Grundlage für das Projekt <a href="/informatik/netzwerke/klassen-internet/">Klassen-Internet</a>.</li>
 <li><strong>Dokumentation:</strong> Netze beschriften und als Bild speichern, z. B. für Abgaben.</li>
 </ul>
-<table class="verlauf">
-<thead><tr><th>Filius-Arbeitsblatt</th><th>im Schulbuch</th></tr></thead>
-<tbody>
-<tr><td>01 LAN simulieren, A1 (LAN, Ping, ARP)</td><td><a href="/informatik/netzwerke/lan-simulieren/">LAN simulieren</a>, Abschnitt 1–2</td></tr>
-<tr><td>01 LAN simulieren, A2 (DNS-Server)</td><td><a href="/informatik/netzwerke/dns/">DNS</a>, Abschnitt 4</td></tr>
-<tr><td>01 LAN simulieren, A3 (DHCP)</td><td><a href="/informatik/netzwerke/lan-simulieren/">LAN simulieren</a>, Abschnitt 4</td></tr>
-<tr><td>02 Subnetze</td><td><a href="/informatik/netzwerke/subnetze/">Subnetze</a>, Aufgabe 3 und 6</td></tr>
-<tr><td>03 Routing simulieren (inkl. Varianten)</td><td><a href="/informatik/netzwerke/routing-simulieren/">Routing simulieren</a>; Variante 3 (Modem) im Projekt Klassen-Internet</td></tr>
-<tr><td>04 Netzwerke und Routing</td><td><a href="/informatik/netzwerke/router/">Router und Gateway</a>, Aufgabe 5 und 6; Begriffe: <a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a>, Aufgabe 2</td></tr>
-<tr><td>05 Internet</td><td><a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a></td></tr>
-</tbody>
-</table>
-<p>Wer weiterhin Filius verwenden möchte, kann die Aufgaben fast wörtlich übernehmen; Abweichungen (z. B. Einträge mit 127.0.0.1 in Filius-Routingtabellen) sind in den Lösungen erwähnt.</p>
 
 <h2>Konsole im Schulnetz</h2>
 
@@ -124,7 +111,7 @@ unterseiten: nein
 
 <h2>Die Begriffe der Reihe</h2>
 
-<p>Alle Begriffe der Begriffsfolie werden eingeführt und auf der Seite <a href="/informatik/netzwerke/begriffe/">Begriffe und Selbsttest</a> zusammengefasst: Client und Server (Schichtenmodell, Webseitenaufruf), IP öffentlich/privat (MAC und IP, Netz zu Hause), MAC (MAC und IP), Netzwerk, Subnetz, Internet, Backbone, WWW, LAN, WLAN (Internet, Subnetze), HTTP (Webseitenaufruf), ARP, Ping, Broadcast (Rollenspiel I, ARP und Switch), Subnetzmaske (Subnetze), Browser, URL, Domain, DNS (DNS, Webseitenaufruf), Router, Gateway, Schnittstelle (Router), Switch (ARP und Switch), Modem, Provider (Netz zu Hause), Host (Webseitenaufruf). VPN und Proxy aus den Folien-Notizen stehen auf der fakultativen Seite <a href="/informatik/netzwerke/sicherheit/">Firewall, Proxy und VPN</a>.</p>
+<p>Die zentralen Begriffe werden eingeführt und auf der Seite <a href="/informatik/netzwerke/begriffe/">Begriffe und Selbsttest</a> zusammengefasst: Client und Server (Schichtenmodell, Webseitenaufruf), IP öffentlich/privat (MAC und IP, Netz zu Hause), MAC (MAC und IP), Netzwerk, Subnetz, Internet, Backbone, WWW, LAN, WLAN (Internet, Subnetze), HTTP (Webseitenaufruf), ARP, Ping, Broadcast (Rollenspiel I, ARP und Switch), Subnetzmaske (Subnetze), Browser, URL, Domain, DNS (DNS, Webseitenaufruf), Router, Gateway, Schnittstelle (Router), Switch (ARP und Switch), Modem, Provider (Netz zu Hause), Host (Webseitenaufruf). VPN und Proxy stehen auf der fakultativen Seite <a href="/informatik/netzwerke/sicherheit/">Firewall, Proxy und VPN</a>.</p>
 
 <h2>Kompetenzen (Auswahl)</h2>
 <ul>
@@ -147,12 +134,11 @@ unterseiten: nein
 <h2>Leistungsüberprüfung</h2>
 <p>Geeignete Aufgabenformen: Subnetz-Entscheidungen mit Begründung; eine Routingtabelle lesen (Was geschieht mit Ziel-IP …?); Max-und-Moritz-Konfiguration mit Netzmasken; den Weg einer Nachricht mit allen Umschlägen tabellarisch darstellen (wie auf der Seite „Weg einer Nachricht“); Konsolenausgaben deuten; Begriffe im Lückentext; Fehlersuche an einem skizzierten Netz. Praktisch: eine Simulationsaufgabe mit Abgabe als Datei oder Bild (Dokumentationsmodus), im Projekt eine Gruppenbewertung mit Adressplan, Testprotokoll und Dokumentation.</p>
 
-<h2>Hinweise zum Ausgangsmaterial</h2>
+<h2>Sachhinweise</h2>
 <ul>
-<li><strong>Feuer seit einer Million Jahren:</strong> Kontrollierte Feuernutzung ist ungefähr so alt (Funde etwa in der Wonderwerk-Höhle, Südafrika). Dass Feuer seither auch als Signal dient, ist plausibel, aber nicht belegt; sicher belegt sind Signalfeuer seit der Antike. Die Seite formuliert deshalb vorsichtig.</li>
+<li><strong>Feuer als Signal:</strong> Kontrollierte Feuernutzung ist ungefähr eine Million Jahre alt (Funde etwa in der Wonderwerk-Höhle, Südafrika). Dass Feuer seither auch als Signal dient, ist plausibel, aber nicht belegt; sicher belegt sind Signalfeuer seit der Antike. Die Einstiegsseite formuliert deshalb vorsichtig.</li>
 <li><strong>Aischylos:</strong> In der Tragödie <em>Agamemnon</em> (458 v. Chr.) berichtet Klytaimnestra von der Feuerkette vom Berg Ida bis Argos.</li>
-<li><strong>Präsentation, Folie zu Subnetzmasken:</strong> In den Notizen steht als Broadcast-Adresse „192.168.9.255“; gemeint ist 192.168.0.255.</li>
-<li><strong>Videos:</strong> Die beiden in der Präsentation eingebetteten YouTube-Videos sind nur verlinkt (keine Einbettung aus Datenschutzgründen); vor dem Einsatz prüfen, ob sie noch verfügbar sind.</li>
+<li><strong>Videos:</strong> Der Filmausschnitt (Einstieg) und das Erklärvideo (Was ist das Internet?) sind aus Datenschutzgründen nur verlinkt, nicht eingebettet; vor dem Einsatz prüfen, ob sie noch verfügbar sind.</li>
 </ul>
 
 <h2>Literatur und Links</h2>

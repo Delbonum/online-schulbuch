@@ -2,7 +2,7 @@
 beschreibung: Netze verbinden in der Netzwerk-Simulation: Router einbauen, Gateways eintragen, Weiterleitungstabellen lesen und ergänzen, Fehler suchen und das Rollenspiel-Netz nachspielen.
 -->
 <lehrkraft titel="Einsatz dieser Seite">
-<p><strong>Typ:</strong> Kernseite, Simulation (ersetzt das Filius-Arbeitsblatt „Routing simulieren“ und erweitert es). <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/weg-einer-nachricht/">Der Weg einer Nachricht</a>. <strong>Dauer:</strong> eine Doppelstunde für Abschnitt 1–3; Abschnitt 4 und 5 zur Differenzierung bzw. als Vertiefung.</p>
+<p><strong>Typ:</strong> Kernseite, Simulation. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/weg-einer-nachricht/">Der Weg einer Nachricht</a>. <strong>Dauer:</strong> eine Doppelstunde für Abschnitt 1–3; Abschnitt 4 und 5 zur Differenzierung bzw. als Vertiefung.</p>
 <p><strong>Funktion im Ablauf:</strong> Überprüfung, ob das Routing-Konzept verstanden ist – besonders Abschnitt 3 (Routen selbst eintragen) und 4 (Rollenspiel-Netz) zeigen, ob die Gruppen das Struktogramm aus Rollenspiel II übertragen können. Die Beispielnetze werden über Links mit <code>?beispiel=…</code> direkt geladen; das bisherige Netz lässt sich in der Simulation mit „Rückgängig“ zurückholen.</p>
 </lehrkraft>
 
@@ -23,7 +23,7 @@ beschreibung: Netze verbinden in der Netzwerk-Simulation: Router einbauen, Gatew
 <lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 bis 5">
 <ul>
 <li><strong>Musterlösung:</strong> Netz 1 192.168.0.x, Netz 2 10.0.0.x, Router 192.168.0.254 und 10.0.0.254, Gateways der Rechner entsprechend. Häufigster Fehler: Gateway vergessen oder Router-Adresse doppelt vergeben.</li>
-<li><strong>Aufgabe 4:</strong> Für einfache Netze erstellt die Simulation die Einträge automatisch: je eine Zeile für jedes direkt angeschlossene Netz (Zielnetz = Netzadresse, Netzmaske, Schnittstelle = eigene Adresse in diesem Netz, kein nächster Router nötig). In Filius erscheinen zusätzlich Zeilen mit 127.0.0.1 für die eigenen Adressen („selbst verarbeiten“).</li>
+<li><strong>Aufgabe 4:</strong> Für einfache Netze erstellt die Simulation die Einträge automatisch: je eine Zeile für jedes direkt angeschlossene Netz (Zielnetz = Netzadresse, Netzmaske, Schnittstelle = eigene Adresse in diesem Netz, kein nächster Router nötig).</li>
 <li><strong>Aufgabe 5:</strong> Zwei ARP-Anfragen: Der Absender fragt nach der MAC des Routers (seines Gateways), der Router fragt im Zielnetz nach der MAC des Ziels. Danach Ping (über den Router) und Pong zurück; für das Pong ist kein ARP mehr nötig, weil beide die MACs aus den ARP-Anfragen kennen.</li>
 </ul>
 </lehrkraft>
