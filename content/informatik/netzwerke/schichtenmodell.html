@@ -1,0 +1,154 @@
+<!--
+beschreibung: Schichtenmodelle: vom Paketversand der Post zum TCP/IP-Schichtenmodell mit Anwendungs-, Transport-, Vermittlungs- und Netzzugangsschicht – und das Prinzip „Umschlag im Umschlag“.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/protokolle/">Kommunikationsprotokolle</a>. <strong>Dauer:</strong> ein bis zwei Stunden.</p>
+<p><strong>Didaktische Reduktion:</strong> Verwendet wird das TCP/IP-Referenzmodell mit vier Schichten. Die <strong>Transportschicht</strong> wird genannt, aber im weiteren Verlauf (Rollenspiele, Ablauf einer Nachricht) ausgeklammert: Für das Verständnis von Adressierung und Weiterleitung sind Anwendung, Vermittlung und Netzzugang ausreichend. Wer die Transportschicht behandeln möchte, findet dazu die fakultative Seite <a href="/informatik/netzwerke/transportschicht/">Vertiefung: Die Transportschicht</a> (sinnvoll nach dem Webseitenaufruf). Das OSI-Modell mit sieben Schichten wird nur erwähnt.</p>
+<p>Die Begriffe MAC- und IP-Adresse fallen hier zum ersten Mal und werden auf der nächsten Seite erklärt; für den Moment genügt „Adresse im lokalen Netz“ und „Adresse im Internet“.</p>
+</lehrkraft>
+
+<h2>1. Wie verschickt die Post ein Paket?</h2>
+
+<p>Bevor wir die komplizierte Übertragung im Internet untersuchen, schauen wir auf eine Übertragung aus dem Alltag. Wenn du ein Paket verschickst, bringt es nicht der erstbeste Postbote direkt zum Empfänger. Es beginnt ein durchdachter Ablauf, bei dem viele Beteiligte jeweils nur <strong>ihren Teil</strong> erledigen:</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 330" role="img" aria-labelledby="netz-post-titel">
+<title id="netz-post-titel">Schichtenmodell der Post. Links der Absender, rechts der Empfänger, je vier Schichten: Inhalt (Geschenk einpacken bzw. auspacken), Adresse (Paket beschriften und abgeben bzw. an der Haustür annehmen), Weiterleitung (Verteilzentrum sortiert nach Postleitzahl), Transport (LKW, Zug, Flugzeug). Ein Pfeil läuft links von oben nach unten, unten hinüber und rechts von unten nach oben.</title>
+<defs><marker id="pfeil-post" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="titel" x="140" y="22" text-anchor="middle">Absender</text>
+<text class="titel" x="600" y="22" text-anchor="middle">Empfänger</text>
+<g>
+<rect class="flaeche" x="40" y="34" width="200" height="56" rx="8"/><text x="140" y="58" text-anchor="middle">Inhalt</text><text x="140" y="77" text-anchor="middle" class="klein">Geschenk einpacken</text>
+<rect class="rahmen" x="40" y="100" width="200" height="56" rx="8"/><text x="140" y="124" text-anchor="middle">Adresse</text><text x="140" y="143" text-anchor="middle" class="klein">beschriften, in der Filiale abgeben</text>
+<rect class="flaeche" x="40" y="166" width="200" height="56" rx="8"/><text x="140" y="190" text-anchor="middle">Weiterleitung</text><text x="140" y="209" text-anchor="middle" class="klein">Verteilzentrum sortiert</text>
+<rect class="rahmen" x="40" y="232" width="200" height="56" rx="8"/><text x="140" y="256" text-anchor="middle">Transport</text><text x="140" y="275" text-anchor="middle" class="klein">LKW, Zug, Flugzeug</text>
+</g>
+<g>
+<rect class="flaeche" x="500" y="34" width="200" height="56" rx="8"/><text x="600" y="58" text-anchor="middle">Inhalt</text><text x="600" y="77" text-anchor="middle" class="klein">auspacken, freuen</text>
+<rect class="rahmen" x="500" y="100" width="200" height="56" rx="8"/><text x="600" y="124" text-anchor="middle">Adresse</text><text x="600" y="143" text-anchor="middle" class="klein">Zustellung an der Haustür</text>
+<rect class="flaeche" x="500" y="166" width="200" height="56" rx="8"/><text x="600" y="190" text-anchor="middle">Weiterleitung</text><text x="600" y="209" text-anchor="middle" class="klein">Zustellbezirk nach Postleitzahl</text>
+<rect class="rahmen" x="500" y="232" width="200" height="56" rx="8"/><text x="600" y="256" text-anchor="middle">Transport</text><text x="600" y="275" text-anchor="middle" class="klein">Zustellfahrzeug</text>
+</g>
+<path class="linie" d="M22,50 L22,305 L718,305 L718,62" marker-end="url(#pfeil-post)"/>
+<line class="gestrichelt" x1="244" y1="62" x2="496" y2="62"/><text x="370" y="56" text-anchor="middle" class="klein">„Hier ist ein Geschenk für dich“</text>
+<line class="gestrichelt" x1="244" y1="128" x2="496" y2="128"/><text x="370" y="122" text-anchor="middle" class="klein">Anschrift auf dem Paket</text>
+<line class="gestrichelt" x1="244" y1="194" x2="496" y2="194"/><text x="370" y="188" text-anchor="middle" class="klein">Postleitzahl, Barcode</text>
+<text x="370" y="324" text-anchor="middle" class="klein">tatsächlicher Weg des Pakets</text>
+</svg>
+<figcaption>Das Paket durchläuft beim Absender die Schichten von oben nach unten und beim Empfänger wieder von unten nach oben. Die gestrichelten Linien zeigen, wer sich mit wem „unterhält“.</figcaption>
+</figure>
+
+<p>Das Besondere: Jede Schicht kümmert sich nur um ihre eigene Aufgabe und verlässt sich auf die Schicht darunter. Wer das Geschenk einpackt, muss nicht wissen, welcher LKW fährt. Der LKW-Fahrer muss nicht wissen, was im Paket ist. Und das Verteilzentrum liest nur die Postleitzahl, nicht den Brief im Paket.</p>
+
+<aside class="box aufgabe">
+<ol>
+<li>Ordne zu: Welche Schicht der Post ist zuständig?
+<div class="sortieren" data-kategorien="Inhalt|Adresse|Weiterleitung|Transport">
+<p>Ziehe oder tippe jede Tätigkeit in die passende Schicht.</p>
+<ul>
+<li data-gehoert="Inhalt" data-erklaerung="Um den Inhalt kümmern sich nur Absender und Empfänger.">Ein Buch in einen Karton legen</li>
+<li data-gehoert="Adresse" data-erklaerung="Die Anschrift sagt, wohin das Paket am Ende soll.">Die Anschrift auf den Karton schreiben</li>
+<li data-gehoert="Weiterleitung" data-erklaerung="Sortieren nach Postleitzahl entscheidet über den nächsten Abschnitt des Wegs.">Pakete nach Postleitzahl auf Rollwagen verteilen</li>
+<li data-gehoert="Transport" data-erklaerung="Der LKW bewegt das Paket nur von einem Ort zum nächsten.">Mit dem LKW von Hamburg nach Frankfurt fahren</li>
+<li data-gehoert="Inhalt" data-erklaerung="Lesen und Verstehen ist Sache des Empfängers.">Die Glückwunschkarte lesen</li>
+<li data-gehoert="Weiterleitung" data-erklaerung="Welches Verteilzentrum als nächstes? Das ist Weiterleitung.">Entscheiden, ob das Paket per Flugzeug oder Zug weiterreist</li>
+<li data-gehoert="Adresse" data-erklaerung="Die Zustellerin prüft die Anschrift an der Haustür.">An der richtigen Haustür klingeln</li>
+<li data-gehoert="Transport" data-erklaerung="Der Zug bringt das Paket nur weiter, ohne es zu öffnen.">Pakete in einen Güterzug laden</li>
+</ul>
+</div></li>
+</ol>
+</aside>
+
+<h2>2. Das Schichtenmodell des Internets</h2>
+
+<p>Genauso ist die Kommunikation im Internet organisiert. Erst durch die klare Aufteilung in Aufgabenbereiche, die übereinander angeordnet sind, werden so riesige Systeme wie das Internet beherrschbar. Wir benutzen das <strong>TCP/IP-Schichtenmodell</strong> mit vier Schichten. (Es gibt auch andere Modelle, etwa das <em>OSI-Modell</em> mit sieben Schichten.)</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 300" role="img" aria-labelledby="netz-tcpip-titel">
+<title id="netz-tcpip-titel">TCP/IP-Schichtenmodell mit vier Schichten, je mit Aufgabe und Beispiel: Anwendungsschicht (Programme wie Browser und Webserver, HTTP, DNS), Transportschicht (Daten in Pakete teilen, Ports, TCP, UDP), Vermittlungsschicht (Pakete über Netze hinweg weiterleiten, IP-Adressen, Router), Netzzugangsschicht (Übertragung im lokalen Netz, MAC-Adressen, Kabel, WLAN, Switch).</title>
+<rect class="flaeche" x="20" y="20" width="700" height="58" rx="8"/>
+<text class="titel" x="40" y="45">4 · Anwendungsschicht</text><text x="40" y="66" class="klein">Programme sprechen miteinander (Client und Server)</text><text x="700" y="56" text-anchor="end">HTTP, DNS, E-Mail</text>
+<rect class="grau" x="20" y="88" width="700" height="58" rx="8"/>
+<text class="titel" x="40" y="113">3 · Transportschicht</text><text x="40" y="134" class="klein">Daten in Pakete aufteilen, zuordnen und vollständig zusammensetzen</text><text x="700" y="124" text-anchor="end">TCP, UDP, Ports</text>
+<rect class="flaeche" x="20" y="156" width="700" height="58" rx="8"/>
+<text class="titel" x="40" y="181">2 · Vermittlungsschicht (Internetschicht)</text><text x="40" y="202" class="klein">Pakete über Netzgrenzen hinweg zum Ziel weiterleiten</text><text x="700" y="192" text-anchor="end">IP-Adressen, Router</text>
+<rect class="rahmen" x="20" y="224" width="700" height="58" rx="8"/>
+<text class="titel" x="40" y="249">1 · Netzzugangsschicht</text><text x="40" y="270" class="klein">Übertragung im lokalen Netz, Bits als Signale auf Kabel oder Funk</text><text x="700" y="260" text-anchor="end">MAC-Adressen, Switch</text>
+</svg>
+<figcaption>Das TCP/IP-Schichtenmodell. Auf jeder Schicht sind andere Protokolle wichtig.</figcaption>
+</figure>
+
+<dl>
+<dt><strong>Anwendungsschicht</strong></dt><dd>Hier kommunizieren Programme miteinander, zum Beispiel dein Browser mit einem Webserver. Wichtige Protokolle sind HTTP (Webseiten) und DNS (Namen in Adressen übersetzen).</dd>
+<dt><strong>Transportschicht</strong></dt><dd>Sie teilt große Datenmengen in Pakete auf, nummeriert sie und sorgt dafür, dass alles vollständig ankommt und beim richtigen Programm landet. Diese Schicht lassen wir in diesem Kapitel meist weg.</dd>
+<dt><strong>Vermittlungsschicht</strong></dt><dd>Sie leitet Datenpakete zwischen verschiedenen Netzen weiter, bis sie am Ziel sind. Dafür braucht jedes Gerät eine <strong>IP-Adresse</strong> (IP = Internet Protocol).</dd>
+<dt><strong>Netzzugangsschicht</strong></dt><dd>Sie überträgt die Daten innerhalb eines lokalen Netzes von einem Gerät zum nächsten – als elektrische Signale, Licht oder Funk. Dafür hat jede Netzwerkkarte eine <strong>MAC-Adresse</strong>.</dd>
+</dl>
+
+<aside class="box info" data-titel="Client und Server">
+<p>Auf der Anwendungsschicht unterhalten sich meist ein <strong>Client</strong> und ein <strong>Server</strong>. Der <strong>Client</strong> (englisch für „Kunde“) fordert Dienste oder Daten an – zum Beispiel dein Browser, der eine Webseite haben möchte. Der <strong>Server</strong> (englisch für „Diener“) stellt Dienste, Daten oder Speicherplatz bereit und wartet ständig auf Anfragen – zum Beispiel ein Webserver, der Webseiten ausliefert.</p>
+<p>Genau genommen sind Client und Server <strong>Programme</strong>. Oft bezeichnet man aber auch die Geräte so: den eigenen Laptop als Client und einen leistungsstarken Rechner im Rechenzentrum, auf dem Serverprogramme laufen, als Server.</p>
+</aside>
+
+<h2>3. Umschlag im Umschlag</h2>
+
+<p>Wie bei der Post wird eine Nachricht auf dem Weg nach unten Schicht für Schicht <strong>verpackt</strong>. Jede Schicht steckt alles, was sie von oben bekommt, in einen eigenen „Umschlag“ und schreibt darauf, was sie für ihre Aufgabe braucht. Diese Angaben heißen <strong>Kopf</strong> oder englisch <em>Header</em>. Beim Empfänger wird in umgekehrter Reihenfolge ausgepackt.</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 250" role="img" aria-labelledby="netz-kapsel-titel">
+<title id="netz-kapsel-titel">Verpacken einer Nachricht: Oben die Nutzdaten „Hallo Bob“ (Anwendung). Darunter das IP-Paket: ein Kopf mit Quell-IP und Ziel-IP vor den Nutzdaten (Vermittlung). Ganz unten der Ethernet-Rahmen: ein Kopf mit Quell-MAC und Ziel-MAC vor dem IP-Paket (Netzzugang).</title>
+<rect class="flaeche" x="420" y="20" width="200" height="44" rx="6"/><text x="520" y="47" text-anchor="middle">„Hallo Bob!“</text>
+<text x="20" y="47" class="titel">Anwendung</text><text x="160" y="47" class="klein">Nutzdaten</text>
+<rect class="rahmen" x="260" y="92" width="160" height="44" rx="6"/><text x="340" y="111" text-anchor="middle" class="klein">Quell-IP · Ziel-IP</text><text x="340" y="127" text-anchor="middle" class="klein">(IP-Kopf)</text>
+<rect class="flaeche" x="420" y="92" width="200" height="44" rx="6"/><text x="520" y="119" text-anchor="middle">„Hallo Bob!“</text>
+<text x="20" y="119" class="titel">Vermittlung</text><text x="160" y="119" class="klein">IP-Paket</text>
+<rect class="grau" x="100" y="164" width="160" height="44" rx="6"/><text x="180" y="183" text-anchor="middle" class="klein">Quell-MAC · Ziel-MAC</text><text x="180" y="199" text-anchor="middle" class="klein">(Ethernet-Kopf)</text>
+<rect class="rahmen" x="260" y="164" width="160" height="44" rx="6"/><text x="340" y="191" text-anchor="middle" class="klein">IP-Kopf</text>
+<rect class="flaeche" x="420" y="164" width="200" height="44" rx="6"/><text x="520" y="191" text-anchor="middle">„Hallo Bob!“</text>
+<text x="20" y="232" class="titel">Netzzugang</text><text x="160" y="232" class="klein">Ethernet-Rahmen: der äußerste Umschlag</text>
+<line class="gestrichelt" x1="420" y1="64" x2="420" y2="92"/><line class="gestrichelt" x1="620" y1="64" x2="620" y2="92"/>
+<line class="gestrichelt" x1="260" y1="136" x2="260" y2="164"/><line class="gestrichelt" x1="620" y1="136" x2="620" y2="164"/>
+</svg>
+<figcaption>Verpacken (Kapselung) ohne Transportschicht: Der innere Umschlag trägt die IP-Adressen, der äußere die MAC-Adressen.</figcaption>
+</figure>
+
+<p>Der Vorteil dieses Aufbaus: <strong>Jede Schicht muss sich nur um ihre eigene Aufgabe kümmern.</strong> Der Browser muss nicht wissen, ob die Daten über Kabel, WLAN oder Glasfaser reisen. Und wenn eine Netzwerkkarte durch eine neue ersetzt wird, ändert sich nur die unterste Schicht – alles andere funktioniert weiter wie bisher.</p>
+
+<aside class="box aufgabe">
+<ol start="2">
+<li>Ordne die Begriffe der passenden Schicht des TCP/IP-Modells zu.
+<div class="sortieren" data-kategorien="Anwendung|Transport|Vermittlung|Netzzugang">
+<p>Ziehe oder tippe jeden Begriff in die passende Schicht.</p>
+<ul>
+<li data-gehoert="Anwendung" data-erklaerung="Der Browser ist ein Programm – er arbeitet auf der Anwendungsschicht.">Browser</li>
+<li data-gehoert="Anwendung" data-erklaerung="HTTP regelt das Gespräch zwischen Browser und Webserver.">HTTP</li>
+<li data-gehoert="Vermittlung" data-erklaerung="IP-Adressen werden für die Weiterleitung über Netze hinweg gebraucht.">IP-Adresse</li>
+<li data-gehoert="Netzzugang" data-erklaerung="Die MAC-Adresse gehört zur Netzwerkkarte und wird im lokalen Netz gebraucht.">MAC-Adresse</li>
+<li data-gehoert="Transport" data-erklaerung="Das Aufteilen und Nummerieren von Paketen ist Aufgabe der Transportschicht.">Daten in nummerierte Pakete aufteilen</li>
+<li data-gehoert="Vermittlung" data-erklaerung="Router entscheiden, in welches Netz ein Paket als Nächstes geht.">Router</li>
+<li data-gehoert="Netzzugang" data-erklaerung="Funkwellen übertragen die Bits im lokalen Netz.">WLAN</li>
+<li data-gehoert="Anwendung" data-erklaerung="Ein Webserver ist ein Programm, das Webseiten ausliefert.">Webserver</li>
+</ul>
+</div></li>
+<li>Vergleiche die Post mit dem Internet: Was entspricht der Anschrift auf dem Paket, was der Postleitzahl, was dem LKW? Begründe kurz.
+<textarea class="notiz" data-notiz="netz-schichten-3" rows="3" aria-label="Aufgabe 3: Vergleich Post und Internet"></textarea></li>
+<li>Jemand ersetzt in einem Netz alle Kupferkabel durch WLAN. Welche Schichten sind davon betroffen, welche nicht? Warum ist das ein Vorteil des Schichtenmodells?
+<textarea class="notiz" data-notiz="netz-schichten-4" rows="3" aria-label="Aufgabe 4: Kabel durch WLAN ersetzen"></textarea></li>
+</ol>
+</aside>
+
+<div class="quiz" data-id="netz-schichten-quiz" data-anweisung="Wähle die richtige Antwort.">
+<div class="frage" data-erklaerung="Beim Sender wird von oben nach unten verpackt, beim Empfänger von unten nach oben ausgepackt."><p>In welcher Richtung durchläuft eine Nachricht beim Empfänger die Schichten?</p><ul><li>von oben nach unten</li><li data-richtig>von unten nach oben</li><li>nur die oberste Schicht</li></ul></div>
+<div class="frage" data-erklaerung="Der äußerste Umschlag ist der Ethernet-Rahmen der Netzzugangsschicht mit den MAC-Adressen."><p>Welcher Umschlag ist ganz außen?</p><ul><li>der mit den IP-Adressen</li><li data-richtig>der mit den MAC-Adressen</li><li>die Nutzdaten</li></ul></div>
+<div class="frage" data-erklaerung="Die Vermittlungsschicht leitet Pakete mithilfe der IP-Adressen zwischen Netzen weiter."><p>Welche Schicht sorgt dafür, dass ein Paket über mehrere Netze hinweg ans Ziel kommt?</p><ul><li>Anwendungsschicht</li><li data-richtig>Vermittlungsschicht</li><li>Netzzugangsschicht</li></ul></div>
+<div class="frage" data-erklaerung="Client und Server sind Programme, die miteinander sprechen – der Client fragt an, der Server antwortet."><p>Was ist ein Client?</p><ul><li>ein besonders schneller Rechner im Rechenzentrum</li><li data-richtig>ein Programm (oder Gerät), das bei einem Server Dienste oder Daten anfordert</li><li>ein Kabel zwischen zwei Netzen</li></ul></div>
+</div>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 bis 4, Live-Umfrage">
+<ul>
+<li><strong>Aufgabe 1 und 2</strong> prüfen sich selbst.</li>
+<li><strong>Aufgabe 3:</strong> Anschrift ≈ IP-Adresse (Endziel, bleibt die ganze Reise gleich); Postleitzahl ≈ Netzanteil der IP-Adresse, nach dem Router weiterleiten (wird später auf der Seite zu Subnetzen klar); LKW ≈ Netzzugangsschicht: bringt das Paket nur bis zur nächsten Station (MAC-Adresse = „Ladeliste von hier bis zum nächsten Verteilzentrum“). Die Analogie trägt nicht vollständig – wichtig ist die Arbeitsteilung.</li>
+<li><strong>Aufgabe 4:</strong> Betroffen ist nur die Netzzugangsschicht (Medium und Signal). Anwendung, Transport und Vermittlung bleiben unverändert: Browser, Webserver und IP-Adressen funktionieren wie zuvor. Vorteil: Technik einer Schicht lässt sich austauschen und weiterentwickeln, ohne alles neu zu bauen.</li>
+</ul>
+<als-umfrage ids="netz-schichten-quiz" titel="Netzwerke – Schichtenmodell" modus="single"></als-umfrage>
+</lehrkraft>

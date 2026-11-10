@@ -1,0 +1,108 @@
+<!--
+beschreibung: Alle Fachbegriffe des Kapitels Netzwerksysteme auf einen Blick – von ARP bis WWW – mit Selbsttest und Rückblick auf die eigene Einschätzung vom Anfang.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite, Abschluss und Wiederholung. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/zuhause/">Das Netz zu Hause</a>. <strong>Dauer:</strong> eine Stunde, Teile auch als Hausaufgabe oder zur Vorbereitung einer Lernkontrolle.</p>
+<p>Die Liste enthält alle Begriffe der Begriffsfolie der Präsentation (Client, Server, IP öffentlich/privat, MAC, Netzwerk, Subnetz, Internet, Backbone, WWW, LAN, WLAN, HTTP, ARP, Ping, Broadcast, Subnetzmaske, Browser, URL, Domain, DNS, Router, Gateway, Schnittstelle, Switch, Modem, Provider, Host) und einige weitere aus dem Kapitel; zu jedem Begriff ist die Seite verlinkt, auf der er eingeführt wird. Der Selbsttest ist zum eigenständigen Üben gedacht; zur Diagnose in der Klasse eignet sich die Selbsteinschätzung am Seitenende (Vorher-nachher-Vergleich mit dem Einstieg).</p>
+</lehrkraft>
+
+<h2>1. Die Begriffe auf einen Blick</h2>
+
+<table class="verlauf">
+<thead><tr><th>Begriff</th><th>Bedeutung</th></tr></thead>
+<tbody>
+<tr><th>ARP</th><td><em>Address Resolution Protocol</em>: findet im lokalen Netz zu einer IP-Adresse die MAC-Adresse – mit einer Anfrage an alle (Broadcast). → <a href="/informatik/netzwerke/arp/">ARP und Switch</a></td></tr>
+<tr><th>Backbone</th><td>die leistungsstärksten Leitungen und Knoten des Internets zwischen Providern, Ländern und Kontinenten, das „Rückgrat“. → <a href="/informatik/netzwerke/internet/">Internet</a></td></tr>
+<tr><th>Broadcast</th><td>Nachricht an alle Geräte im selben lokalen Netz (MAC FF:FF:FF:FF:FF:FF bzw. höchste IP-Adresse des Subnetzes). → <a href="/informatik/netzwerke/arp/">ARP und Switch</a></td></tr>
+<tr><th>Browser</th><td>Client-Programm, das Dateien aus dem WWW über ihre URL anfordert und als Webseite darstellt. → <a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a></td></tr>
+<tr><th>Client</th><td>Programm (oder Gerät), das Dienste oder Daten bei einem Server anfordert, z. B. ein Browser. → <a href="/informatik/netzwerke/schichtenmodell/">Schichtenmodell</a></td></tr>
+<tr><th>DHCP</th><td><em>Dynamic Host Configuration Protocol</em>: vergibt Geräten automatisch IP-Adresse, Netzmaske, Gateway und DNS-Server. → <a href="/informatik/netzwerke/lan-simulieren/">LAN simulieren</a></td></tr>
+<tr><th>DNS</th><td><em>Domain Name System</em>: übersetzt Domainnamen in IP-Adressen, wie ein Telefonbuch; ein DNS-Server beantwortet solche Anfragen. → <a href="/informatik/netzwerke/dns/">DNS</a></td></tr>
+<tr><th>Domain</th><td>der Name eines Servers im Internet, z. B. <code>online-schulbuch.de</code>; endet mit der Top-Level-Domain (<code>.de</code>). → <a href="/informatik/netzwerke/dns/">DNS</a></td></tr>
+<tr><th>Gateway</th><td>(Standardgateway) der Router im eigenen Netz, an den ein Gerät alle Pakete für fremde Netze schickt – die Tür nach draußen. → <a href="/informatik/netzwerke/router/">Router und Gateway</a></td></tr>
+<tr><th>Host</th><td>ein Rechner, auf dem Server-Programme laufen, bzw. ein Anbieter, der Speicherplatz für Webseiten, E-Mail und Datenbanken bereitstellt (Webhosting). → <a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a></td></tr>
+<tr><th>HTTP / HTTPS</th><td><em>Hypertext Transfer Protocol</em>: Protokoll der Anwendungsschicht, mit dem Browser Webseiten vom Webserver abrufen; HTTPS ist die verschlüsselte Form. → <a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a></td></tr>
+<tr><th>Internet</th><td>das weltweite Netz der Netze (<em>interconnected networks</em>): die Infrastruktur, auf der Dienste wie das WWW oder E-Mail laufen. → <a href="/informatik/netzwerke/internet/">Internet</a></td></tr>
+<tr><th>IP-Adresse</th><td>logische Adresse eines Geräts im Netz (IPv4: 32 Bit, z. B. 192.168.0.33); sie sagt, <em>wo</em> ein Gerät ist, und wird für die Weiterleitung über Netze hinweg gebraucht. → <a href="/informatik/netzwerke/adressen/">MAC und IP</a></td></tr>
+<tr><th>IP, öffentlich / privat</th><td>Private Adressen (z. B. 192.168.x.x, 10.x.x.x) gelten nur im lokalen Netz; nach außen tritt das Netz mit einer öffentlichen Adresse des Providers auf (NAT). → <a href="/informatik/netzwerke/zuhause/">Netz zu Hause</a></td></tr>
+<tr><th>LAN</th><td><em>Local Area Network</em>: lokales Netzwerk in einem Haus, einer Schule oder Firma. → <a href="/informatik/netzwerke/internet/">Internet</a></td></tr>
+<tr><th>MAC-Adresse</th><td><em>Media Access Control</em>: physische, vom Hersteller vergebene Adresse einer Netzwerkkarte (48 Bit, hexadezimal); sie sagt, <em>wer</em> ein Gerät ist, und wird im lokalen Netz gebraucht. → <a href="/informatik/netzwerke/adressen/">MAC und IP</a></td></tr>
+<tr><th>Modem</th><td><em>Modulator-Demodulator</em>: wandelt Daten in Signale für die Leitung zum Provider um und zurück. → <a href="/informatik/netzwerke/zuhause/">Netz zu Hause</a></td></tr>
+<tr><th>Netzwerk</th><td>mindestens zwei verbundene Geräte, die Daten austauschen; der Begriff passt vom Heimnetz bis zum ganzen Internet. → <a href="/informatik/netzwerke/internet/">Internet</a></td></tr>
+<tr><th>Ping</th><td>Diagnosewerkzeug: schickt eine Echo-Anfrage an ein Gerät und misst, ob und wie schnell die Antwort kommt. → <a href="/informatik/netzwerke/arp/">ARP und Switch</a></td></tr>
+<tr><th>Protokoll</th><td>Gesamtheit der Vereinbarungen für eine Kommunikation: Format der Nachrichten und zeitlicher Ablauf. → <a href="/informatik/netzwerke/protokolle/">Protokolle</a></td></tr>
+<tr><th>Provider</th><td>Internetanbieter: stellt gegen Gebühr den Zugang zum Internet bereit (Leitung, öffentliche IP, oft Router und DNS-Server). → <a href="/informatik/netzwerke/zuhause/">Netz zu Hause</a></td></tr>
+<tr><th>Router</th><td>Gerät mit mehreren Schnittstellen, das Pakete anhand der Ziel-IP und seiner Routingtabelle von einem Netz ins nächste weiterleitet. → <a href="/informatik/netzwerke/router/">Router und Gateway</a></td></tr>
+<tr><th>Schichtenmodell</th><td>Aufteilung der Kommunikation in übereinanderliegende Aufgabenbereiche (TCP/IP: Anwendung, Transport, Vermittlung, Netzzugang); jede Schicht verpackt die Daten in einen eigenen „Umschlag“. → <a href="/informatik/netzwerke/schichtenmodell/">Schichtenmodell</a></td></tr>
+<tr><th>Schnittstelle</th><td>Netzwerkanschluss (Netzwerkkarte) eines Geräts mit eigener MAC- und IP-Adresse; Router haben mehrere. → <a href="/informatik/netzwerke/router/">Router und Gateway</a></td></tr>
+<tr><th>Server</th><td>Programm (oder Rechner), das ständig auf Anfragen wartet und Dienste oder Daten bereitstellt, z. B. ein Webserver oder DNS-Server. → <a href="/informatik/netzwerke/schichtenmodell/">Schichtenmodell</a></td></tr>
+<tr><th>Subnetz</th><td>Gruppe von IP-Adressen mit gleichem Netzteil; Geräte darin können sich direkt Pakete schicken. → <a href="/informatik/netzwerke/subnetze/">Subnetze</a></td></tr>
+<tr><th>Subnetzmaske</th><td>(Netzmaske) Schablone aus 32 Bit (erst Einsen, dann Nullen), die angibt, welcher Teil der IP-Adresse das Netz bezeichnet, z. B. 255.255.255.0 = /24. → <a href="/informatik/netzwerke/subnetze/">Subnetze</a></td></tr>
+<tr><th>Switch</th><td>Verteiler im lokalen Netz, der Rahmen anhand der Ziel-MAC nur an den richtigen Anschluss weitergibt und lernt, wer wo angeschlossen ist. → <a href="/informatik/netzwerke/arp/">ARP und Switch</a></td></tr>
+<tr><th>URL</th><td><em>Uniform Resource Locator</em>: vollständige Adresse einer Ressource im WWW aus Protokoll, Domain und Pfad. → <a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a></td></tr>
+<tr><th>WLAN</th><td><em>Wireless LAN</em>: lokales Netz, in dem die Geräte per Funk verbunden sind. → <a href="/informatik/netzwerke/internet/">Internet</a></td></tr>
+<tr><th>WWW</th><td>World Wide Web: ein Dienst im Internet, ein System aus verlinkten Dokumenten (Webseiten), die man mit einem Browser abruft; 1989 von Tim Berners-Lee am CERN erfunden. → <a href="/informatik/netzwerke/internet/">Internet</a></td></tr>
+</tbody>
+</table>
+
+<h2>2. Begriffe ordnen</h2>
+
+<aside class="box aufgabe">
+<ol>
+<li>Zu welcher Schicht des TCP/IP-Modells gehören die Begriffe am ehesten?
+<div class="sortieren" data-kategorien="Anwendung|Vermittlung|Netzzugang">
+<p>Ziehe oder tippe jeden Begriff in die passende Schicht.</p>
+<ul>
+<li data-gehoert="Anwendung" data-erklaerung="HTTP regelt das Gespräch zwischen Browser und Webserver.">HTTP</li>
+<li data-gehoert="Anwendung" data-erklaerung="DNS ist ein Dienst, den Programme nutzen – ein Gespräch zwischen Client und DNS-Server.">DNS</li>
+<li data-gehoert="Vermittlung" data-erklaerung="IP-Adressen gehören zur Vermittlungsschicht.">IP-Adresse</li>
+<li data-gehoert="Vermittlung" data-erklaerung="Router leiten anhand der Ziel-IP weiter.">Router</li>
+<li data-gehoert="Vermittlung" data-erklaerung="Das Gateway ist der Router für fremde Netze.">Gateway</li>
+<li data-gehoert="Netzzugang" data-erklaerung="Die MAC-Adresse gehört zur Netzwerkkarte.">MAC-Adresse</li>
+<li data-gehoert="Netzzugang" data-erklaerung="Der Switch entscheidet nach MAC-Adressen.">Switch</li>
+<li data-gehoert="Netzzugang" data-erklaerung="ARP sucht die MAC-Adresse im lokalen Netz – das Bindeglied nach unten.">ARP</li>
+<li data-gehoert="Anwendung" data-erklaerung="Der Browser ist ein Programm.">Browser</li>
+<li data-gehoert="Netzzugang" data-erklaerung="Das Modem wandelt Bits in Signale für die Leitung.">Modem</li>
+</ul>
+</div></li>
+<li>Zeichne ein <strong>Begriffsnetz</strong> mit mindestens zwölf Begriffen aus der Liste. Verbinde Begriffe, die zusammengehören, mit Pfeilen und beschrifte die Pfeile (z. B. „DNS – übersetzt Domain in → IP-Adresse“). Beschreibe hier drei deiner Verbindungen.
+<textarea class="notiz" data-notiz="netz-begriffe-2" rows="4" aria-label="Aufgabe 2: Begriffsnetz"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Hinweise zu Aufgabe 1 und 2">
+<p><strong>Aufgabe 1</strong> prüft sich selbst. ARP ist ein Grenzfall (Bindeglied zwischen Vermittlung und Netzzugang); die Einordnung in den Netzzugang entspricht der Darstellung im Kapitel. <strong>Aufgabe 2</strong> eignet sich auch als Gruppenarbeit auf Plakat; gut gelungene Begriffsnetze verbinden die Schichten (z. B. Browser → HTTP-Anfrage → DNS → IP → Gateway → ARP → MAC → Switch).</p>
+</lehrkraft>
+
+<h2>3. Selbsttest</h2>
+
+<div class="quiz" data-anweisung="Teste dein Wissen. Wähle jeweils die richtige Antwort.">
+<div class="frage" data-erklaerung="Die IP-Adresse ist logisch (wo), die MAC-Adresse physisch (wer)."><p>Welche Aussage stimmt?</p><ul><li>Die MAC-Adresse ändert sich mit dem Netz, die IP-Adresse nie.</li><li data-richtig>Die IP-Adresse sagt, wo ein Gerät ist; die MAC-Adresse, welche Netzwerkkarte es ist.</li><li>MAC- und IP-Adresse sind zwei Schreibweisen derselben Adresse.</li></ul></div>
+<div class="frage" data-erklaerung="192.168.5.7 und 192.168.5.200 stimmen in den ersten drei Bytes überein."><p>Liegen 192.168.5.7 und 192.168.5.200 bei der Netzmaske 255.255.255.0 im selben Subnetz?</p><ul><li data-richtig>ja</li><li>nein</li></ul></div>
+<div class="frage" data-erklaerung="/26 = 26 Einsen, 6 Nullen: 2^6 = 64 Adressen, 62 Geräte."><p>Wie viele Geräte passen in ein Subnetz mit dem Suffix /26?</p><ul><li>64</li><li data-richtig>62</li><li>254</li></ul></div>
+<div class="frage" data-erklaerung="Für ein Ziel außerhalb des eigenen Netzes fragt man per ARP nach der MAC des Gateways."><p>Ein Rechner schickt ein Paket an einen Server in einem anderen Netz. Welche Ziel-MAC steht auf dem ersten Ethernet-Rahmen?</p><ul><li>die MAC des Servers</li><li data-richtig>die MAC des Gateways</li><li>FF:FF:FF:FF:FF:FF</li></ul></div>
+<div class="frage" data-erklaerung="Die IP-Adressen bleiben gleich; die MAC-Adressen werden bei jedem Router neu gesetzt."><p>Was ändert sich, wenn ein Paket einen Router passiert?</p><ul><li>die Ziel-IP</li><li data-richtig>die Quell- und Ziel-MAC</li><li>gar nichts</li></ul></div>
+<div class="frage" data-erklaerung="Ohne die IP-Adresse kann der Rechner die Anfrage nicht verschicken – DNS kommt zuerst."><p>Was passiert beim Aufruf von <code>www.beispiel.ch</code> als Erstes im Netz (wenn nichts zwischengespeichert ist)?</p><ul><li>Die HTTP-Anfrage geht an den Webserver.</li><li data-richtig>Eine DNS-Anfrage nach der IP-Adresse von www.beispiel.ch.</li><li>Der Webserver schickt die Seite.</li></ul></div>
+<div class="frage" data-erklaerung="Die Standardroute 0.0.0.0/0 passt auf jede Adresse und gilt, wenn keine genauere Zeile passt."><p>Was bedeutet die Zeile „0.0.0.0 / 0.0.0.0“ in einer Routingtabelle?</p><ul><li>Pakete an 0.0.0.0 werden verworfen.</li><li data-richtig>Standardroute für alle Ziele, für die keine genauere Zeile passt.</li><li>Der Router ist ausgeschaltet.</li></ul></div>
+<div class="frage" data-erklaerung="Der Host stellt Rechner und Speicherplatz für die Website, der Provider den Zugang zum Internet."><p>Lina betreibt eine Website. Bei wem mietet sie den Speicherplatz dafür?</p><ul><li>beim Provider</li><li data-richtig>bei einem Host</li><li>beim DNS-Server</li></ul></div>
+<div class="frage" data-erklaerung="Der Router ersetzt per NAT die privaten Adressen durch seine öffentliche."><p>Warum zeigt eine „Meine IP“-Seite bei allen in der Klasse dieselbe Adresse?</p><ul><li>Weil die Seite nicht richtig funktioniert.</li><li data-richtig>Weil der Router alle privaten Adressen nach außen durch eine öffentliche ersetzt.</li><li>Weil alle Rechner dieselbe MAC-Adresse haben.</li></ul></div>
+<div class="frage" data-erklaerung="Ein Switch arbeitet mit MAC-Adressen im lokalen Netz, ein Router mit IP-Adressen zwischen Netzen."><p>Was unterscheidet einen Switch von einem Router?</p><ul><li data-richtig>Der Switch verbindet Geräte in einem Netz (nach MAC), der Router verbindet Netze (nach IP).</li><li>Der Switch ist nur ein kleinerer Router.</li><li>Es gibt keinen Unterschied.</li></ul></div>
+</div>
+
+<h2>4. Wo stehst du jetzt?</h2>
+
+<aside class="box aufgabe">
+<p>Schätze dich noch einmal ein – mit denselben Aussagen wie am Anfang des Kapitels. Nach dem Verschieben siehst du deine damalige Einschätzung zum Vergleich.</p>
+<div class="position" data-id="netz-pos-1-nachher" data-vergleich="netz-pos-1" data-links="gar nicht" data-rechts="sehr genau"><p>Ich kann erklären, wie eine Nachricht von meinem Handy zum Handy einer Freundin oder eines Freundes kommt.</p></div>
+<div class="position" data-id="netz-pos-2-nachher" data-vergleich="netz-pos-2" data-links="gar nicht" data-rechts="sehr genau"><p>Ich weiß, was beim Aufruf einer Webseite im Hintergrund passiert.</p></div>
+<div class="position" data-id="netz-pos-3-nachher" data-vergleich="netz-pos-3" data-links="stimmt nicht" data-rechts="stimmt genau"><p>Das Internet und das World Wide Web sind dasselbe.</p></div>
+<ol start="3">
+<li>Was war für dich in diesem Kapitel am überraschendsten? Was möchtest du noch genauer wissen?
+<textarea class="notiz" data-notiz="netz-begriffe-3" rows="3" aria-label="Aufgabe 3: Rückblick"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Als Live-Umfrage durchführen">
+<p>Dieselbe Selbsteinschätzung wie auf der Einstiegsseite; die Ergebnisse früherer Durchführungen bleiben in der Umfrage gespeichert, sodass sich Vorher und Nachher in der Klasse vergleichen lassen. Bei der dritten Aussage sollte sich die Verteilung deutlich nach links verschoben haben.</p>
+<als-umfrage ids="netz-pos-1-nachher netz-pos-2-nachher netz-pos-3-nachher" titel="Netzwerke – Selbsteinschätzung (Abschluss)" modus="all"></als-umfrage>
+</lehrkraft>

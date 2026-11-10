@@ -36,8 +36,32 @@
       "titel": "Netzwerksysteme",
       "slug": "netzwerke",
       "icon": "netzwerk",
-      "beschreibung": "Wie Daten ihren Weg durch das Internet finden.",
-      "geplant": true
+      "beschreibung": "Wie Daten ihren Weg durch das Internet finden – vom Leuchtfeuer bis zum Webseitenaufruf, mit Rollenspiel und Netzwerk-Simulation.",
+      "seiten": [
+        { "titel": "Einstieg: Die Leuchtfeuer von Gondor", "kurz": "Einstieg", "slug": "leuchtfeuer", "beschreibung": "Feuer an, Feuer aus: das einfachste Nachrichtensystem der Welt – und was man dafür vereinbaren muss." },
+        { "titel": "Von Leuchtfeuern zum Internet", "kurz": "Geschichte", "slug": "geschichte", "beschreibung": "Eine kurze Geschichte der Nachrichtenübertragung: Fackeln, Telegrafen, ein Kabel durch den Atlantik und das Netz der Netze." },
+        { "titel": "Das Sender-Empfänger-Modell", "kurz": "Sender-Empfänger-Modell", "slug": "sender-empfaenger", "beschreibung": "Sender, Empfänger, Nachricht und Übertragungsmedium: ein Modell für jede Art von Kommunikation." },
+        { "titel": "Kommunikationsprotokolle", "kurz": "Protokolle", "slug": "protokolle", "beschreibung": "Warum Kommunikation nur mit Vereinbarungen klappt – vom Würfelspiel bis zum Internet." },
+        { "titel": "Das Schichtenmodell", "kurz": "Schichtenmodell", "slug": "schichtenmodell", "beschreibung": "Vom Paketdienst zum Internet: Wie Schichten die Arbeit aufteilen und Umschläge in Umschlägen entstehen." },
+        { "titel": "Was ist das Internet?", "kurz": "Internet", "slug": "internet", "beschreibung": "Netz der Netze, LAN und WLAN – und warum das Internet nicht dasselbe ist wie das World Wide Web." },
+        { "titel": "Adressen im Netz: MAC und IP", "kurz": "MAC und IP", "slug": "adressen", "beschreibung": "Wer bist du, und wo bist du? Die zwei Adressen jedes Geräts – und wie du deine eigenen herausfindest." },
+        { "titel": "Rollenspiel I: Ein Netz im Klassenzimmer", "kurz": "Rollenspiel I", "slug": "rollenspiel-lan", "beschreibung": "Ihr spielt ein lokales Netz: Umschläge, MAC- und IP-Adressen – erst mit MAC-Liste, dann mit ARP." },
+        { "titel": "ARP, Broadcast und Switch", "kurz": "ARP und Switch", "slug": "arp", "beschreibung": "Wie ein Rechner die MAC-Adresse zu einer IP-Adresse findet und wie ein Switch lernt, wer wo angeschlossen ist." },
+        { "titel": "Ein LAN simulieren", "kurz": "LAN simulieren", "slug": "lan-simulieren", "beschreibung": "Ein lokales Netz in der Netzwerk-Simulation bauen, anpingen und den Datenaustausch Schicht für Schicht verstehen." },
+        { "titel": "Subnetze und Netzmasken", "kurz": "Subnetze", "slug": "subnetze", "beschreibung": "Die Netzmaske als Schablone: Gehören zwei Adressen zum selben Netz – und wie viele Geräte passen hinein?" },
+        { "titel": "Router, Gateway und Routingtabelle", "kurz": "Router und Gateway", "slug": "router", "beschreibung": "Wie Pakete von einem Netz ins nächste kommen und woher ein Router weiß, wohin." },
+        { "titel": "DNS: Namen statt Nummern", "kurz": "DNS", "slug": "dns", "beschreibung": "Das Telefonbuch des Internets: Domain, URL und Namensauflösung." },
+        { "titel": "Rollenspiel II: Netze verbinden", "kurz": "Rollenspiel II", "slug": "rollenspiel-internet", "beschreibung": "Ihr spielt das Internet im Kleinen: mehrere Netze, Router, ein DNS-Server und Nachrichten per Namen." },
+        { "titel": "Der Weg einer Nachricht Schritt für Schritt", "kurz": "Weg einer Nachricht", "slug": "weg-einer-nachricht", "beschreibung": "Aline schreibt Bob: Was passiert auf jeder Schicht, bei jedem Router und mit jedem Umschlag?" },
+        { "titel": "Netze verbinden in der Simulation", "kurz": "Routing simulieren", "slug": "routing-simulieren", "beschreibung": "Router einbauen, Gateways eintragen, Routingtabellen ergänzen und Fehler suchen." },
+        { "titel": "Was passiert beim Aufruf einer Webseite?", "kurz": "Webseitenaufruf", "slug": "webseitenaufruf", "beschreibung": "Vom Tippen der URL bis zur fertigen Seite: Browser, DNS, HTTP, Server und Host." },
+        { "titel": "Vertiefung: Die Transportschicht", "kurz": "Transportschicht", "slug": "transportschicht", "beschreibung": "Ports, TCP und UDP: wie aus vielen Paketen ein zuverlässiges Gespräch wird (fakultativ)." },
+        { "titel": "Das Netz zu Hause: Router, Modem und Provider", "kurz": "Netz zu Hause", "slug": "zuhause", "beschreibung": "Was in deinem Router steckt, warum alle Geräte zu Hause nach außen dieselbe IP haben und was ein Provider tut." },
+        { "titel": "Vertiefung: Firewall, Proxy und VPN", "kurz": "Firewall, Proxy, VPN", "slug": "sicherheit", "beschreibung": "Pakete filtern, vermitteln und tunneln: drei Begriffe, die dir beim Surfen begegnen (fakultativ)." },
+        { "titel": "Begriffe und Selbsttest", "kurz": "Begriffe", "slug": "begriffe", "beschreibung": "Alle Fachbegriffe des Kapitels auf einen Blick – und ein Test, ob du sie sicher beherrschst." },
+        { "titel": "Projekt: Ein Klassen-Internet mit Modems", "kurz": "Klassen-Internet", "slug": "klassen-internet", "beschreibung": "Jede Gruppe baut ein eigenes Netz, die Modems verbinden alle zu einem Internet – mit Webseiten und DNS (fakultativ)." },
+        { "titel": "Hinweise für Lehrkräfte", "kurz": "Für Lehrkräfte", "slug": "lehrkraefte", "beschreibung": "Konzeption, Bausteine, Planungsmodelle, Rollenspiel-Organisation und Hinweise zur Konsole.", "lehrkraft": true }
+      ]
     },
     {
       "titel": "Kryptologie",
@@ -167,6 +191,21 @@
           "beta": true,
           "beschreibung": "Rechner, Switches und Router verkabeln, IP-Adressen vergeben und beobachten, wie Daten Schicht für Schicht durchs Netz laufen – mit Befehlszeile, Webserver, DNS und DHCP.",
           "icon": "netzwerk"
+        },
+        {
+          "titel": "Rollenspiel: Nachrichten im Netzwerk",
+          "kurz": "Netzwerk-Rollenspiel",
+          "slug": "netzwerk-rollenspiel",
+          "thema": "netzwerke",
+          "beschreibung": "Rollen und Datenblätter für das Netzwerk-Rollenspiel verteilen – per Code, QR-Code oder als Druckvorlage.",
+          "icon": "spiel"
+        },
+        {
+          "titel": "Subnetze üben",
+          "slug": "subnetze",
+          "thema": "netzwerke",
+          "beschreibung": "Gleiches Subnetz? Netz- und Broadcast-Adresse, Anzahl der Geräte, Netzmaske und Suffix – mit Binärdarstellung.",
+          "icon": "binaer"
         },
         {
           "titel": "KryptoGAME",

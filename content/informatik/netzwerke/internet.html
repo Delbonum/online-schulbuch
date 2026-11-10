@@ -1,0 +1,104 @@
+<!--
+beschreibung: Was ist das Internet? Netz der Netze, LAN, WLAN und Backbone – und warum das Internet nicht dasselbe ist wie das World Wide Web.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/schichtenmodell/">Das Schichtenmodell</a>; die Seite funktioniert auch schon direkt nach dem Einstieg. <strong>Dauer:</strong> eine Stunde.</p>
+<p><strong>Video:</strong> In der Präsentation zur Reihe wird an dieser Stelle ein Erklärvideo zur Frage „Was ist das Internet?“ gezeigt (<a href="https://www.youtube.com/watch?v=EKm6pJSI-aQ" target="_blank" rel="noopener">auf YouTube</a>). Vor dem Einsatz Inhalt und Länge prüfen. Danach Abschnitt 2 als Klärung der Fehlvorstellung „Internet = WWW“ (siehe Selbsteinschätzung auf der Einstiegsseite).</p>
+</lehrkraft>
+
+<h2>1. Ein Netz aus Netzen</h2>
+
+<p>Ein <strong>Netzwerk</strong> entsteht, sobald mindestens zwei Geräte miteinander verbunden sind und Daten austauschen können. Bei dir zu Hause sind wahrscheinlich Handys, Laptops, ein Fernseher und vielleicht ein Drucker über den Router miteinander verbunden. So ein Netz in einem Haus, einer Schule oder einer Firma heißt <strong>LAN</strong> – <em>Local Area Network</em>, also <strong>lokales Netzwerk</strong>. Sind die Geräte per Funk verbunden, spricht man von einem <strong>WLAN</strong> – <em>Wireless LAN</em>.</p>
+
+<p>Das <strong>Internet</strong> ist nun nichts anderes als ein riesiger Zusammenschluss solcher Netze: ein <strong>Netz der Netze</strong>. Der Name kommt von <em>interconnected networks</em>, „miteinander verbundene Netze“. Die vielen lokalen Netze hängen an den Netzen der <strong>Provider</strong> (Internetanbieter), diese wiederum an überregionalen und internationalen Netzen. Die leistungsstärksten Leitungen und Knotenpunkte, über die riesige Datenmengen zwischen Ländern und Kontinenten fließen, nennt man das <strong>Backbone</strong> – das „Rückgrat“ des Internets.</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 300" role="img" aria-labelledby="netz-ndn-titel">
+<title id="netz-ndn-titel">Das Internet als Netz der Netze: In der Mitte das Backbone mit mehreren verbundenen Knoten. Daran hängen die Netze zweier Provider, und an diesen mehrere lokale Netze: ein Heimnetz mit WLAN, ein Schulnetz und ein Firmennetz mit Servern.</title>
+<ellipse class="flaeche" cx="370" cy="150" rx="150" ry="70"/>
+<text class="titel" x="370" y="128" text-anchor="middle">Backbone</text>
+<g class="linie"><line x1="300" y1="150" x2="360" y2="175"/><line x1="360" y1="175" x2="440" y2="150"/><line x1="300" y1="150" x2="380" y2="140"/><line x1="380" y1="140" x2="440" y2="150"/><line x1="360" y1="175" x2="380" y2="140"/></g>
+<circle class="rahmen" cx="300" cy="150" r="9"/><circle class="rahmen" cx="360" cy="175" r="9"/><circle class="rahmen" cx="440" cy="150" r="9"/><circle class="rahmen" cx="380" cy="140" r="9"/>
+<ellipse class="rahmen" cx="130" cy="150" rx="78" ry="42"/><text x="130" y="146" text-anchor="middle">Provider A</text><text x="130" y="164" text-anchor="middle" class="klein">regionales Netz</text>
+<ellipse class="rahmen" cx="610" cy="150" rx="78" ry="42"/><text x="610" y="146" text-anchor="middle">Provider B</text><text x="610" y="164" text-anchor="middle" class="klein">regionales Netz</text>
+<line class="linie" x1="208" y1="150" x2="291" y2="150"/><line class="linie" x1="449" y1="150" x2="532" y2="150"/>
+<rect class="grau" x="20" y="22" width="130" height="46" rx="8"/><text x="85" y="42" text-anchor="middle">Heimnetz</text><text x="85" y="59" text-anchor="middle" class="klein">LAN mit WLAN</text>
+<rect class="grau" x="40" y="236" width="130" height="46" rx="8"/><text x="105" y="256" text-anchor="middle">Schulnetz</text><text x="105" y="273" text-anchor="middle" class="klein">LAN</text>
+<rect class="grau" x="590" y="22" width="130" height="46" rx="8"/><text x="655" y="42" text-anchor="middle">Firmennetz</text><text x="655" y="59" text-anchor="middle" class="klein">LAN mit Servern</text>
+<rect class="grau" x="570" y="236" width="150" height="46" rx="8"/><text x="645" y="256" text-anchor="middle">Rechenzentrum</text><text x="645" y="273" text-anchor="middle" class="klein">Webserver</text>
+<line class="linie" x1="85" y1="68" x2="110" y2="110"/><line class="linie" x1="105" y1="236" x2="118" y2="191"/><line class="linie" x1="655" y1="68" x2="630" y2="110"/><line class="linie" x1="645" y1="236" x2="624" y2="191"/>
+</svg>
+<figcaption>Das Internet als Netz der Netze (stark vereinfacht). In Wirklichkeit gibt es zwischen zwei Punkten fast immer mehrere Wege.</figcaption>
+</figure>
+
+<p>Das Internet gehört <strong>niemandem allein</strong>. Die lokalen Netze gehören Privatleuten, Schulen und Firmen, die regionalen und internationalen Leitungen vor allem Telekommunikationsunternehmen. Dass trotzdem alles zusammenarbeitet, liegt an den gemeinsamen <strong>Protokollen</strong>, an die sich alle halten. Und weil es zwischen zwei Orten meist viele mögliche Wege gibt, ist das Internet sehr robust: Fällt eine Leitung aus, nehmen die Daten einfach einen anderen Weg.</p>
+
+<aside class="box info" data-titel="Ein bisschen Geschichte">
+<p>Die Anfänge liegen im Jahr <strong>1969</strong>: Das US-Verteidigungsministerium förderte das ARPANET, das zunächst Rechner an Universitäten und Forschungseinrichtungen verband. Seit 1983 sprechen die Rechner die Protokolle TCP und IP. Aus dem Forschungsnetz wurde nach und nach das weltweite Internet.</p>
+</aside>
+
+<h2>2. Internet ≠ World Wide Web</h2>
+
+<p>Im Alltag sagen viele „Internet“, wenn sie Webseiten meinen. Das ist aber nicht dasselbe:</p>
+
+<ul>
+<li>Das <strong>Internet</strong> ist das weltweite, physische Netz aus Computern, Kabeln, Routern und Servern. Es ist die <strong>Infrastruktur</strong>, auf der viele verschiedene <strong>Dienste</strong> laufen.</li>
+<li>Das <strong>World Wide Web</strong> (WWW, kurz „Web“) ist <strong>einer</strong> dieser Dienste: ein riesiges System aus elektronischen Dokumenten – den Webseiten –, die über Links miteinander verknüpft sind und mit einem <strong>Browser</strong> über das Internet abgerufen werden. Erfunden hat es 1989 der britische Physiker <strong>Tim Berners-Lee</strong> am europäischen Kernforschungszentrum CERN bei Genf.</li>
+</ul>
+
+<aside class="box merke" data-titel="Merke: Straßen und Lieferdienst">
+<p>Das Internet ist wie das <strong>Straßennetz</strong>. Das World Wide Web ist wie ein <strong>Lieferdienst</strong>, der diese Straßen benutzt, um dir Webseiten nach Hause zu bringen. Andere Dienste – E-Mail, Messenger, Online-Spiele, Videotelefonie – benutzen dieselben Straßen, sind aber andere „Lieferdienste“.</p>
+</aside>
+
+<aside class="box aufgabe">
+<ol>
+<li>Ordne zu: Nutzt du dabei das World Wide Web – oder „nur“ das Internet mit einem anderen Dienst?
+<div class="sortieren" data-kategorien="World Wide Web|anderer Internetdienst">
+<p>Ziehe oder tippe jede Tätigkeit in die passende Gruppe.</p>
+<ul>
+<li data-gehoert="World Wide Web" data-erklaerung="Ein Artikel ist eine Webseite, die du im Browser aufrufst.">einen Wikipedia-Artikel im Browser lesen</li>
+<li data-gehoert="anderer Internetdienst" data-erklaerung="Messenger nutzen das Internet, aber eigene Protokolle statt Webseiten.">eine Messenger-Nachricht in der App schicken</li>
+<li data-gehoert="anderer Internetdienst" data-erklaerung="Ein Online-Spiel tauscht Spieldaten mit einem Server aus, ohne Webseiten.">ein Online-Spiel auf der Konsole spielen</li>
+<li data-gehoert="World Wide Web" data-erklaerung="Der Onlineshop ist eine Webseite.">in einem Onlineshop im Browser bestellen</li>
+<li data-gehoert="anderer Internetdienst" data-erklaerung="Ein E-Mail-Programm benutzt die E-Mail-Protokolle (SMTP, IMAP), nicht das Web.">E-Mails mit einem E-Mail-Programm abrufen</li>
+<li data-gehoert="anderer Internetdienst" data-erklaerung="Videotelefonie überträgt Ton und Bild direkt, nicht als Webseite.">ein Videotelefonat führen</li>
+<li data-gehoert="World Wide Web" data-erklaerung="Eine Suchmaschine im Browser liefert Webseiten.">mit einer Suchmaschine nach Rezepten suchen</li>
+</ul>
+</div></li>
+<li>Erkläre mit eigenen Worten, warum der Satz „Das Internet wurde 1989 erfunden“ falsch ist.
+<textarea class="notiz" data-notiz="netz-internet-2" rows="2" aria-label="Aufgabe 2: Warum der Satz falsch ist"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 und 2">
+<p><strong>Aufgabe 1</strong> prüft sich selbst. Grenzfälle eignen sich zum Gespräch: E-Mails im Browser (Webmail) lesen ist Web, das Versenden zwischen den Mailservern geschieht trotzdem über die E-Mail-Protokolle; viele Apps holen ihre Daten über HTTP, zeigen aber keine Webseiten.</p>
+<p><strong>Aufgabe 2:</strong> 1989 wurde das World Wide Web erfunden, ein Dienst, der das schon bestehende Internet nutzt. Das Internet selbst entstand ab 1969 (ARPANET), mit TCP/IP seit 1983.</p>
+</lehrkraft>
+
+<h2>3. Wie groß ist ein Netz?</h2>
+
+<p>Netze unterscheidet man oft nach ihrer Ausdehnung:</p>
+
+<table class="verlauf">
+<thead><tr><th>Abkürzung</th><th>Name</th><th>Ausdehnung</th><th>Beispiel</th></tr></thead>
+<tbody>
+<tr><th>LAN</th><td>Local Area Network</td><td>ein Raum, ein Haus, ein Gelände</td><td>Heimnetz, Schulnetz</td></tr>
+<tr><th>WLAN</th><td>Wireless LAN</td><td>wie LAN, aber per Funk</td><td>WLAN zu Hause oder im Café</td></tr>
+<tr><th>MAN</th><td>Metropolitan Area Network</td><td>eine Stadt oder Region</td><td>Netz eines regionalen Providers</td></tr>
+<tr><th>WAN</th><td>Wide Area Network</td><td>Länder und Kontinente</td><td>Netze großer Telekommunikationsfirmen, Backbone</td></tr>
+</tbody>
+</table>
+
+<p>Den Begriff <strong>Netzwerk</strong> kann man auf jeder dieser Ebenen verwenden – für das Heimnetz genauso wie für das ganze Internet. Ein lokales Netz, in dem alle Geräte direkt miteinander sprechen können, heißt in der Fachsprache auch <strong>Subnetz</strong>. Was das genau bedeutet, erfährst du später.</p>
+
+<div class="quiz" data-id="netz-internet-quiz" data-anweisung="Wähle die richtige Antwort.">
+<div class="frage" data-erklaerung="Das Internet ist ein Zusammenschluss vieler Netze – interconnected networks."><p>Was ist das Internet?</p><ul><li>ein großer Computer in den USA</li><li data-richtig>ein weltweiter Zusammenschluss vieler Netze</li><li>die Sammlung aller Webseiten</li></ul></div>
+<div class="frage" data-erklaerung="Das WWW ist ein Dienst, der das Internet nutzt – wie ein Lieferdienst die Straßen."><p>Wie hängen Internet und World Wide Web zusammen?</p><ul><li>Es sind zwei Namen für dasselbe.</li><li data-richtig>Das WWW ist ein Dienst, der das Internet nutzt.</li><li>Das Internet ist ein Teil des WWW.</li></ul></div>
+<div class="frage" data-erklaerung="WLAN steht für Wireless LAN: ein lokales Netz per Funk."><p>Was ist ein WLAN?</p><ul><li data-richtig>ein lokales Netz, in dem die Geräte per Funk verbunden sind</li><li>ein weltweites Netz ohne Kabel</li><li>ein anderer Name für das Internet</li></ul></div>
+<div class="frage" data-erklaerung="Das Backbone besteht aus den leistungsstärksten Leitungen und Knoten zwischen Providern, Ländern und Kontinenten."><p>Was ist das Backbone?</p><ul><li>das Kabel zwischen Router und Laptop</li><li data-richtig>die leistungsstärksten Leitungen und Knoten, das „Rückgrat“ des Internets</li><li>der wichtigste Server des WWW</li></ul></div>
+</div>
+
+<lehrkraft titel="Als Live-Umfrage durchführen">
+<p>Zur Sicherung am Stundenende; Frage 2 greift die Selbsteinschätzung vom Einstieg auf.</p>
+<als-umfrage ids="netz-internet-quiz" titel="Netzwerke – Was ist das Internet?" modus="single"></als-umfrage>
+</lehrkraft>

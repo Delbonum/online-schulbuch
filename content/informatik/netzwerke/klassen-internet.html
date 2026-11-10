@@ -1,0 +1,123 @@
+<!--
+beschreibung: Projekt Klassen-Internet: Jede Gruppe baut in der Netzwerk-Simulation ein eigenes Netz mit Webserver, eine Provider-Gruppe verbindet alle über Modems – mit Adressplan, Routing, DNS und eigenen Webseiten.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> <strong>fakultatives Projekt</strong>, Anwendung und Vertiefung am Ende der Reihe. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/routing-simulieren/">Netze verbinden in der Simulation</a> und <a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a>. <strong>Dauer:</strong> zwei bis drei Doppelstunden.</p>
+<p><strong>Voraussetzungen:</strong> Jede Gruppe arbeitet auf einem eigenen Gerät mit Internetzugang (die Modems reichen die Daten über die Schulbuch-API weiter; es werden keine Konten benötigt). Bis zu sieben Gruppen-Netze lassen sich an einen Provider-Router hängen (ein Router hat höchstens acht Anschlüsse); bei mehr Gruppen zwei Provider-Gruppen einsetzen und deren Router ebenfalls per Modem verbinden (Abschnitt 5). Das Beispiel „Provider-Netz“ ist für vier Gruppen vorbereitet.</p>
+<p><strong>Rollen:</strong> eine Provider-Gruppe (gern die stärkste oder eine, die das Rollenspiel als Router erlebt hat), sonst Gruppen-Netze zu zweit oder zu dritt. Die Lehrkraft hält den Adressplan an der Tafel fest. Der Dokumentationsmodus der Simulation eignet sich für eine Abgabe (Netz beschriften, als Bild speichern).</p>
+</lehrkraft>
+
+<p>Bisher hast du Netze immer auf einem einzigen Gerät gebaut. Jetzt baut die ganze Klasse gemeinsam ein Internet: Jede Gruppe betreibt auf ihrem Gerät ein eigenes Netz mit einem Webserver. Eine Gruppe spielt den <strong>Provider</strong>: Sie betreibt den zentralen Router, den DNS-Server und ein Portal. Verbunden wird alles über <strong>Modems</strong> – wie echte Heimnetze über die Leitung des Providers.</p>
+
+<h2>1. Der Adressplan</h2>
+
+<p>Bevor jemand ein Kabel zieht, braucht es einen Plan – sonst vergeben zwei Gruppen dieselben Adressen. Für Gruppe <em>g</em> gilt:</p>
+
+<table class="verlauf">
+<thead><tr><th></th><th>Gruppen-Netz <em>g</em></th><th>Provider</th></tr></thead>
+<tbody>
+<tr><th>eigenes LAN</th><td>192.168.<em>g</em>.0 /24, Router 192.168.<em>g</em>.1, Webserver 192.168.<em>g</em>.80</td><td>10.0.0.0 /24, Router 10.0.0.1, DNS-Server 10.0.0.53, Portal 10.0.0.80</td></tr>
+<tr><th>Leitung (Transfernetz)</th><td>Router-Anschluss am Modem: 100.64.<em>g</em>.2</td><td>Router-Anschluss am Modem <em>g</em>: 100.64.<em>g</em>.1</td></tr>
+<tr><th>Routing</th><td>Standardroute 0.0.0.0 / 0.0.0.0 → 100.64.<em>g</em>.1</td><td>je Gruppe: 192.168.<em>g</em>.0 / 255.255.255.0 → 100.64.<em>g</em>.2</td></tr>
+<tr><th>Rechner</th><td>Gateway 192.168.<em>g</em>.1, DNS-Server 10.0.0.53</td><td>Gateway 10.0.0.1, DNS-Server 10.0.0.53</td></tr>
+<tr><th>Name der Website</th><td>www.gruppe<em>g</em>.test</td><td>portal.provider.test</td></tr>
+</tbody>
+</table>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 260" role="img" aria-labelledby="netz-ki-titel">
+<title id="netz-ki-titel">Das Klassen-Internet: In der Mitte das Provider-Netz 10.0.0.x mit Router, DNS-Server und Portal. Vom Provider-Router führen Leitungen über Modems zu vier Gruppen-Netzen 192.168.1.x bis 192.168.4.x, jede Leitung ist ein eigenes Transfernetz 100.64.g.x. Jedes Gruppen-Netz läuft auf einem anderen Gerät.</title>
+<ellipse class="flaeche" cx="370" cy="130" rx="130" ry="62"/><text class="titel" x="370" y="118" text-anchor="middle">Provider 10.0.0.x</text><text x="370" y="138" text-anchor="middle" class="klein">Router, DNS-Server, Portal</text><text x="370" y="156" text-anchor="middle" class="klein">(eigenes Gerät)</text>
+<g>
+<rect class="rahmen" x="10" y="20" width="150" height="56" rx="8"/><text x="85" y="44" text-anchor="middle">Gruppe 1</text><text x="85" y="62" text-anchor="middle" class="klein">192.168.1.x</text>
+<rect class="rahmen" x="580" y="20" width="150" height="56" rx="8"/><text x="655" y="44" text-anchor="middle">Gruppe 2</text><text x="655" y="62" text-anchor="middle" class="klein">192.168.2.x</text>
+<rect class="rahmen" x="10" y="190" width="150" height="56" rx="8"/><text x="85" y="214" text-anchor="middle">Gruppe 3</text><text x="85" y="232" text-anchor="middle" class="klein">192.168.3.x</text>
+<rect class="rahmen" x="580" y="190" width="150" height="56" rx="8"/><text x="655" y="214" text-anchor="middle">Gruppe 4</text><text x="655" y="232" text-anchor="middle" class="klein">192.168.4.x</text>
+</g>
+<g class="gestrichelt"><line x1="160" y1="56" x2="262" y2="104"/><line x1="580" y1="56" x2="478" y2="104"/><line x1="160" y1="210" x2="262" y2="160"/><line x1="580" y1="210" x2="478" y2="160"/></g>
+<text x="200" y="64" class="klein">100.64.1.x</text><text x="490" y="64" class="klein">100.64.2.x</text><text x="196" y="208" class="klein">100.64.3.x</text><text x="486" y="208" class="klein">100.64.4.x</text>
+<text x="370" y="250" text-anchor="middle" class="klein">gestrichelt: Modem-Verbindungen zwischen verschiedenen Geräten</text>
+</svg>
+<figcaption>Das Klassen-Internet mit vier Gruppen und einem Provider.</figcaption>
+</figure>
+
+<aside class="box aufgabe">
+<ol>
+<li>Tragt den Adressplan für eure Gruppe ein. Welche Gruppennummer habt ihr?
+<table class="verlauf ausfuell">
+<thead><tr><th>Gerät</th><th>IP-Adresse</th><th>Netzmaske</th><th>Gateway</th></tr></thead>
+<tbody>
+<tr><th>Router, Anschluss LAN</th><td><textarea class="notiz" data-notiz="netz-ki-1-1-1" rows="1" aria-label="Aufgabe 1: Router LAN – IP"></textarea></td><td><textarea class="notiz" data-notiz="netz-ki-1-1-2" rows="1" aria-label="Aufgabe 1: Router LAN – Netzmaske"></textarea></td><td>–</td></tr>
+<tr><th>Router, Anschluss Modem</th><td><textarea class="notiz" data-notiz="netz-ki-1-2-1" rows="1" aria-label="Aufgabe 1: Router Modem – IP"></textarea></td><td><textarea class="notiz" data-notiz="netz-ki-1-2-2" rows="1" aria-label="Aufgabe 1: Router Modem – Netzmaske"></textarea></td><td>–</td></tr>
+<tr><th>Webserver</th><td><textarea class="notiz" data-notiz="netz-ki-1-3-1" rows="1" aria-label="Aufgabe 1: Webserver – IP"></textarea></td><td><textarea class="notiz" data-notiz="netz-ki-1-3-2" rows="1" aria-label="Aufgabe 1: Webserver – Netzmaske"></textarea></td><td><textarea class="notiz" data-notiz="netz-ki-1-3-3" rows="1" aria-label="Aufgabe 1: Webserver – Gateway"></textarea></td></tr>
+<tr><th>Client</th><td><textarea class="notiz" data-notiz="netz-ki-1-4-1" rows="1" aria-label="Aufgabe 1: Client – IP"></textarea></td><td><textarea class="notiz" data-notiz="netz-ki-1-4-2" rows="1" aria-label="Aufgabe 1: Client – Netzmaske"></textarea></td><td><textarea class="notiz" data-notiz="netz-ki-1-4-3" rows="1" aria-label="Aufgabe 1: Client – Gateway"></textarea></td></tr>
+</tbody>
+</table></li>
+</ol>
+</aside>
+
+<h2>2. Die Netze bauen</h2>
+
+<aside class="box aufgabe">
+<ol start="2">
+<li><strong>Gruppen-Netze:</strong> Öffnet das Beispiel <a href="/informatik/werkzeuge/netzwerk-simulation/?beispiel=heimnetz" target="_blank" rel="noopener">Heimnetz mit Router und Modem</a>. Es ist für Gruppe 1 vorbereitet. Ersetzt überall die 1 durch eure Gruppennummer (auch in der Standardroute des Routers). Gestaltet mit dem Text-Editor die Startseite eures Webservers (<code>/webserver/index.html</code>). Testet innerhalb eures Netzes: Klappt ein Ping vom Notebook zum Webserver?</li>
+<li><strong>Provider:</strong> Öffnet das Beispiel <a href="/informatik/werkzeuge/netzwerk-simulation/?beispiel=provider" target="_blank" rel="noopener">Provider-Netz für das Klassen-Internet</a>. Prüft die Weiterleitungstabelle des Provider-Routers und die Einträge im DNS-Server. Passt beides an die tatsächliche Zahl der Gruppen an.</li>
+</ol>
+</aside>
+
+<h2>3. Verbinden</h2>
+
+<aside class="box aufgabe">
+<ol start="4">
+<li>Alle wechseln in die Simulation. Die <strong>Provider-Gruppe</strong> klickt doppelt auf „Modem Gruppe 1“ und bietet eine Verbindung an: Die Simulation zeigt einen <strong>Code</strong>. Gruppe 1 klickt doppelt auf ihr Modem und wählt sich mit diesem Code ein. Genauso für alle anderen Gruppen.</li>
+<li>Testet die Verbindung Schritt für Schritt – und notiert, was klappt:
+<ul class="abhaken" data-id="netz-ki-test">
+<li><code>ping 100.64.g.1</code> (der Provider-Router am anderen Ende der Leitung)</li>
+<li><code>ping 10.0.0.53</code> (der DNS-Server beim Provider)</li>
+<li><code>ping portal.provider.test</code> (per Namen)</li>
+<li><code>ping www.gruppeX.test</code> (der Webserver einer anderen Gruppe)</li>
+<li>Webseite einer anderen Gruppe im Webbrowser aufrufen</li>
+<li><code>traceroute www.gruppeX.test</code> – über welche Router geht es?</li>
+</ul></li>
+<li>Wenn etwas nicht klappt: Geht vom ersten Punkt der Liste aus und sucht die Stelle, an der es hakt. Notiert Fehler und Lösungen.
+<textarea class="notiz" data-notiz="netz-ki-6" rows="3" aria-label="Aufgabe 6: Fehler und Lösungen"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Hinweise zur Fehlersuche (Aufgabe 4 bis 6)">
+<ul>
+<li>Die schrittweise Testliste entspricht dem professionellen Vorgehen „von innen nach außen“: erst das eigene Netz, dann die Leitung, dann der Provider, dann Namen, dann fremde Netze.</li>
+<li>Häufige Fehler: Gruppennummer nicht überall ersetzt (Gateway der Rechner, Standardroute des Routers, Transfernetz); Route beim Provider fehlt (Pings kommen hin, aber Antworten von anderen Gruppen nicht zurück); DNS-Server nicht gestartet oder Eintrag fehlt; Modem-Verbindung abgebrochen, weil eine Gruppe in den Entwurf gewechselt hat (dann neu verbinden).</li>
+<li>Die Modem-Verbindung überträgt die Rahmen mit kleiner Verzögerung über das Internet; ein Ping braucht deshalb länger als im eigenen Netz – ein schöner Anlass, über Laufzeiten zu sprechen.</li>
+</ul>
+</lehrkraft>
+
+<h2>4. Das Internet beobachten</h2>
+
+<aside class="box aufgabe">
+<ol start="7">
+<li>Ruft die Webseite einer anderen Gruppe auf und öffnet den Datenaustausch eures Routers. Welche Adressen stehen in den Paketen, die über das Modem hinausgehen? Welche MAC-Adressen sieht euer Router von der Gegenseite?
+<textarea class="notiz" data-notiz="netz-ki-7" rows="3" aria-label="Aufgabe 7: Datenaustausch am Router"></textarea></li>
+<li><strong>Störfall:</strong> Die Provider-Gruppe legt ein Modem auf. Was merken die anderen Gruppen? Was würde im echten Internet passieren, wenn ein Provider ausfällt?
+<textarea class="notiz" data-notiz="netz-ki-8" rows="2" aria-label="Aufgabe 8: Störfall"></textarea></li>
+<li>Beschriftet euer Netz im Modus <em>Dokumentation</em> (Bereiche für LAN und Leitung, Textfelder mit den Adressen) und speichert es als Bild.</li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 7 und 8">
+<p><strong>Aufgabe 7:</strong> Die IP-Adressen sind die der eigentlichen Kommunikationspartner (z. B. 192.168.1.11 → 192.168.3.80); auf der Leitung stehen außen die MAC-Adressen der beiden Router-Anschlüsse am Transfernetz – der Router „sieht“ den Provider-Router, nicht den fremden Webserver. <strong>Aufgabe 8:</strong> Die betroffene Gruppe ist vom Klassen-Internet getrennt; alle anderen arbeiten weiter. Im echten Internet sind große Netze mehrfach angebunden, sodass Router auf andere Wege ausweichen; ein Heimnetz mit einer einzigen Leitung ist bei einer Störung aber ebenfalls offline.</p>
+</lehrkraft>
+
+<h2>5. Erweiterungen</h2>
+
+<aside class="box aufgabe">
+<ol start="10">
+<li><strong>Zwei Provider:</strong> Bei vielen Gruppen gibt es zwei Provider-Gruppen. Verbindet deren Router über ein weiteres Modem (z. B. Transfernetz 100.127.0.0/24) und ergänzt die Weiterleitungstabellen, sodass alle Gruppen einander erreichen. Wer braucht welche neuen Routen?</li>
+<li><strong>E-Mail:</strong> Richtet bei zwei Gruppen je einen E-Mail-Server für die eigene Domain ein (Vorbild: Beispiel <a href="/informatik/werkzeuge/netzwerk-simulation/?beispiel=email" target="_blank" rel="noopener">E-Mail zwischen zwei Domains</a>) und lasst den Provider passende MX-Einträge im DNS-Server anlegen. Schickt euch E-Mails über das Klassen-Internet.</li>
+<li><strong>Firewall:</strong> Eine Gruppe schützt ihr Netz mit der Firewall ihres Routers so, dass nur ihr Webserver von außen erreichbar ist (siehe <a href="/informatik/netzwerke/sicherheit/">Firewall, Proxy und VPN</a>).</li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 10">
+<p>Provider A braucht Routen zu allen Gruppen-Netzen von Provider B (über die Adresse von Router B im neuen Transfernetz) und umgekehrt; die Gruppen-Router brauchen nichts Neues, weil ihre Standardroute ohnehin zum eigenen Provider zeigt. Außerdem müssen beide DNS-Server die Namen aller Gruppen kennen (oder ein gemeinsamer DNS-Server wird verwendet). Das zeigt im Kleinen, wie Provider im Backbone zusammenarbeiten.</p>
+</lehrkraft>

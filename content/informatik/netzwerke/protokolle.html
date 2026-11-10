@@ -1,0 +1,111 @@
+<!--
+beschreibung: Kommunikationsprotokolle: Warum Sender und Empfänger Vereinbarungen brauchen – mit Würfelspiel, Alltagsbeispielen und einem eigenen Lichtprotokoll.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/sender-empfaenger/">Das Sender-Empfänger-Modell</a> (am besten direkt nach dem Lichtexperiment). <strong>Dauer:</strong> eine Stunde.</p>
+<p><strong>Würfelspiel (Abschnitt 2):</strong> etwa 10 Minuten, braucht einen Würfel und Platz für eine Reihe. Vorher eine Person vor die Tür schicken – sie kommt später ohne Kenntnis der Vereinbarung zurück. Das zeigt: Das Übertragungsprinzip (umdrehen) ist leicht zu durchschauen, die Bedeutung ohne Protokoll aber nicht.</p>
+</lehrkraft>
+
+<h2>1. Ohne Absprache geht es nicht</h2>
+
+<p>Mit einem Ein-Aus-System wie einer Taschenlampe lässt sich jede beliebige Nachricht übertragen – du weißt ja, dass man jeden Buchstaben als Folge von Nullen und Einsen darstellen kann. Das Experiment mit den Lichtsignalen zeigt aber: Damit es klappt, müssen Sender und Empfänger vorher eine ganze Reihe von Dingen festlegen:</p>
+
+<ul>
+<li>Welche <strong>Codierung</strong> wird verwendet? (z. B. Morsecode oder ASCII)</li>
+<li>Wie wird eine Nachricht <strong>angekündigt</strong>, wann beginnt die Übertragung, und woran erkennt man ihr <strong>Ende</strong>?</li>
+<li>Wie lange dauert ein einzelnes Bit? (Man spricht von der <strong>Abtastrate</strong>: Wie oft schaut der Empfänger hin?)</li>
+<li>Was tut der Sender, wenn er versehentlich ein <strong>falsches Zeichen</strong> gesendet hat?</li>
+<li>Was tut der Empfänger, wenn er beim Empfangen und Decodieren <strong>nicht mehr mitkommt</strong>?</li>
+</ul>
+
+<aside class="box merke" data-titel="Merke: Protokoll">
+<p>Ein <strong>(Kommunikations-)Protokoll</strong> ist die Gesamtheit aller Vereinbarungen, die Kommunikationsteilnehmer zur Abwicklung der Kommunikation treffen. Es legt fest,</p>
+<ul>
+<li>in welchem <strong>Format</strong> die Nachrichten aufgebaut sind und</li>
+<li>in welchem <strong>zeitlichen Ablauf</strong> Sender und Empfänger handeln.</li>
+</ul>
+<p>Protokolle regeln die Datenübertragung zwischen Rechnern – sie begegnen dir aber auch im Alltag.</p>
+</aside>
+
+<h2>2. Das Würfelspiel</h2>
+
+<aside class="box aufgabe">
+<ol>
+<li><strong>Spiel für die ganze Klasse:</strong> Eine Person geht kurz vor die Tür. Alle anderen stellen sich in einer Reihe hintereinander auf, alle schauen in dieselbe Richtung nach vorn. Die vorderste Person würfelt so, dass nur sie es sieht. <strong>Vereinbarung:</strong> Bei einer 6 dreht sie sich um. Wer sieht, dass sich die Person vor ihm umgedreht hat, dreht sich ebenfalls um. Spielt einige Runden.</li>
+<li>Jetzt kommt die Person von draußen zurück und schaut ein paar Runden zu. Sie soll herausfinden, was übertragen wird. Was erkennt sie leicht, was nicht?
+<textarea class="notiz" data-notiz="netz-protokoll-2" rows="2" aria-label="Aufgabe 2: Was erkennt die neue Person?"></textarea></li>
+<li>Vergleicht das Würfelspiel mit den Leuchtfeuern von Gondor. Was entspricht sich?
+<textarea class="notiz" data-notiz="netz-protokoll-3" rows="2" aria-label="Aufgabe 3: Vergleich mit den Leuchtfeuern"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 bis 3">
+<ul>
+<li><strong>Aufgabe 2:</strong> Das Übertragungsprinzip (umdrehen, weitergeben) durchschaut man schnell. Was das Umdrehen bedeutet, bleibt ohne Kenntnis des Protokolls ein Rätsel – es könnte eine gerade Zahl, eine 1, „über 4“ … bedeuten. Erst nach vielen Beobachtungen ließe sich das vielleicht erraten. Nebenbei: Wer das Protokoll nicht kennt, kann die Nachricht nicht lesen – das ist eine sehr einfache Form von Geheimhaltung (Bezug zur Kryptologie).</li>
+<li><strong>Aufgabe 3:</strong> Beide übertragen 1 Bit (umgedreht / nicht umgedreht bzw. Feuer an / aus) entlang einer Kette; jede Person ist Empfänger und Sender; die Bedeutung ist vorher vereinbart; es gibt keine Rückmeldung an den Anfang.</li>
+</ul>
+</lehrkraft>
+
+<h2>3. Protokolle im Alltag</h2>
+
+<p>Das Wort „Protokoll“ kennst du vielleicht aus der Politik: Das diplomatische Protokoll legt fest, wer wen wann und wie begrüßt. Aber auch ganz alltägliche Gespräche folgen Regeln, über die wir kaum nachdenken – zum Beispiel ein Telefonat.</p>
+
+<aside class="box aufgabe">
+<ol start="4">
+<li>Bringe den Ablauf eines Telefonats in die übliche Reihenfolge.
+<ol class="reihenfolge">
+<li>Anna wählt die Nummer, bei Ben klingelt es.</li>
+<li>Ben nimmt ab und meldet sich mit seinem Namen.</li>
+<li>Anna grüßt und sagt, wer sie ist.</li>
+<li>Anna nennt ihr Anliegen.</li>
+<li>Ben antwortet; beide sprechen abwechselnd.</li>
+<li>Anna fragt bei einer schlechten Verbindung nach: „Was hast du gesagt?“</li>
+<li>Beide verabschieden sich.</li>
+<li>Beide legen auf.</li>
+</ol></li>
+<li>Im Sprechfunk (z. B. bei Pilotinnen und Piloten) kann immer nur eine Person sprechen. Deshalb endet jeder Funkspruch mit „Over“ oder „Kommen“. Wozu ist das nötig? Finde ein weiteres Alltagsprotokoll und beschreibe es kurz.
+<textarea class="notiz" data-notiz="netz-protokoll-5" rows="3" aria-label="Aufgabe 5: Sprechfunk und eigenes Beispiel"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 4 und 5">
+<p><strong>Aufgabe 4</strong> prüft sich selbst. Besprechen lässt sich: Das Melden mit dem Namen ist eine Art <em>Bestätigung</em> („Verbindung steht, ich bin der Richtige“), das Nachfragen ist <em>Fehlerbehandlung</em>, das Verabschieden ein vereinbartes <em>Ende</em>.</p>
+<p><strong>Aufgabe 5:</strong> „Over“ zeigt das Ende eines Beitrags an, damit nicht beide gleichzeitig senden und sich gegenseitig überlagern (ein Problem, das auch Computernetze lösen müssen). Weitere Beispiele: Melden im Unterricht, Einkauf an der Kasse, Begrüßungsrituale, Briefanschrift (Format!), Funkalphabet, Ampel und Vorfahrtsregeln.</p>
+</lehrkraft>
+
+<h2>4. Protokolle zwischen Computern</h2>
+
+<p>Computer verstehen nur, was ganz genau festgelegt ist. Deshalb gibt es für jede Art von Gespräch zwischen Rechnern ein eigenes, schriftlich festgelegtes Protokoll. Ein sehr einfaches Beispiel ist ein Dienst, der die genaue Uhrzeit liefert:</p>
+
+<pre class="code"><code>Rechner A: Hallo, Uhrzeit-Server!
+Server:    Hallo, Rechner A!
+Rechner A: Wie spät ist es?
+Server:    11:46 Uhr und 17,234673 Sekunden
+Rechner A: Danke, tschüss!
+Server:    Tschüss!</code></pre>
+
+<p>Im Internet gibt es Hunderte solcher Protokolle. Einige wirst du in diesem Kapitel kennenlernen, zum Beispiel <strong>HTTP</strong> (Webseiten abrufen), <strong>DNS</strong> (Namen in Adressen übersetzen), <strong>ARP</strong> (Adressen im lokalen Netz finden) und <strong>IP</strong> (Pakete über viele Netze hinweg zustellen). Ihre Namen enden oft auf „P“ – für <em>Protocol</em>.</p>
+
+<aside class="box aufgabe">
+<ol start="6">
+<li>Entwickelt zu zweit ein <strong>Lichtprotokoll</strong> für die Taschenlampe. Legt alles fest, was ihr beim Experiment vermisst habt.
+<div class="felder">
+<div><label for="netz-protokoll-6a">Codierung (Wie wird ein Buchstabe dargestellt?)</label><textarea class="notiz" id="netz-protokoll-6a" data-notiz="netz-protokoll-6a" rows="2"></textarea></div>
+<div><label for="netz-protokoll-6b">Beginn und Ende einer Nachricht</label><textarea class="notiz" id="netz-protokoll-6b" data-notiz="netz-protokoll-6b" rows="2"></textarea></div>
+<div><label for="netz-protokoll-6c">Dauer eines Bits und Pausen</label><textarea class="notiz" id="netz-protokoll-6c" data-notiz="netz-protokoll-6c" rows="2"></textarea></div>
+<div><label for="netz-protokoll-6d">Was tun bei Fehlern? Wie zeigt der Empfänger, dass er etwas nicht verstanden hat?</label><textarea class="notiz" id="netz-protokoll-6d" data-notiz="netz-protokoll-6d" rows="2"></textarea></div>
+</div></li>
+<li>Tauscht euer Protokoll mit einem anderen Paar aus. Könnt ihr damit dessen Nachrichten empfangen, ohne nachzufragen?</li>
+</ol>
+</aside>
+
+<div class="quiz" data-id="netz-protokoll-quiz" data-anweisung="Wähle die richtige Antwort.">
+<div class="frage" data-erklaerung="Ein Protokoll ist die Gesamtheit aller Vereinbarungen für die Kommunikation – Format und Ablauf."><p>Was ist ein Kommunikationsprotokoll?</p><ul><li>eine Mitschrift eines Gesprächs</li><li data-richtig>die Gesamtheit der Vereinbarungen, nach denen kommuniziert wird</li><li>ein besonders schnelles Kabel</li></ul></div>
+<div class="frage" data-erklaerung="Protokolle legen das Format der Nachrichten und den zeitlichen Ablauf fest."><p>Welche zwei Dinge legt ein Protokoll fest?</p><ul><li>Preis und Geschwindigkeit</li><li data-richtig>Format der Nachrichten und zeitlichen Ablauf</li><li>Sender und Empfänger</li></ul></div>
+<div class="frage" data-erklaerung="Ohne Kenntnis des Protokolls weiß man nicht, was das Umdrehen bedeutet."><p>Warum versteht die zurückkehrende Person das Würfelspiel nicht?</p><ul><li>Weil sie das Umdrehen nicht sieht.</li><li data-richtig>Weil sie die vereinbarte Bedeutung nicht kennt.</li><li>Weil zu viele Personen mitspielen.</li></ul></div>
+</div>
+
+<lehrkraft titel="Hinweise zu Aufgabe 6 und 7, Live-Umfrage">
+<p>Ein gutes Lichtprotokoll enthält z. B.: Buchstabe als 5-Bit-Zahl (A = 00001 …) oder Morsecode; Startsignal (dreimal kurz), Endsignal (Licht 5 s an); 1 Bit = 1 Sekunde, nach jedem Buchstaben 3 Sekunden Pause; Empfänger blinkt zur Bestätigung nach jedem Buchstaben einmal zurück, bei Fehler zweimal (Sender wiederholt den Buchstaben). Beim Tausch zeigt sich, ob das Protokoll vollständig und eindeutig aufgeschrieben ist. Das Quiz lässt sich als Live-Umfrage durchführen:</p>
+<als-umfrage ids="netz-protokoll-quiz" titel="Netzwerke – Protokolle" modus="single"></als-umfrage>
+</lehrkraft>

@@ -1,0 +1,32 @@
+/* Subnetz-Trainer */
+#subnetze section { margin-bottom: 2em; }
+.sn-form, .sn-antwort { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; margin: .6em 0 1em; }
+.sn-form label { display: flex; flex-direction: column; gap: 4px; font-size: .9rem; color: var(--muted); }
+.sn-form input, .sn-antwort input {
+  font: 600 1.1rem ui-monospace, "Cascadia Mono", Consolas, monospace; color: var(--text);
+  padding: 6px 10px; border: 2px solid var(--border); border-radius: 8px; background: #fff; width: min(100%, 230px);
+}
+.sn-einstellungen { border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; margin: 0 0 1em; }
+.sn-einstellungen legend { font-weight: 700; padding: 0 6px; }
+.sn-einstellungen label { display: inline-flex; gap: 6px; align-items: center; margin: 3px 16px 3px 0; }
+.sn-krumm { display: flex !important; margin-top: 8px !important; color: var(--muted); }
+.sn-aufgabe p { font-size: 1.15rem; font-weight: 600; margin: .4em 0; }
+.sn-jn { display: flex; gap: 10px; flex-wrap: wrap; margin: .6em 0 1em; }
+.sn-richtig { color: var(--good); font-weight: 700; }
+.sn-falsch { color: var(--bad); font-weight: 700; }
+.sn-leiste { display: flex; gap: 16px; align-items: center; color: var(--muted); }
+.sn-binaer { border-collapse: collapse; margin: .6em 0 .3em; font-size: .95rem; }
+.sn-binaer th { text-align: left; font-weight: 400; color: var(--muted); padding: 3px 14px 3px 0; white-space: nowrap; }
+.sn-binaer td { padding: 3px 14px 3px 0; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; white-space: nowrap; }
+.sn-binaer .sn-und td, .sn-binaer .sn-und th { border-top: 2px solid var(--text); font-weight: 700; }
+.sn-bits { letter-spacing: .05em; }
+.sn-n { color: var(--fach); font-weight: 700; }
+.sn-h { color: #b05a00; }
+.sn-punkt { color: var(--muted); }
+.sn-legende { font-size: .85rem; color: var(--muted); margin: 0 0 .8em; }
+.sn-werte { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: .6em 0; }
+.sn-werte dt { color: var(--muted); }
+.sn-werte dd { margin: 0; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-weight: 700; }
+@media (max-width: 600px) { .sn-binaer td.sn-bits { font-size: .78rem; } .sn-binaer th { white-space: normal; } }
+.sn-rueckmeldung { overflow-x: auto; }
+.sn-rechner .sn-ergebnis { overflow-x: auto; }

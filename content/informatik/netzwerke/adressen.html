@@ -1,0 +1,145 @@
+<!--
+beschreibung: MAC-Adresse und IP-Adresse: physische und logische Adresse, IPv4 und IPv6, öffentliche und private IP – und wie du mit ipconfig die eigenen Adressen herausfindest.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/schichtenmodell/">Das Schichtenmodell</a>. <strong>Dauer:</strong> ein bis zwei Stunden mit den Konsolen-Experimenten.</p>
+<p><strong>Konsole:</strong> Abschnitt 4 setzt Rechner mit Konsole voraus (Computerraum oder eigene Laptops). Ohne Rechner: die Beispielausgabe gemeinsam deuten und die Befehlszeile der Netzwerk-Simulation nutzen (<code>ipconfig</code> funktioniert dort ebenso). In manchen Schulnetzen sind die Ausgaben ungewöhnlich (mehrere Adapter, VPN, IPv6) – eine kurze Vorab-Probe auf einem Schulrechner lohnt.</p>
+<p><strong>Anschließend:</strong> <a href="/informatik/netzwerke/rollenspiel-lan/">Rollenspiel I</a> – dort werden beide Adressen sofort angewendet.</p>
+</lehrkraft>
+
+<h2>1. Wer bist du – und wo bist du?</h2>
+
+<p>Damit eine Nachricht ankommt, braucht sie eine Adresse. Im Netz hat jedes Gerät sogar <strong>zwei</strong> Adressen, die ganz verschiedene Aufgaben haben:</p>
+
+<table class="verlauf">
+<thead><tr><th></th><th>MAC-Adresse</th><th>IP-Adresse</th></tr></thead>
+<tbody>
+<tr><th>steht für</th><td><em>Media Access Control</em></td><td><em>Internet Protocol</em></td></tr>
+<tr><th>Art</th><td><strong>physische</strong> Adresse: Nummer der Netzwerkkarte</td><td><strong>logische</strong> Adresse: wird dem Gerät im Netz zugewiesen</td></tr>
+<tr><th>beantwortet</th><td><strong>Wer</strong> bist du?</td><td><strong>Wo</strong> bist du?</td></tr>
+<tr><th>Lebensdauer</th><td>vom Hersteller fest „eingebrannt“, weltweit eindeutig</td><td>veränderbar: ein anderes Netz – eine andere IP</td></tr>
+<tr><th>Länge</th><td>48 Bit, geschrieben als 12 Hexadezimalziffern, z. B. <code>A4-34-D9-24-19-E5</code></td><td>32 Bit (IPv4), geschrieben als vier Zahlen, z. B. <code>192.168.0.33</code></td></tr>
+<tr><th>gebraucht</th><td>innerhalb eines lokalen Netzes (Netzzugangsschicht)</td><td>über Netzgrenzen hinweg (Vermittlungsschicht)</td></tr>
+<tr><th>Vergleich</th><td>wie die Nummer deines Personalausweises</td><td>wie deine Postanschrift</td></tr>
+</tbody>
+</table>
+
+<p>Warum reicht nicht eine Adresse? Eine MAC-Adresse verrät nichts darüber, <strong>wo</strong> ein Gerät steht – so wie die Ausweisnummer nichts über deinen Wohnort sagt. Wollte man Pakete weltweit nur mit MAC-Adressen zustellen, müsste jeder Knotenpunkt Milliarden von Nummern kennen. Die IP-Adresse dagegen ist aufgebaut wie eine Anschrift: Ein Teil sagt, in welchem <strong>Netz</strong> das Gerät steht (wie Ort und Straße), der Rest, <strong>welches Gerät</strong> in diesem Netz gemeint ist (wie die Hausnummer). Damit lässt sich der Weg finden.</p>
+
+<aside class="box hinweis" data-titel="„Unveränderlich“?">
+<p>Die MAC-Adresse ist vom Hersteller fest vergeben. Per Software lässt sie sich aber überschreiben – und viele Handys und Laptops tun das inzwischen absichtlich: Sie verwenden in jedem WLAN eine andere, zufällige MAC-Adresse, damit man sie nicht von WLAN zu WLAN verfolgen kann.</p>
+</aside>
+
+<aside class="box aufgabe">
+<ol>
+<li>MAC oder IP? Ordne die Aussagen zu.
+<div class="sortieren" data-kategorien="MAC-Adresse|IP-Adresse">
+<p>Ziehe oder tippe jede Aussage zur passenden Adresse.</p>
+<ul>
+<li data-gehoert="MAC-Adresse" data-erklaerung="Die MAC-Adresse gehört zur Netzwerkkarte.">gehört fest zur Netzwerkkarte</li>
+<li data-gehoert="IP-Adresse" data-erklaerung="In einem anderen Netz bekommt das Gerät eine andere IP-Adresse.">ändert sich, wenn du mit dem Laptop in ein anderes WLAN gehst</li>
+<li data-gehoert="MAC-Adresse" data-erklaerung="MAC-Adressen werden hexadezimal geschrieben.">besteht aus 12 Hexadezimalziffern</li>
+<li data-gehoert="IP-Adresse" data-erklaerung="Ein Teil der IP-Adresse bezeichnet das Netz – daran orientieren sich die Router.">verrät, in welchem Netz sich ein Gerät befindet</li>
+<li data-gehoert="MAC-Adresse" data-erklaerung="Im lokalen Netz werden die Daten an die MAC-Adresse übergeben.">wird gebraucht, um Daten im lokalen Netz zuzustellen</li>
+<li data-gehoert="IP-Adresse" data-erklaerung="Die Vermittlungsschicht arbeitet mit IP-Adressen.">wird von Routern benutzt, um Pakete weiterzuleiten</li>
+<li data-gehoert="IP-Adresse" data-erklaerung="Eine IPv4-Adresse besteht aus vier Zahlen von 0 bis 255.">sieht zum Beispiel so aus: 10.0.0.17</li>
+</ul>
+</div></li>
+</ol>
+</aside>
+
+<h2>2. Die IP-Adresse genauer</h2>
+
+<p>Eine IPv4-Adresse besteht aus <strong>4 Bytes</strong>, also 4 · 8 = <strong>32 Bit</strong>. Damit Menschen sie lesen können, schreibt man jedes Byte als Dezimalzahl von 0 bis 255 und trennt die vier Zahlen durch Punkte:</p>
+
+<pre class="code"><code>        192 .      168 .        0 .       33
+   11000000 . 10101000 . 00000000 . 00100001</code></pre>
+
+<p>Mit 32 Bit gibt es 2<sup>32</sup> ≈ <strong>4,3 Milliarden</strong> verschiedene Adressen. Das klingt viel – ist aber weniger als die Zahl der Menschen auf der Erde, und viele besitzen mehrere Geräte. Im Jahr <strong>2011</strong> wurden die letzten freien Adressblöcke an die Regionen der Welt verteilt. Die Lösung heißt <strong>IPv6</strong>: Eine IPv6-Adresse hat 128 Bit und wird hexadezimal geschrieben, z. B. <code>2001:db8:85a3::8a2e:370:7334</code>. Damit gibt es 2<sup>128</sup> Adressen – genug, um jedem Sandkorn der Erde Milliarden davon zu geben. Ansonsten funktioniert IPv6 im Prinzip gleich. Wir bleiben in diesem Kapitel bei IPv4.</p>
+
+<aside class="box aufgabe">
+<ol start="2">
+<li>Wandle die IP-Adressen in die Binärdarstellung um (8 Bit je Zahl).
+<div class="felder">
+<div><label for="netz-adr-2a">10.0.0.1</label><textarea class="notiz" id="netz-adr-2a" data-notiz="netz-adr-2a" rows="1"></textarea></div>
+<div><label for="netz-adr-2b">172.16.5.200</label><textarea class="notiz" id="netz-adr-2b" data-notiz="netz-adr-2b" rows="1"></textarea></div>
+</div></li>
+<li>Warum kann keine Zahl in einer IPv4-Adresse größer als 255 sein?
+<textarea class="notiz" data-notiz="netz-adr-3" rows="2" aria-label="Aufgabe 3: Warum höchstens 255?"></textarea></li>
+<li>Welche dieser Adressen sind gültige IPv4-Adressen? Begründe bei den ungültigen.<br><code>192.168.1.1</code> · <code>256.10.0.1</code> · <code>10.0.0</code> · <code>0.0.0.0</code> · <code>172.16.300.4</code>
+<textarea class="notiz" data-notiz="netz-adr-4" rows="2" aria-label="Aufgabe 4: gültige Adressen"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 2 bis 4">
+<ul>
+<li><strong>Aufgabe 2:</strong> 10.0.0.1 = 00001010.00000000.00000000.00000001; 172.16.5.200 = 10101100.00010000.00000101.11001000.</li>
+<li><strong>Aufgabe 3:</strong> Jede Zahl steht für ein Byte (8 Bit); die größte 8-Bit-Zahl ist 11111111 = 255.</li>
+<li><strong>Aufgabe 4:</strong> gültig: 192.168.1.1 und 0.0.0.0 (formal gültig, hat aber eine Sonderbedeutung: „unbekannt“ bzw. „alle“); ungültig: 256.10.0.1 (256 &gt; 255), 10.0.0 (nur drei Zahlen), 172.16.300.4 (300 &gt; 255).</li>
+</ul>
+</lehrkraft>
+
+<h2>3. Öffentliche und private IP-Adressen</h2>
+
+<p>Es gibt Adressbereiche, die nur innerhalb lokaler Netze benutzt werden dürfen, die <strong>privaten IP-Adressen</strong>. Die bekanntesten beginnen mit <code>192.168.</code>, <code>10.</code> oder <code>172.16.</code> bis <code>172.31.</code>. Fast jedes Heimnetz verwendet sie – deshalb hat dein Laptop zu Hause vielleicht dieselbe Adresse wie der Laptop deiner Freundin bei ihr zu Hause. Im Internet selbst sind diese Adressen nicht zu sehen. Dort tritt dein ganzes Heimnetz mit einer einzigen <strong>öffentlichen IP-Adresse</strong> auf, die dir dein Internetanbieter zuteilt. Wie das funktioniert, erfährst du auf der Seite <a href="/informatik/netzwerke/zuhause/">Das Netz zu Hause</a>.</p>
+
+<h2>4. Experiment: Deine eigenen Adressen</h2>
+
+<aside class="box aufgabe">
+<ol start="5">
+<li>Öffne die Konsole (Windows: Windows-Taste, <code>cmd</code>, Enter) und gib ein:
+<pre class="code"><code>ipconfig /all</code></pre>
+Auf dem Mac heißt der Befehl <code>ifconfig</code> (im Terminal). Suche in der Ausgabe den Abschnitt deines aktiven Netzwerkadapters (WLAN oder Ethernet) und trage ein:
+<div class="felder">
+<div><label for="netz-adr-5a">IPv4-Adresse</label><textarea class="notiz" id="netz-adr-5a" data-notiz="netz-adr-5a" rows="1"></textarea></div>
+<div><label for="netz-adr-5b">Subnetzmaske</label><textarea class="notiz" id="netz-adr-5b" data-notiz="netz-adr-5b" rows="1"></textarea></div>
+<div><label for="netz-adr-5c">Physische Adresse (MAC)</label><textarea class="notiz" id="netz-adr-5c" data-notiz="netz-adr-5c" rows="1"></textarea></div>
+<div><label for="netz-adr-5d">Standardgateway</label><textarea class="notiz" id="netz-adr-5d" data-notiz="netz-adr-5d" rows="1"></textarea></div>
+</div></li>
+<li>Vergleiche mit deinem Sitznachbarn: Welche Teile der IP-Adresse sind gleich, welche verschieden? Was ist mit der MAC-Adresse?
+<textarea class="notiz" data-notiz="netz-adr-6" rows="2" aria-label="Aufgabe 6: Vergleich mit dem Nachbarn"></textarea></li>
+<li>Öffne im Browser eine Seite, die dir deine IP-Adresse anzeigt (z. B. eine Suchmaschine mit der Suche „meine IP“). Vergleiche mit der IPv4-Adresse aus <code>ipconfig</code>. Was fällt auf? Stelle eine Vermutung an.
+<textarea class="notiz" data-notiz="netz-adr-7" rows="2" aria-label="Aufgabe 7: Vergleich mit meine IP"></textarea></li>
+</ol>
+</aside>
+
+<details class="aufklapp">
+<summary>So sieht die Ausgabe von ipconfig /all ungefähr aus (gekürzt)</summary>
+<pre class="code"><code>Drahtlos-LAN-Adapter WLAN:
+
+   Beschreibung. . . . . . . . . . . : Intel(R) Wi-Fi 6 AX201
+   Physische Adresse . . . . . . . . : A4-34-D9-24-19-E5
+   DHCP aktiviert. . . . . . . . . . : Ja
+   IPv4-Adresse  . . . . . . . . . . : 192.168.178.34(Bevorzugt)
+   Subnetzmaske  . . . . . . . . . . : 255.255.255.0
+   Standardgateway . . . . . . . . . : 192.168.178.1
+   DHCP-Server . . . . . . . . . . . : 192.168.178.1
+   DNS-Server  . . . . . . . . . . . : 192.168.178.1</code></pre>
+<ul>
+<li><strong>Physische Adresse:</strong> die MAC-Adresse der WLAN-Karte.</li>
+<li><strong>IPv4-Adresse:</strong> die (private) IP-Adresse, die der Rechner in diesem Netz hat.</li>
+<li><strong>Subnetzmaske:</strong> gibt an, welcher Teil der IP-Adresse das Netz bezeichnet (Seite <a href="/informatik/netzwerke/subnetze/">Subnetze</a>).</li>
+<li><strong>Standardgateway:</strong> der Router, an den alles geht, was das lokale Netz verlässt (Seite <a href="/informatik/netzwerke/router/">Router und Gateway</a>).</li>
+<li><strong>DHCP aktiviert / DHCP-Server:</strong> Der Rechner hat seine Einstellungen automatisch von einem DHCP-Server bekommen, hier vom Router.</li>
+<li><strong>DNS-Server:</strong> wen der Rechner fragt, wenn er einen Namen wie <code>online-schulbuch.de</code> in eine IP-Adresse übersetzen muss (Seite <a href="/informatik/netzwerke/dns/">DNS</a>).</li>
+</ul>
+</details>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 5 bis 7">
+<ul>
+<li><strong>Aufgabe 6:</strong> Im selben Netz stimmen meist die ersten drei Zahlen überein (bei Netzmaske 255.255.255.0), nur die letzte unterscheidet sich. Die MAC-Adressen sind völlig verschieden – sie haben nichts mit dem Ort zu tun. Hier lässt sich die Frage vorbereiten, woran ein Rechner erkennt, ob ein anderer „im selben Netz“ ist.</li>
+<li><strong>Aufgabe 7:</strong> Die angezeigte Adresse ist eine ganz andere, öffentliche IP – und bei allen in der Klasse dieselbe. Es ist die Adresse, mit der das Schulnetz nach außen auftritt (Router bzw. Provider). Die Ortsangabe solcher Seiten ist oft ungenau, weil sie nur den Standort des Providers kennen. Auflösung auf der Seite <a href="/informatik/netzwerke/zuhause/">Das Netz zu Hause</a>.</li>
+<li>Falls im Schulnetz mehrere Adapter angezeigt werden (Ethernet, WLAN, virtuelle Adapter, VPN): Der aktive Adapter ist der mit Standardgateway.</li>
+</ul>
+</lehrkraft>
+
+<div class="quiz" data-id="netz-adressen-quiz" data-anweisung="Wähle die richtige Antwort.">
+<div class="frage" data-erklaerung="Die IP-Adresse ist logisch und hängt vom Netz ab, die MAC-Adresse gehört zur Netzwerkkarte."><p>Du nimmst deinen Laptop mit zu einer Freundin und verbindest dich mit ihrem WLAN. Was ändert sich?</p><ul><li>die MAC-Adresse</li><li data-richtig>die IP-Adresse</li><li>beide</li></ul></div>
+<div class="frage" data-erklaerung="4 Bytes = 32 Bit."><p>Aus wie vielen Bit besteht eine IPv4-Adresse?</p><ul><li>8</li><li data-richtig>32</li><li>48</li></ul></div>
+<div class="frage" data-erklaerung="Eine MAC-Adresse hat 48 Bit = 12 Hexadezimalziffern."><p>Welche der folgenden ist eine MAC-Adresse?</p><ul><li>192.168.0.1</li><li data-richtig>3C-22-FB-7A-01-9D</li><li>www.schule.de</li></ul></div>
+<div class="frage" data-erklaerung="192.168.x.x ist ein privater Bereich und wird nur in lokalen Netzen verwendet."><p>Was stimmt über die Adresse 192.168.1.20?</p><ul><li>Sie ist weltweit eindeutig.</li><li data-richtig>Sie ist eine private Adresse, die in vielen Heimnetzen vorkommt.</li><li>Sie gehört einem Server in den USA.</li></ul></div>
+</div>
+
+<lehrkraft titel="Als Live-Umfrage durchführen">
+<als-umfrage ids="netz-adressen-quiz" titel="Netzwerke – MAC und IP" modus="single"></als-umfrage>
+</lehrkraft>

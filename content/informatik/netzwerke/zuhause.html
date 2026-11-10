@@ -1,0 +1,101 @@
+<!--
+beschreibung: Das Netz zu Hause: Was im Heimrouter steckt (Modem, Router, Switch, WLAN, DHCP), was ein Provider tut und warum alle Geräte nach außen dieselbe öffentliche IP-Adresse haben (NAT).
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/router/">Router, Gateway und Routingtabelle</a>; günstig nach <a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a>. <strong>Dauer:</strong> eine Stunde.</p>
+<p>Die Seite löst die Beobachtung aus dem Experiment auf der Seite <a href="/informatik/netzwerke/adressen/">MAC und IP</a> auf (verschiedene Adressen bei <code>ipconfig</code> und „meine IP“) und führt die Begriffe Modem, Switch, Provider und Schnittstelle im Alltagskontext zusammen. Ein alter Heimrouter zum Herumzeigen (Anschlüsse, Typenschild mit WLAN-Passwort und MAC-Adresse) macht die Seite anschaulich.</p>
+</lehrkraft>
+
+<h2>1. Ein Kasten, viele Geräte</h2>
+
+<p>Zu Hause steht meist ein einziges Gerät, das alle „den Router“ nennen. Tatsächlich stecken darin mehrere Geräte, die du in diesem Kapitel einzeln kennengelernt hast:</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 280" role="img" aria-labelledby="netz-heim-titel">
+<title id="netz-heim-titel">Ein Heimrouter von innen: Links das Heimnetz mit Laptop, Handy (per WLAN) und Fernseher (per Kabel). Im Kasten: WLAN-Zugangspunkt und Switch für die Geräte, der eigentliche Router mit DHCP-Server, DNS-Weiterleitung, Firewall und NAT, und das Modem. Rechts die Leitung zum Provider (DSL, Kabel oder Glasfaser) und dahinter das Internet. Im Heimnetz private Adressen 192.168.178.x, nach außen eine öffentliche IP-Adresse.</title>
+<rect class="flaeche" x="10" y="20" width="170" height="240" rx="10"/><text class="titel" x="95" y="44" text-anchor="middle">Heimnetz</text><text x="95" y="62" text-anchor="middle" class="klein">private Adressen 192.168.178.x</text>
+<rect class="rahmen" x="30" y="80" width="130" height="40" rx="6"/><text x="95" y="105" text-anchor="middle">Laptop</text>
+<rect class="rahmen" x="30" y="140" width="130" height="40" rx="6"/><text x="95" y="165" text-anchor="middle">Handy</text>
+<rect class="rahmen" x="30" y="200" width="130" height="40" rx="6"/><text x="95" y="225" text-anchor="middle">Fernseher</text>
+<rect class="grau" x="220" y="20" width="370" height="240" rx="12"/><text class="titel" x="405" y="44" text-anchor="middle">„der Router“ zu Hause</text>
+<rect class="rahmen" x="240" y="62" width="110" height="80" rx="6"/><text x="295" y="96" text-anchor="middle">WLAN-</text><text x="295" y="114" text-anchor="middle">Zugangspunkt</text>
+<rect class="rahmen" x="240" y="160" width="110" height="80" rx="6"/><text x="295" y="205" text-anchor="middle">Switch</text>
+<rect class="flaeche" x="370" y="62" width="110" height="178" rx="6"/><text x="425" y="96" text-anchor="middle" class="titel">Router</text><text x="425" y="124" text-anchor="middle" class="klein">DHCP-Server</text><text x="425" y="144" text-anchor="middle" class="klein">DNS-Weiterleitung</text><text x="425" y="164" text-anchor="middle" class="klein">Firewall</text><text x="425" y="184" text-anchor="middle" class="klein">NAT</text>
+<rect class="rahmen" x="500" y="110" width="74" height="80" rx="6"/><text x="537" y="155" text-anchor="middle">Modem</text>
+<line class="gestrichelt" x1="160" y1="100" x2="240" y2="100"/><line class="gestrichelt" x1="160" y1="160" x2="240" y2="110"/><line class="linie" x1="160" y1="220" x2="240" y2="205"/>
+<line class="linie" x1="350" y1="100" x2="370" y2="100"/><line class="linie" x1="350" y1="200" x2="370" y2="200"/><line class="linie" x1="480" y1="150" x2="500" y2="150"/>
+<line class="linie" x1="574" y1="150" x2="640" y2="150"/>
+<ellipse class="rahmen" cx="680" cy="150" rx="52" ry="70"/><text x="680" y="140" text-anchor="middle" class="titel">Provider</text><text x="680" y="160" text-anchor="middle" class="klein">und Internet</text><text x="680" y="178" text-anchor="middle" class="klein">öffentliche IP</text>
+</svg>
+<figcaption>Was in einem typischen Heimrouter steckt.</figcaption>
+</figure>
+
+<dl>
+<dt><strong>WLAN-Zugangspunkt</strong> und <strong>Switch</strong></dt><dd>verbinden die Geräte im Heimnetz – per Funk bzw. per Kabel an den LAN-Buchsen. Zusammen bilden sie dein LAN.</dd>
+<dt><strong>Router</strong></dt><dd>verbindet das Heimnetz mit dem Netz des Providers. Er ist das <strong>Standardgateway</strong> aller Geräte zu Hause und hat zwei <strong>Schnittstellen</strong>: eine ins Heimnetz (z. B. 192.168.178.1) und eine nach draußen.</dd>
+<dt><strong>DHCP-Server</strong></dt><dd>vergibt allen Geräten im Heimnetz automatisch IP-Adresse, Netzmaske, Gateway und DNS-Server.</dd>
+<dt><strong>DNS-Weiterleitung</strong></dt><dd>Der Router nimmt DNS-Anfragen entgegen und reicht sie an den DNS-Server des Providers weiter.</dd>
+<dt><strong>Modem</strong></dt><dd>Kurzform für <em>Modulator-Demodulator</em>. Es wandelt die digitalen Daten in Signale um, die über die Leitung zum Provider passen (Telefonleitung bei DSL, Fernsehkabel oder Glasfaser) – und umgekehrt. Es arbeitet also ganz unten, auf der Netzzugangsschicht.</dd>
+<dt><strong>Provider</strong></dt><dd>Dein Internetanbieter verlegt die Leitung, betreibt die Router und DNS-Server auf seiner Seite, verbindet sein Netz mit dem Backbone und teilt dir eine <strong>öffentliche IP-Adresse</strong> zu. Das kostet eine monatliche Gebühr. Eine zentrale „Internetverwaltung“ gibt es nicht – das Internet funktioniert, weil die Provider zusammenarbeiten.</dd>
+</dl>
+
+<aside class="box aufgabe">
+<ol>
+<li>Welcher Teil des Heimrouters ist zuständig? Ordne zu.
+<div class="sortieren" data-kategorien="WLAN/Switch|Router|DHCP-Server|Modem">
+<p>Ziehe oder tippe jede Aufgabe zum passenden Teil.</p>
+<ul>
+<li data-gehoert="DHCP-Server" data-erklaerung="Der DHCP-Server vergibt die Adressen automatisch.">Dein neues Handy bekommt beim ersten Verbinden eine IP-Adresse.</li>
+<li data-gehoert="Modem" data-erklaerung="Das Modem passt die Signale an die Leitung zum Provider an.">Die Daten werden in Signale für die Glasfaserleitung umgewandelt.</li>
+<li data-gehoert="Router" data-erklaerung="Der Router leitet alles, was nicht ins Heimnetz gehört, nach draußen weiter.">Ein Paket an einen Server im Internet verlässt das Heimnetz.</li>
+<li data-gehoert="WLAN/Switch" data-erklaerung="Innerhalb des Heimnetzes reicht die Netzzugangsschicht: Switch bzw. WLAN.">Der Laptop schickt ein Dokument an den Drucker im Flur.</li>
+<li data-gehoert="Router" data-erklaerung="Das Ersetzen der privaten durch die öffentliche Adresse (NAT) erledigt der Router.">Die private Absenderadresse wird durch die öffentliche ersetzt.</li>
+<li data-gehoert="WLAN/Switch" data-erklaerung="Der Fernseher hängt am Switch des Routers.">Der Fernseher ist per Kabel mit dem Heimnetz verbunden.</li>
+</ul>
+</div></li>
+</ol>
+</aside>
+
+<h2>2. Eine Adresse für alle: NAT</h2>
+
+<p>Auf der Seite <a href="/informatik/netzwerke/adressen/">MAC und IP</a> hast du entdeckt: <code>ipconfig</code> zeigt eine andere IP-Adresse als eine Webseite, die dir „deine IP“ anzeigt. Deine damalige Vermutung:</p>
+
+<div class="notiz-rueckblick" data-notiz="netz-adr-7">Noch keine Vermutung notiert – die Aufgabe steht auf der Seite „Adressen im Netz: MAC und IP“.</div>
+
+<p>Die Auflösung: Im Heimnetz (und im Schulnetz) haben alle Geräte <strong>private IP-Adressen</strong>, etwa 192.168.178.x. Diese Adressen gibt es in Millionen von Heimnetzen gleichzeitig – im Internet dürfen sie deshalb nicht auftauchen. Der Router hat nach außen eine einzige <strong>öffentliche IP-Adresse</strong> vom Provider. Schickt ein Gerät ein Paket ins Internet, ersetzt der Router die private Absenderadresse durch seine öffentliche und merkt sich, welches Gerät die Anfrage gestellt hat. Kommt die Antwort zurück, setzt er wieder die richtige private Adresse ein und leitet sie an das Gerät weiter. Dieses Verfahren heißt <strong>NAT</strong> (<em>Network Address Translation</em>, Adressübersetzung).</p>
+
+<p>Darum kommunizieren nach außen alle Computer eines Netzes mit derselben IP-Adresse – und darum zeigt die „Meine IP“-Seite bei allen in der Klasse dieselbe Adresse. NAT spart öffentliche IPv4-Adressen, die ja knapp sind, und schützt nebenbei: Von außen kann niemand direkt ein Gerät im Heimnetz ansprechen.</p>
+
+<aside class="box aufgabe">
+<ol start="2">
+<li>Die Seite „Meine IP“ zeigt oft auch einen Ort an – und der stimmt meist nur ungefähr. Erkläre, woran das liegt.
+<textarea class="notiz" data-notiz="netz-heim-2" rows="2" aria-label="Aufgabe 2: ungenaue Ortsangabe"></textarea></li>
+<li>Dein Handy hat zu Hause im WLAN eine andere öffentliche IP-Adresse als unterwegs im Mobilfunknetz. Warum?
+<textarea class="notiz" data-notiz="netz-heim-3" rows="2" aria-label="Aufgabe 3: Handy zu Hause und unterwegs"></textarea></li>
+<li>Schau auf die Unterseite eures Routers zu Hause (oder auf ein Foto davon). Welche Angaben aus diesem Kapitel findest du auf dem Typenschild?
+<textarea class="notiz" data-notiz="netz-heim-4" rows="2" aria-label="Aufgabe 4: Typenschild des Routers"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 bis 4">
+<ul>
+<li><strong>Aufgabe 1</strong> prüft sich selbst.</li>
+<li><strong>Aufgabe 2:</strong> Die öffentliche Adresse gehört dem Provider, nicht dem Gerät. Datenbanken ordnen Adressbereiche ungefähren Orten zu – oft dem Standort des Providers oder seines Knotens, der Dutzende Kilometer entfernt sein kann. Für genaue Zuordnungen braucht es die Daten des Providers (z. B. bei Ermittlungen).</li>
+<li><strong>Aufgabe 3:</strong> Zu Hause gilt die öffentliche Adresse des Heimrouters (Festnetz-Provider), unterwegs die des Mobilfunkanbieters – dort teilen sich oft sehr viele Kunden eine Adresse (Carrier-Grade-NAT).</li>
+<li><strong>Aufgabe 4:</strong> typischerweise WLAN-Name und -Passwort, MAC-Adresse(n), Adresse der Bedienoberfläche (z. B. 192.168.178.1 oder ein Name), Seriennummer.</li>
+</ul>
+</lehrkraft>
+
+<h2>3. Ein Heimnetz in der Simulation</h2>
+
+<aside class="box aufgabe">
+<ol start="5">
+<li>Öffne das Beispiel <a href="/informatik/werkzeuge/netzwerk-simulation/?beispiel=heimnetz" target="_blank" rel="noopener">Heimnetz mit Router und Modem</a>. Welche Teile des echten Heimrouters sind hier als einzelne Geräte dargestellt? Was fehlt noch, damit die Geräte ihre Adressen automatisch bekommen? Richte es ein.
+<textarea class="notiz" data-notiz="netz-heim-5" rows="2" aria-label="Aufgabe 5: Heimnetz in der Simulation"></textarea></li>
+<li>Das Modem führt ins Leere – auf der anderen Seite fehlt der Provider. Wie man zwei Simulationen über Modems verbindet, zeigt das Projekt <a href="/informatik/netzwerke/klassen-internet/">Ein Klassen-Internet mit Modems</a>.</li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 5">
+<p>Einzeln dargestellt sind Switch, Router und Modem; WLAN steckt im Handy (gestrichelte Verbindung). Für DHCP fehlt ein DHCP-Server: In der Simulation lässt er sich auf einem Rechner einrichten (Bereich z. B. 192.168.1.100–150, Gateway 192.168.1.1); die Geräte dann auf „per DHCP beziehen“ umstellen. NAT bildet die Simulation nicht ab – dort hat jedes Gerät seine Adresse auch „draußen“.</p>
+</lehrkraft>

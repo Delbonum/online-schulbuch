@@ -1,0 +1,143 @@
+<!--
+beschreibung: Was passiert beim Aufruf einer Webseite? URL, Browser, DNS, HTTP-Anfrage und -Antwort, Webserver und Host – Schritt für Schritt, mit Browser-Entwicklerwerkzeugen und Simulation.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite (Arbeitsblatt „Internet“). <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/dns/">DNS</a>; am besten nach <a href="/informatik/netzwerke/routing-simulieren/">Netze verbinden in der Simulation</a>. <strong>Dauer:</strong> zwei Stunden.</p>
+<p>Die Seite fasst das Kapitel an einem Alltagsbeispiel zusammen: Alle bisherigen Bausteine (DNS, Gateway, ARP, Router, Schichten) kommen in einem einzigen Seitenaufruf vor. Die Transportschicht wird nur in einem Kasten erwähnt; wer sie behandelt, schließt die fakultative Seite <a href="/informatik/netzwerke/transportschicht/">Transportschicht</a> an.</p>
+</lehrkraft>
+
+<h2>1. Die Adresse einer Webseite: die URL</h2>
+
+<p>Eine <strong>URL</strong> (<em>Uniform Resource Locator</em>) ist die genaue „Adresse“ einer Ressource im World Wide Web – einer Webseite, eines Bildes oder einer Datei. Sie besteht aus mehreren Teilen:</p>
+
+<pre class="code"><code>https://www.beispiel.ch/dokumente/reglemente.html
+└─┬─┘   └┬┘ └──┬───┘└┬┘ └───┬────┘ └──────┬──────┘
+Protokoll│  Domain  TLD   Ordner       Dateiname
+       Subdomain</code></pre>
+
+<ul>
+<li><strong>Protokoll</strong> (<code>https</code>): wie die Daten übertragen werden; heute fast immer HTTPS, die verschlüsselte Form von HTTP.</li>
+<li><strong>Domain</strong> (<code>www.beispiel.ch</code>): der Name des Servers, den DNS in eine IP-Adresse übersetzt.</li>
+<li><strong>Pfad</strong> (<code>/dokumente/reglemente.html</code>): wo die Datei auf diesem Server liegt – wie ein Ordnerpfad auf deinem Rechner.</li>
+</ul>
+
+<p>Eine URL ist für das Web, was die Postanschrift für die echte Welt ist: Sie sagt dem Browser genau, wo etwas zu finden ist.</p>
+
+<h2>2. Wer ist beteiligt?</h2>
+
+<dl>
+<dt><strong>Browser</strong></dt><dd>ein Programm, mit dem man Dateien aus dem WWW anfordert, indem man eine URL angibt, und das die empfangenen Dateien (vor allem HTML) als Webseite darstellt. Der Browser ist ein <strong>Client</strong>. Das eigentliche Senden und Empfangen übernimmt das Betriebssystem.</dd>
+<dt><strong>Webserver</strong></dt><dd>ein Programm, das ständig auf Anfragen wartet und die gewünschten Dateien ausliefert – ein <strong>Server</strong>.</dd>
+<dt><strong>Host</strong></dt><dd>der Rechner, auf dem der Webserver läuft – bzw. die Firma, die solche Rechner und Speicherplatz für Webseiten, E-Mail oder Datenbanken bereitstellt (<em>Webhosting</em>). Wer eine Website betreibt, mietet meist Speicherplatz bei einem Host.</dd>
+<dt><strong>Provider</strong></dt><dd>der Internetanbieter, der dir den Zugang zum Internet bereitstellt (Leitung, öffentliche IP-Adresse, oft auch den Router und einen DNS-Server) – gegen eine Gebühr.</dd>
+<dt><strong>Backbone</strong></dt><dd>die großen Netze von Routern auf regionaler bis globaler Ebene, die die Pakete zwischen den Providern weiterleiten.</dd>
+</dl>
+
+<h2>3. Ein Seitenaufruf Schritt für Schritt</h2>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 280" role="img" aria-labelledby="netz-aufruf-titel">
+<title id="netz-aufruf-titel">Ablauf eines Seitenaufrufs: 1. URL im Browser eingeben. 2. Browser erstellt eine HTTP-Anfrage und übergibt sie dem Betriebssystem. 3. DNS-Anfrage an den DNS-Server, Antwort mit der IP. 4. Die HTTP-Anfrage wird über Gateway und Router durchs Internet zum Webserver geleitet. 5. Der Webserver schickt die HTML-Datei in mehreren Paketen zurück. 6. Der Browser stellt die Seite dar und fordert weitere Dateien an.</title>
+<defs><marker id="pfeil-auf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="flaeche" x="20" y="100" width="170" height="90" rx="10"/><text x="105" y="125" text-anchor="middle" class="titel">Client</text><text x="105" y="146" text-anchor="middle" class="klein">Browser (Anwendung)</text><text x="105" y="164" text-anchor="middle" class="klein">Betriebssystem (Transport,</text><text x="105" y="180" text-anchor="middle" class="klein">Vermittlung, Netzzugang)</text>
+<rect class="rahmen" x="300" y="10" width="150" height="54" rx="8"/><text x="375" y="34" text-anchor="middle" class="titel">DNS-Server</text><text x="375" y="52" text-anchor="middle" class="klein">beim Provider</text>
+<ellipse class="grau" cx="390" cy="200" rx="90" ry="48"/><text x="390" y="196" text-anchor="middle" class="titel">Internet</text><text x="390" y="214" text-anchor="middle" class="klein">Router, Backbone</text>
+<rect class="rahmen" x="560" y="150" width="160" height="90" rx="10"/><text x="640" y="176" text-anchor="middle" class="titel">Webserver</text><text x="640" y="196" text-anchor="middle" class="klein">beim Host</text><text x="640" y="216" text-anchor="middle" class="klein">index.html, Bilder, CSS</text>
+<text x="20" y="40" class="klein">① URL eingeben</text><text x="20" y="58" class="klein">② HTTP-Anfrage erstellen</text>
+<line class="linie" x1="190" y1="110" x2="296" y2="45" marker-end="url(#pfeil-auf)"/><line class="gestrichelt" x1="300" y1="60" x2="194" y2="122" marker-end="url(#pfeil-auf)"/><text x="210" y="70" class="klein">③ DNS</text>
+<line class="linie" x1="190" y1="170" x2="300" y2="190" marker-end="url(#pfeil-auf)"/><line class="linie" x1="480" y1="196" x2="556" y2="190" marker-end="url(#pfeil-auf)"/><text x="470" y="150" class="klein">④ HTTP-Anfrage (GET)</text>
+<path class="gestrichelt" d="M560,232 C470,275 260,275 190,186" marker-end="url(#pfeil-auf)"/><text x="300" y="272" class="klein">⑤ HTTP-Antwort: HTML-Datei in vielen Paketen</text>
+<text x="20" y="220" class="klein">⑥ Seite darstellen,</text><text x="20" y="236" class="klein">weitere Dateien anfordern</text>
+</svg>
+<figcaption>Ein Seitenaufruf in sechs Schritten (stark vereinfacht).</figcaption>
+</figure>
+
+<ol>
+<li>Du gibst eine URL in den Browser ein, z. B. <code>https://online-schulbuch.de</code>.</li>
+<li>Der Browser erstellt eine <strong>HTTP-Anfrage</strong> (englisch <em>HTTP-Request</em>) und übergibt sie dem Betriebssystem:
+<pre class="code"><code>GET /index.html HTTP/1.1
+Host: online-schulbuch.de</code></pre></li>
+<li>Das Betriebssystem kennt die IP-Adresse zu <code>online-schulbuch.de</code> noch nicht und stellt eine <strong>DNS-Anfrage</strong> an seinen DNS-Server. Der antwortet mit der IP-Adresse.</li>
+<li>Jetzt geht die HTTP-Anfrage auf die Reise: Die Ziel-IP liegt nicht im eigenen Netz, also an das Gateway (nach einer ARP-Anfrage nach dessen MAC). Von dort leiten Router die Pakete durch das Internet bis zum Webserver.</li>
+<li>Der <strong>Webserver</strong> empfängt die Anfrage und schickt die gewünschte HTML-Datei zurück – meist in vielen Paketen, denn ein Paket fasst nur etwa 1,5 Kilobyte. Das Betriebssystem des Clients sammelt die Pakete ein, setzt sie in der richtigen Reihenfolge zusammen und übergibt die Datei dem Browser.</li>
+<li>Der Browser beginnt mit der Darstellung – und merkt schnell, dass er noch mehr braucht: Stylesheets für das Aussehen, Bilder, Schriften, Skripte. Für jede dieser Dateien schickt er eine weitere HTTP-Anfrage. All das geschieht in wenigen Hundertstelsekunden.</li>
+</ol>
+
+<aside class="box info" data-titel="Und die Transportschicht?">
+<p>Zwischen Schritt 3 und 4 baut das Betriebssystem eigentlich noch eine <strong>TCP-Verbindung</strong> zum Webserver auf („Hallo, bist du bereit?“ – „Ja!“ – „Gut, los geht’s.“). TCP sorgt auch dafür, dass alle Pakete vollständig und in der richtigen Reihenfolge ankommen. Mehr dazu auf der Seite <a href="/informatik/netzwerke/transportschicht/">Vertiefung: Die Transportschicht</a>.</p>
+</aside>
+
+<aside class="box aufgabe">
+<ol>
+<li>Bringe die Schritte eines Seitenaufrufs in die richtige Reihenfolge.
+<ol class="reihenfolge">
+<li>Die Nutzerin tippt eine URL in die Adresszeile.</li>
+<li>Der Browser erstellt eine HTTP-Anfrage.</li>
+<li>Das Betriebssystem fragt den DNS-Server nach der IP-Adresse der Domain.</li>
+<li>Das Betriebssystem fragt per ARP nach der MAC-Adresse des Gateways.</li>
+<li>Router leiten die HTTP-Anfrage durch das Internet zum Webserver.</li>
+<li>Der Webserver schickt die HTML-Datei in mehreren Paketen zurück.</li>
+<li>Der Browser stellt die Seite dar und fordert Bilder und Stylesheets an.</li>
+</ol></li>
+<li>Setze die passenden Begriffe ein: <em>Client, Domain, Host, Provider, Router, Server, URL, User</em>.
+<p class="klein">Hans (1) öffnet einen Browser (2) und gibt in die Adresszeile www.nksa.ch/termine.html (3) ein. Der Browser fragt sein Betriebssystem nach der Datei. Da es sie noch nicht hat, sucht es im Internet danach. Dazu muss es unter anderem herausfinden, welche IP-Adresse zu www.nksa.ch (4) gehört. Zu dieser IP-Adresse gibt es einen Computer (5), auf dem das Programm (6) läuft, das die gewünschte Datei liefert. Voraussetzung für das alles ist ein Internetzugang, den Hans von einer Firma (7) gegen eine Gebühr bekommt. Von dieser Firma erhielt er ein kleines Gerät (8), das sein Heimnetz mit dem Internet verbindet.</p>
+<table class="verlauf ausfuell">
+<thead><tr><th>(1)</th><th>(2)</th><th>(3)</th><th>(4)</th><th>(5)</th><th>(6)</th><th>(7)</th><th>(8)</th></tr></thead>
+<tbody><tr>
+<td><textarea class="notiz" data-notiz="netz-web-2-1" rows="1" aria-label="Aufgabe 2: Lücke 1"></textarea></td>
+<td><textarea class="notiz" data-notiz="netz-web-2-2" rows="1" aria-label="Aufgabe 2: Lücke 2"></textarea></td>
+<td><textarea class="notiz" data-notiz="netz-web-2-3" rows="1" aria-label="Aufgabe 2: Lücke 3"></textarea></td>
+<td><textarea class="notiz" data-notiz="netz-web-2-4" rows="1" aria-label="Aufgabe 2: Lücke 4"></textarea></td>
+<td><textarea class="notiz" data-notiz="netz-web-2-5" rows="1" aria-label="Aufgabe 2: Lücke 5"></textarea></td>
+<td><textarea class="notiz" data-notiz="netz-web-2-6" rows="1" aria-label="Aufgabe 2: Lücke 6"></textarea></td>
+<td><textarea class="notiz" data-notiz="netz-web-2-7" rows="1" aria-label="Aufgabe 2: Lücke 7"></textarea></td>
+<td><textarea class="notiz" data-notiz="netz-web-2-8" rows="1" aria-label="Aufgabe 2: Lücke 8"></textarea></td>
+</tr></tbody>
+</table></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 und 2">
+<p><strong>Aufgabe 1</strong> prüft sich selbst. <strong>Aufgabe 2:</strong> (1) User, (2) Client, (3) URL, (4) Domain, (5) Host, (6) Server, (7) Provider, (8) Router.</p>
+</lehrkraft>
+
+<h2>4. Experiment: dem Browser über die Schulter schauen</h2>
+
+<aside class="box aufgabe">
+<ol start="3">
+<li>Öffne eine Webseite, klicke mit der rechten Maustaste auf einen Text und wähle <em>Untersuchen</em> (oder drücke F12). Suche im Bereich <em>Elemente</em> die Stelle im HTML, die zu diesem Text gehört, und ändere den Text per Doppelklick. Lade die Seite danach neu. Was passiert – und warum?
+<textarea class="notiz" data-notiz="netz-web-3" rows="3" aria-label="Aufgabe 3: Text im Browser ändern"></textarea></li>
+<li>Wechsle in den Entwicklerwerkzeugen zum Reiter <em>Netzwerk</em> und lade die Seite neu. Wie viele Anfragen schickt der Browser für eine einzige Seite? Von wie vielen verschiedenen Domains lädt er Dateien?
+<textarea class="notiz" data-notiz="netz-web-4" rows="2" aria-label="Aufgabe 4: Anfragen zählen"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 3 und 4">
+<p><strong>Aufgabe 3:</strong> Die Änderung ist sofort sichtbar, aber nur lokal: Der Browser zeigt seine eigene Kopie der Dateien an. Beim Neuladen holt er die Dateien erneut vom Server, und die Änderung ist weg. (Wichtig auch für Medienkompetenz: Screenshots von Webseiten lassen sich so leicht fälschen.) <strong>Aufgabe 4:</strong> Je nach Seite einige Dutzend bis mehrere hundert Anfragen, oft von vielen Domains (Schriften, Werbung, Statistik). Die Seiten dieses Schulbuchs kommen mit wenigen Anfragen von einer Domain aus.</p>
+</lehrkraft>
+
+<h2>5. Ein Seitenaufruf in der Simulation</h2>
+
+<aside class="box aufgabe">
+<ol start="5">
+<li>Öffne das Beispiel <a href="/informatik/werkzeuge/netzwerk-simulation/?beispiel=internet" target="_blank" rel="noopener">Kleines Internet mit DNS, DHCP und Webserver</a> und starte die Simulation. Öffne auf „Schüler 1“ den Webbrowser und rufe <code>www.schulbuch.test</code> auf.</li>
+<li>Öffne den Datenaustausch von „Schüler 1“. Ordne die Einträge den sechs Schritten aus Abschnitt 3 zu. Welche Protokolle findest du, und zu welcher Schicht gehören sie?
+<textarea class="notiz" data-notiz="netz-web-6" rows="4" aria-label="Aufgabe 6: Datenaustausch beim Seitenaufruf"></textarea></li>
+<li>Ändere auf dem Webserver mit dem Text-Editor die Datei <code>/webserver/index.html</code> und rufe die Seite erneut auf.</li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 5 bis 7">
+<p>Im Datenaustausch erscheinen (je nach Zeitpunkt): DHCP (Adresse beziehen – passiert beim Start), ARP nach dem Gateway, DNS-Anfrage an 10.0.0.53 und Antwort (Anwendung, über UDP), TCP-Verbindungsaufbau mit dem Webserver (Transport), HTTP-GET und HTTP-Antwort (Anwendung), TCP-Bestätigungen und Verbindungsabbau. Jede Nachricht hat Zeilen für Netzzugang (MAC) und Vermittlung (IP). Aufgabe 7 zeigt die Rolle des Hosts: Wer Zugriff auf den Server hat, bestimmt den Inhalt.</p>
+</lehrkraft>
+
+<div class="quiz" data-id="netz-web-quiz" data-anweisung="Wähle die richtige Antwort.">
+<div class="frage" data-erklaerung="Der Browser fordert an und stellt dar – er ist ein Client-Programm."><p>Was ist ein Browser?</p><ul><li>ein Server, der Webseiten speichert</li><li data-richtig>ein Client-Programm, das Dateien aus dem WWW anfordert und darstellt</li><li>ein anderer Name für das Internet</li></ul></div>
+<div class="frage" data-erklaerung="Ohne die IP-Adresse kann die HTTP-Anfrage nicht verschickt werden – also zuerst DNS."><p>Was passiert, bevor die HTTP-Anfrage verschickt werden kann?</p><ul><li>Der Webserver schickt die Seite.</li><li data-richtig>Die Domain wird per DNS in eine IP-Adresse übersetzt.</li><li>Der Browser zeigt die Seite an.</li></ul></div>
+<div class="frage" data-erklaerung="Ein Host stellt Rechner und Speicherplatz für Webseiten bereit, ein Provider den Internetzugang."><p>Was ist der Unterschied zwischen Host und Provider?</p><ul><li data-richtig>Der Host stellt Speicherplatz für Webseiten bereit, der Provider den Internetzugang.</li><li>Es gibt keinen.</li><li>Der Provider speichert Webseiten, der Host verkauft Router.</li></ul></div>
+<div class="frage" data-erklaerung="Für jede eingebundene Datei (Bilder, CSS, Skripte) schickt der Browser eine eigene Anfrage."><p>Warum schickt der Browser für eine einzige Seite oft viele Anfragen?</p><ul><li>Weil der Server beim ersten Mal nicht antwortet.</li><li data-richtig>Weil die Seite weitere Dateien wie Bilder und Stylesheets einbindet.</li><li>Weil jede Anfrage nur einen Buchstaben überträgt.</li></ul></div>
+</div>
+
+<lehrkraft titel="Als Live-Umfrage durchführen">
+<als-umfrage ids="netz-web-quiz" titel="Netzwerke – Webseitenaufruf" modus="single"></als-umfrage>
+</lehrkraft>

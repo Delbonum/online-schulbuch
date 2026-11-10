@@ -1,0 +1,56 @@
+<!--
+beschreibung: Unterrichtsreihe Netzwerksysteme: Kommunikation, Sender-Empfänger-Modell, Protokolle, Schichtenmodell, MAC- und IP-Adressen, ARP, Subnetze, Router, DNS und Webseitenaufruf – mit Rollenspiel, Netzwerk-Simulation und Experimenten in der Konsole.
+-->
+<p>Du tippst eine Adresse in den Browser, und Sekundenbruchteile später steht die Seite da – obwohl der Server vielleicht auf einem anderen Kontinent steht. Wie findet eine Nachricht ihren Weg durch Milliarden von Geräten? Wer sorgt dafür, dass sie beim richtigen Empfänger ankommt und nicht bei deinem Nachbarn? In diesem Kapitel gehst du der Sache auf den Grund: vom einfachsten Nachrichtensystem der Welt – einem Feuer auf einem Berg – bis zum Aufruf einer Webseite.</p>
+
+<h2>So ist das Kapitel aufgebaut</h2>
+
+<figure class="skizze">
+<svg viewBox="0 0 760 330" role="img" aria-labelledby="netz-reihe-titel">
+<title id="netz-reihe-titel">Das Kapitel in vier Teilen: 1. Kommunikation (Leuchtfeuer, Geschichte, Sender-Empfänger-Modell, Protokolle, Schichtenmodell, Internet), 2. Im lokalen Netz (MAC und IP, Rollenspiel I, ARP und Switch, LAN simulieren), 3. Netze verbinden (Subnetze, Router, DNS, Rollenspiel II, Weg einer Nachricht, Routing simulieren), 4. Internet im Alltag (Webseitenaufruf, Netz zu Hause, Begriffe). Dazu Vertiefungen: Transportschicht, Firewall/Proxy/VPN, Klassen-Internet.</title>
+<defs><marker id="pfeil-netz" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="rahmen" x="8" y="14" width="170" height="236" rx="10"/>
+<rect class="flaeche" x="198" y="14" width="170" height="236" rx="10"/>
+<rect class="rahmen" x="388" y="14" width="170" height="236" rx="10"/>
+<rect class="flaeche" x="578" y="14" width="174" height="236" rx="10"/>
+<line class="linie" x1="180" y1="132" x2="195" y2="132" marker-end="url(#pfeil-netz)"/>
+<line class="linie" x1="370" y1="132" x2="385" y2="132" marker-end="url(#pfeil-netz)"/>
+<line class="linie" x1="560" y1="132" x2="575" y2="132" marker-end="url(#pfeil-netz)"/>
+<text class="titel" x="93" y="40" text-anchor="middle">1 · Kommunikation</text>
+<text x="93" y="72" text-anchor="middle">Leuchtfeuer</text><text x="93" y="96" text-anchor="middle">Geschichte</text><text x="93" y="120" text-anchor="middle">Sender und Empfänger</text><text x="93" y="144" text-anchor="middle">Protokolle</text><text x="93" y="168" text-anchor="middle">Schichtenmodell</text><text x="93" y="192" text-anchor="middle">Was ist das Internet?</text>
+<text class="titel" x="283" y="40" text-anchor="middle">2 · Im lokalen Netz</text>
+<text x="283" y="72" text-anchor="middle">MAC und IP</text><text x="283" y="96" text-anchor="middle" class="akzent">Rollenspiel I</text><text x="283" y="120" text-anchor="middle">ARP und Switch</text><text x="283" y="144" text-anchor="middle">LAN simulieren</text>
+<text class="titel" x="473" y="40" text-anchor="middle">3 · Netze verbinden</text>
+<text x="473" y="72" text-anchor="middle">Subnetze</text><text x="473" y="96" text-anchor="middle">Router und Gateway</text><text x="473" y="120" text-anchor="middle">DNS</text><text x="473" y="144" text-anchor="middle" class="akzent">Rollenspiel II</text><text x="473" y="168" text-anchor="middle">Weg einer Nachricht</text><text x="473" y="192" text-anchor="middle">Routing simulieren</text>
+<text class="titel" x="665" y="40" text-anchor="middle">4 · Internet im Alltag</text>
+<text x="665" y="72" text-anchor="middle">Webseitenaufruf</text><text x="665" y="96" text-anchor="middle">Netz zu Hause</text><text x="665" y="120" text-anchor="middle">Begriffe und Test</text>
+<rect class="grau" x="8" y="270" width="744" height="50" rx="10"/>
+<text class="titel" x="380" y="292" text-anchor="middle">Zum Vertiefen</text>
+<text x="380" y="311" text-anchor="middle" class="klein">Transportschicht · Firewall, Proxy und VPN · Projekt: Klassen-Internet mit Modems</text>
+</svg>
+<figcaption>Die Teile bauen aufeinander auf. Die Vertiefungen kannst du je nach Interesse und Zeit dazunehmen.</figcaption>
+</figure>
+
+<h2>Was du brauchst</h2>
+
+<ul>
+<li><strong>Die Netzwerk-Simulation:</strong> Damit baust du Netze aus Rechnern, Switches und Routern direkt im Browser und schaust zu, wie die Daten Schicht für Schicht durch das Netz laufen. Viele Seiten öffnen sie mit einem passenden Beispielnetz.</li>
+<li><strong>Die Konsole deines Computers:</strong> An mehreren Stellen untersuchst du dein echtes Netz mit Befehlen wie <code>ipconfig</code> oder <code>ping</code>. Wie du die Konsole öffnest, steht im Kasten unten.</li>
+<li><strong>Deine Klasse:</strong> In zwei Rollenspielen seid ihr selbst das Netz – mit Umschlägen, Zetteln und klaren Regeln.</li>
+</ul>
+
+<aside class="box info" data-titel="Netzwerk-Simulation">
+<p>Rechner, Switches und Router verkabeln, IP-Adressen vergeben, Programme installieren und den Datenaustausch beobachten – mit Befehlszeile, Webbrowser, Webserver, DNS, DHCP und Modem.</p>
+<p><a href="/informatik/werkzeuge/netzwerk-simulation/">Netzwerk-Simulation öffnen</a></p>
+</aside>
+
+<aside class="box tipp" data-titel="So öffnest du die Konsole">
+<p><strong>Windows:</strong> Windows-Taste drücken, <code>cmd</code> tippen, Enter. Es öffnet sich die <em>Eingabeaufforderung</em>.<br>
+<strong>macOS:</strong> Befehlstaste + Leertaste, <code>Terminal</code> tippen, Enter.<br>
+<strong>Linux:</strong> meist Strg + Alt + T.</p>
+<p>Auf Tablets und Handys gibt es keine Konsole. Dann nutzt du die Befehlszeile in der Netzwerk-Simulation: Sie kennt dieselben Befehle für das simulierte Netz.</p>
+</aside>
+
+<lehrkraft titel="Für die Planung">
+<p>Konzeption, Bausteinübersicht mit Kern- und Zusatzseiten, drei Planungsmodelle, die Organisation der Rollenspiele und Hinweise zu den Konsolen-Experimenten (Firewall, Schulnetz) stehen auf der Seite <a href="/informatik/netzwerke/lehrkraefte/">Hinweise für Lehrkräfte</a>. Die Rollen für die Rollenspiele verteilt das Werkzeug <a href="/informatik/werkzeuge/netzwerk-rollenspiel/">Rollenspiel: Nachrichten im Netzwerk</a> – digital per Code oder als Druckvorlage.</p>
+</lehrkraft>

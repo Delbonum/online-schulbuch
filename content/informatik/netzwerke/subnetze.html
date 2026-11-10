@@ -1,0 +1,190 @@
+<!--
+beschreibung: Subnetze und Netzmasken: die Netzmaske als Schablone, Netz- und Broadcast-Adresse, Anzahl der Geräte, Suffix-Schreibweise und die Frage, ob zwei IP-Adressen im selben Subnetz liegen – binär und dezimal.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite (enthält das Arbeitsblatt „Subnetze“). <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/lan-simulieren/">Ein LAN simulieren</a>; Binärzahlen sollten bekannt sein. <strong>Dauer:</strong> zwei Stunden; Abschnitt 4 („krumme“ Netzmasken) ist anspruchsvoller und lässt sich in einem Grundkurs auf das Prinzip beschränken.</p>
+<p><strong>Üben:</strong> Der <a href="/informatik/werkzeuge/subnetze/">Subnetz-Trainer</a> erzeugt beliebig viele Aufgaben aller Arten mit Erklärung in Binärdarstellung – geeignet für Hausaufgaben und zur Differenzierung (Schalter „krumme Netzmasken“).</p>
+<p><strong>Hinweis zur Präsentation:</strong> In den Notizen steht als Broadcast-Adresse des Netzes 192.168.0.0/24 „192.168.9.255“ – gemeint ist 192.168.0.255.</p>
+</lehrkraft>
+
+<h2>1. Wer gehört zu meinem Netz?</h2>
+
+<p>Im Rollenspiel war es einfach: Wer in den ersten drei Zahlen der IP-Adresse mit dir übereinstimmt, gehört zu deiner Gruppe. Das hat die <strong>Netzmaske</strong> 255.255.255.0 festgelegt. Eine Netzmaske fasst mehrere IP-Adressen zu einer Gruppe zusammen, einem <strong>Subnetz</strong> (Teilnetz). Alle Geräte eines Subnetzes können sich direkt Pakete schicken – über die MAC-Adresse, wie im Rollenspiel. Für alles außerhalb braucht es einen Router.</p>
+
+<p>Man kann sich die Netzmaske wie eine <strong>Schablone</strong> vorstellen, die man über die IP-Adresse legt: Wo die Maske 255 hat, muss die Zahl bei allen im Subnetz <strong>gleich</strong> sein (Netzteil). Wo sie 0 hat, darf sich die Zahl unterscheiden (Geräteteil).</p>
+
+<pre class="code"><code>IP-Adresse   192 . 168 .   0 .  33
+Netzmaske    255 . 255 . 255 .   0
+             ---- Netzteil ----   Geräteteil
+→ Zum Subnetz gehören alle Adressen 192.168.0.x</code></pre>
+
+<p>Wie viele Geräte passen in dieses Subnetz? Für x gibt es 256 Möglichkeiten (0 bis 255). Zwei davon sind aber reserviert:</p>
+<ul>
+<li>Die erste Adresse, <code>192.168.0.0</code>, ist die <strong>Netzadresse</strong>: Sie bezeichnet das Subnetz als Ganzes.</li>
+<li>Die letzte Adresse, <code>192.168.0.255</code>, ist die <strong>Broadcast-Adresse</strong>: Ein Paket an sie geht an alle im Subnetz.</li>
+</ul>
+<p>Bleiben <strong>254</strong> Adressen für Geräte.</p>
+
+<h2>2. Die Netzmaske binär</h2>
+
+<p>Richtig verstehen kann man Netzmasken erst in der Binärdarstellung. Eine Netzmaske besteht wie eine IP-Adresse aus 32 Bit. Sie hat <strong>immer erst nur Einsen und dann nur Nullen</strong>. Die Einsen markieren den Netzteil, die Nullen den Geräteteil:</p>
+
+<pre class="code"><code>255.255.255.0  =  11111111.11111111.11111111.00000000   (24 Einsen)
+255.255.0.0    =  11111111.11111111.00000000.00000000   (16 Einsen)
+255.255.255.252=  11111111.11111111.11111111.11111100   (30 Einsen)
+255.0.255.0    =  ungültig! (Einsen nach Nullen)</code></pre>
+
+<p>Weil nur die Anzahl der Einsen zählt, gibt es eine Kurzschreibweise, das <strong>Suffix</strong>: <code>192.168.0.1/24</code> heißt „IP-Adresse 192.168.0.1 mit 24 Einsen in der Netzmaske“, also 255.255.255.0.</p>
+
+<table class="verlauf">
+<thead><tr><th>Netzmaske</th><th>binär (letzte Bytes)</th><th>Suffix</th><th>Adressen</th><th>Geräte</th></tr></thead>
+<tbody>
+<tr><td>255.0.0.0</td><td>…00000000.00000000.00000000</td><td>/8</td><td>2<sup>24</sup> = 16 777 216</td><td>16 777 214</td></tr>
+<tr><td>255.255.0.0</td><td>…11111111.00000000.00000000</td><td>/16</td><td>2<sup>16</sup> = 65 536</td><td>65 534</td></tr>
+<tr><td>255.255.252.0</td><td>…11111100.00000000</td><td>/22</td><td>2<sup>10</sup> = 1 024</td><td>1 022</td></tr>
+<tr><td>255.255.255.0</td><td>…11111111.00000000</td><td>/24</td><td>2<sup>8</sup> = 256</td><td>254</td></tr>
+<tr><td>255.255.255.128</td><td>…11111111.10000000</td><td>/25</td><td>2<sup>7</sup> = 128</td><td>126</td></tr>
+<tr><td>255.255.255.248</td><td>…11111111.11111000</td><td>/29</td><td>2<sup>3</sup> = 8</td><td>6</td></tr>
+<tr><td>255.255.255.252</td><td>…11111111.11111100</td><td>/30</td><td>2<sup>2</sup> = 4</td><td>2</td></tr>
+</tbody>
+</table>
+
+<aside class="box merke" data-titel="Merke: Anzahl der Geräte">
+<p>Hat die Netzmaske <em>n</em> Nullen, gibt es im Subnetz 2<sup><em>n</em></sup> Adressen. Davon sind zwei reserviert (Netzadresse: Geräteteil nur Nullen; Broadcast-Adresse: Geräteteil nur Einsen). Also passen 2<sup><em>n</em></sup> − 2 Geräte hinein.</p>
+<p>Schnell gerechnet: Bei 255.255.255.<strong>248</strong> ist 256 − 248 = 8 die Zahl der Adressen.</p>
+</aside>
+
+<aside class="box aufgabe">
+<ol>
+<li>Wie viele Adressen und wie viele Geräte gehören zu einem Subnetz mit der Netzmaske …
+<div class="felder">
+<div><label for="netz-sub-1a">… 255.255.255.240?</label><textarea class="notiz" id="netz-sub-1a" data-notiz="netz-sub-1a" rows="1"></textarea></div>
+<div><label for="netz-sub-1b">… 255.255.254.0?</label><textarea class="notiz" id="netz-sub-1b" data-notiz="netz-sub-1b" rows="1"></textarea></div>
+<div><label for="netz-sub-1c">… /27?</label><textarea class="notiz" id="netz-sub-1c" data-notiz="netz-sub-1c" rows="1"></textarea></div>
+</div></li>
+<li>Eine Schule braucht ein Subnetz für 300 Geräte. Welche Netzmaske ist am besten geeignet? Begründe.
+<textarea class="notiz" data-notiz="netz-sub-2" rows="2" aria-label="Aufgabe 2: Netzmaske für 300 Geräte"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 und 2">
+<ul>
+<li><strong>Aufgabe 1:</strong> 255.255.255.240: 4 Nullen → 16 Adressen, 14 Geräte. 255.255.254.0: 9 Nullen → 512 Adressen, 510 Geräte. /27: 5 Nullen → 32 Adressen, 30 Geräte.</li>
+<li><strong>Aufgabe 2:</strong> 255.255.254.0 (/23) reicht genau (510 Geräte); /24 mit 254 Geräten ist zu klein, /22 mit 1 022 verschenkt Adressen. Auch /22 ist vertretbar, wenn mit Wachstum gerechnet wird.</li>
+</ul>
+</lehrkraft>
+
+<h2>3. Die Subnetz-Frage: gleiches Netz oder nicht?</h2>
+
+<p>Bevor ein Rechner ein Paket verschickt, muss er entscheiden: Liegt die Ziel-IP in meinem Subnetz? Dann stelle ich direkt zu (ARP, dann an die MAC). Sonst gebe ich das Paket an mein Gateway, den Router. Dafür gibt es zwei Wege.</p>
+
+<h3>Variante 1: der binäre Weg (so macht es der Computer)</h3>
+
+<p>Man verknüpft die IP-Adresse Bit für Bit durch ein <strong>logisches UND</strong> mit der Netzmaske: Nur wo beide eine 1 haben, entsteht eine 1. Das Ergebnis ist die <strong>Netzadresse</strong>. Haben zwei IP-Adressen dieselbe Netzadresse, liegen sie im selben Subnetz.</p>
+
+<pre class="code"><code>Netzmaske      255.255.248.0   11111111.11111111.11111000.00000000
+IP-Adresse 1   192.68.48.117   11000000.01000100.00110000.01110101
+UND            192.68.48.0     11000000.01000100.00110000.00000000
+
+IP-Adresse 2   192.68.51.3     11000000.01000100.00110011.00000011
+UND            192.68.48.0     11000000.01000100.00110000.00000000
+
+Gleiche Netzadresse  →  gleiches Subnetz</code></pre>
+
+<h3>Variante 2: der dezimale Weg (schnell im Kopf)</h3>
+
+<p>Man sucht das Byte, in dem die Maske weder 255 noch 0 ist (hier: 248). 256 − 248 = 8: In diesem Byte bilden immer <strong>8 aufeinanderfolgende Werte</strong> ein Subnetz (0–7, 8–15, …, 48–55, …). Man teilt die Zahlen beider Adressen an dieser Stelle ganzzahlig durch 8:</p>
+
+<pre class="code"><code>192.68.48.117   →   48 : 8 = 6   (Rest 0)
+192.68.51.3     →   51 : 8 = 6   (Rest 3)
+Gleiches Ergebnis  →  gleiches Subnetz (192.68.48.0 bis 192.68.55.255)</code></pre>
+
+<p>Die Bytes davor (bei Maske 255) müssen genau gleich sein, die Bytes danach (bei Maske 0) spielen keine Rolle.</p>
+
+<aside class="box aufgabe">
+<ol start="3">
+<li>Ein Rechner mit der gegebenen IP-Adresse und Netzmaske möchte ein Paket an die Ziel-IP schicken. Bleibt das Paket im Subnetz (direkt zustellen) oder geht es an das Gateway? Tipp: Schau dir im Zweifel die Binärdarstellung an.
+<div class="quiz" data-id="netz-sub-quiz-1" data-anweisung="Gleiches Subnetz – ja oder nein?">
+<div class="frage" data-erklaerung="Die ersten drei Bytes müssen gleich sein: 17 ≠ 16 im dritten Byte."><p>192.168.17.189 · Netzmaske 255.255.255.0 · Ziel 192.168.16.199</p><ul><li>ja</li><li data-richtig>nein</li></ul></div>
+<div class="frage" data-erklaerung="Die ersten drei Bytes stimmen überein (192.168.17)."><p>192.168.17.189 · Netzmaske 255.255.255.0 · Ziel 192.168.17.19</p><ul><li data-richtig>ja</li><li>nein</li></ul></div>
+<div class="frage" data-erklaerung="Schon das erste Byte ist verschieden (192 ≠ 193)."><p>192.168.17.189 · Netzmaske 255.255.255.0 · Ziel 193.168.17.23</p><ul><li>ja</li><li data-richtig>nein</li></ul></div>
+<div class="frage" data-erklaerung="Bei 255.255.0.0 müssen nur die ersten zwei Bytes gleich sein (192.168)."><p>192.168.17.189 · Netzmaske 255.255.0.0 · Ziel 192.168.16.199</p><ul><li data-richtig>ja</li><li>nein</li></ul></div>
+<div class="frage" data-erklaerung="Die ersten zwei Bytes sind gleich (192.168)."><p>192.168.17.189 · Netzmaske 255.255.0.0 · Ziel 192.168.17.254</p><ul><li data-richtig>ja</li><li>nein</li></ul></div>
+<div class="frage" data-erklaerung="Die ersten drei Bytes sind gleich (88.20.111)."><p>88.20.111.1 · Netzmaske 255.255.255.0 · Ziel 88.20.111.254</p><ul><li data-richtig>ja</li><li>nein</li></ul></div>
+<div class="frage" data-erklaerung="Die Maske 0.0.0.0 hat gar keinen Netzteil: Alles gehört zum selben (unrealistischen) Subnetz."><p>88.100.111.1 · Netzmaske 0.0.0.0 · Ziel 213.45.19.89</p><ul><li data-richtig>ja</li><li>nein</li></ul></div>
+<div class="frage" data-erklaerung="252 = 11111100: Die ersten 30 Bit sind gleich, nur die letzten 2 Bit dürfen sich unterscheiden (1.2.3.0 bis 1.2.3.3)."><p>1.2.3.0 · Netzmaske 255.255.255.252 · Ziel 1.2.3.1</p><ul><li data-richtig>ja</li><li>nein</li></ul></div>
+<div class="frage" data-erklaerung="5 = 00000101: Das drittletzte Bit ist 1, bei 1.2.3.0 aber 0. Das Subnetz reicht nur von 1.2.3.0 bis 1.2.3.3."><p>1.2.3.0 · Netzmaske 255.255.255.252 · Ziel 1.2.3.5</p><ul><li>ja</li><li data-richtig>nein</li></ul></div>
+</div></li>
+<li>Wende beide Varianten an: Liegen 10.20.130.7 und 10.20.135.200 bei der Netzmaske 255.255.252.0 im selben Subnetz?
+<textarea class="notiz" data-notiz="netz-sub-4" rows="4" aria-label="Aufgabe 4: binär und dezimal prüfen"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 3 und 4, Live-Umfrage">
+<p><strong>Aufgabe 3</strong> prüft sich selbst (Arbeitsblatt „Subnetze“, Teil 1).</p>
+<p><strong>Aufgabe 4:</strong> Dezimal: 256 − 252 = 4; 130 : 4 = 32 Rest 2, 135 : 4 = 33 Rest 3 → verschieden, also <strong>nicht</strong> im selben Subnetz (Subnetze 10.20.128.0–10.20.131.255 und 10.20.132.0–10.20.135.255). Binär: 130 = 10000010, 135 = 10000111; UND mit 11111100 ergibt 10000000 = 128 bzw. 10000100 = 132.</p>
+<p>Teil 1 lässt sich als Live-Umfrage im Modus „Frage für Frage“ durchführen; die Verteilung zeigt sofort, wo (meist bei 0.0.0.0 und /30) Unsicherheit besteht.</p>
+<als-umfrage ids="netz-sub-quiz-1" titel="Netzwerke – Gleiches Subnetz?" modus="single"></als-umfrage>
+</lehrkraft>
+
+<h2>4. Krumme Netzmasken</h2>
+
+<p>Endet die Maske nicht an einer Bytegrenze, entstehen mehrere kleine Subnetze innerhalb eines Bytes. Beispiel <code>255.255.255.252</code> (/30) mit Adressen der Form 7.4.9.x: Nur die letzten zwei Bit sind frei.</p>
+
+<table class="verlauf">
+<thead><tr><th></th><th>Subnetz 1</th><th>Subnetz 2</th><th>Subnetz 3</th><th>…</th></tr></thead>
+<tbody>
+<tr><th>Netzadresse (…00)</th><td>7.4.9.0</td><td>7.4.9.4</td><td>7.4.9.8</td><td>…</td></tr>
+<tr><th>Geräte (…01, …10)</th><td>7.4.9.1 und .2</td><td>7.4.9.5 und .6</td><td>7.4.9.9 und .10</td><td>…</td></tr>
+<tr><th>Broadcast (…11)</th><td>7.4.9.3</td><td>7.4.9.7</td><td>7.4.9.11</td><td>…</td></tr>
+</tbody>
+</table>
+
+<p>Solche Mini-Netze mit nur zwei Geräten verbinden zum Beispiel zwei Router direkt miteinander. Umgekehrt fasst <code>255.255.252.0</code> (/22) vier „Dreierblöcke“ zusammen: 4.2.0.x bis 4.2.3.x bilden ein Subnetz mit 4 · 256 = 1 024 Adressen (Netzadresse 4.2.0.0, Broadcast 4.2.3.255), das nächste beginnt bei 4.2.4.0.</p>
+
+<aside class="box aufgabe">
+<ol start="5">
+<li>Die Netzmaske ist 255.255.255.248. Welche der folgenden Adressen liegen jeweils im selben Subnetz? Bilde Gruppen.<br><code>192.168.17.3</code> · <code>.7</code> · <code>.8</code> · <code>.9</code> · <code>.133</code> · <code>.134</code> · <code>.135</code> · <code>.136</code> · <code>.137</code>
+<textarea class="notiz" data-notiz="netz-sub-5" rows="2" aria-label="Aufgabe 5: Gruppen bilden"></textarea></li>
+<li>Sechs Subnetze sind gegeben, jeweils durch eine Netzmaske und die IP-Adresse eines Rechners darin. Entscheide für jeden Rechner links, zu welchen der Subnetze er gehören kann (ja/nein).
+<table class="verlauf ausfuell">
+<thead>
+<tr><th>Rechner</th><th>255.255.255.0<br>mit 2.6.6.5</th><th>255.255.255.0<br>mit 1.6.6.4</th><th>255.255.0.0<br>mit 1.5.6.3</th><th>255.255.0.0<br>mit 2.6.5.4</th><th>255.0.0.0<br>mit 1.6.2.6</th><th>255.0.0.0<br>mit 2.5.6.4</th></tr>
+</thead>
+<tbody>
+<tr><th>1.5.5.3</th><td><textarea class="notiz" data-notiz="netz-sub-6-1-1" rows="1" aria-label="Aufgabe 6: 1.5.5.3, Subnetz 1"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-1-2" rows="1" aria-label="Aufgabe 6: 1.5.5.3, Subnetz 2"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-1-3" rows="1" aria-label="Aufgabe 6: 1.5.5.3, Subnetz 3"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-1-4" rows="1" aria-label="Aufgabe 6: 1.5.5.3, Subnetz 4"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-1-5" rows="1" aria-label="Aufgabe 6: 1.5.5.3, Subnetz 5"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-1-6" rows="1" aria-label="Aufgabe 6: 1.5.5.3, Subnetz 6"></textarea></td></tr>
+<tr><th>1.5.6.5</th><td><textarea class="notiz" data-notiz="netz-sub-6-6-1" rows="1" aria-label="Aufgabe 6: 1.5.6.5, Subnetz 1"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-6-2" rows="1" aria-label="Aufgabe 6: 1.5.6.5, Subnetz 2"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-6-3" rows="1" aria-label="Aufgabe 6: 1.5.6.5, Subnetz 3"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-6-4" rows="1" aria-label="Aufgabe 6: 1.5.6.5, Subnetz 4"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-6-5" rows="1" aria-label="Aufgabe 6: 1.5.6.5, Subnetz 5"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-6-6" rows="1" aria-label="Aufgabe 6: 1.5.6.5, Subnetz 6"></textarea></td></tr>
+<tr><th>1.6.6.5</th><td><textarea class="notiz" data-notiz="netz-sub-6-2-1" rows="1" aria-label="Aufgabe 6: 1.6.6.5, Subnetz 1"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-2-2" rows="1" aria-label="Aufgabe 6: 1.6.6.5, Subnetz 2"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-2-3" rows="1" aria-label="Aufgabe 6: 1.6.6.5, Subnetz 3"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-2-4" rows="1" aria-label="Aufgabe 6: 1.6.6.5, Subnetz 4"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-2-5" rows="1" aria-label="Aufgabe 6: 1.6.6.5, Subnetz 5"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-2-6" rows="1" aria-label="Aufgabe 6: 1.6.6.5, Subnetz 6"></textarea></td></tr>
+<tr><th>2.6.5.6</th><td><textarea class="notiz" data-notiz="netz-sub-6-3-1" rows="1" aria-label="Aufgabe 6: 2.6.5.6, Subnetz 1"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-3-2" rows="1" aria-label="Aufgabe 6: 2.6.5.6, Subnetz 2"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-3-3" rows="1" aria-label="Aufgabe 6: 2.6.5.6, Subnetz 3"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-3-4" rows="1" aria-label="Aufgabe 6: 2.6.5.6, Subnetz 4"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-3-5" rows="1" aria-label="Aufgabe 6: 2.6.5.6, Subnetz 5"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-3-6" rows="1" aria-label="Aufgabe 6: 2.6.5.6, Subnetz 6"></textarea></td></tr>
+<tr><th>2.6.6.4</th><td><textarea class="notiz" data-notiz="netz-sub-6-4-1" rows="1" aria-label="Aufgabe 6: 2.6.6.4, Subnetz 1"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-4-2" rows="1" aria-label="Aufgabe 6: 2.6.6.4, Subnetz 2"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-4-3" rows="1" aria-label="Aufgabe 6: 2.6.6.4, Subnetz 3"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-4-4" rows="1" aria-label="Aufgabe 6: 2.6.6.4, Subnetz 4"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-4-5" rows="1" aria-label="Aufgabe 6: 2.6.6.4, Subnetz 5"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-4-6" rows="1" aria-label="Aufgabe 6: 2.6.6.4, Subnetz 6"></textarea></td></tr>
+<tr><th>1.5.2.6</th><td><textarea class="notiz" data-notiz="netz-sub-6-5-1" rows="1" aria-label="Aufgabe 6: 1.5.2.6, Subnetz 1"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-5-2" rows="1" aria-label="Aufgabe 6: 1.5.2.6, Subnetz 2"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-5-3" rows="1" aria-label="Aufgabe 6: 1.5.2.6, Subnetz 3"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-5-4" rows="1" aria-label="Aufgabe 6: 1.5.2.6, Subnetz 4"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-5-5" rows="1" aria-label="Aufgabe 6: 1.5.2.6, Subnetz 5"></textarea></td><td><textarea class="notiz" data-notiz="netz-sub-6-5-6" rows="1" aria-label="Aufgabe 6: 1.5.2.6, Subnetz 6"></textarea></td></tr>
+</tbody>
+</table></li>
+<li>Prüfe mit <code>ipconfig</code> die Netzmaske im Schulnetz. Liegt dein Rechner im selben Subnetz wie der deines Nachbarn? Wie viele Geräte passen in euer Subnetz?
+<textarea class="notiz" data-notiz="netz-sub-7" rows="2" aria-label="Aufgabe 7: Schulnetz untersuchen"></textarea></li>
+</ol>
+</aside>
+
+<aside class="box info" data-titel="Weiter üben">
+<p>Im <a href="/informatik/werkzeuge/subnetze/">Subnetz-Trainer</a> bekommst du beliebig viele neue Aufgaben – mit Erklärung in Binärdarstellung und einem Rechner für eigene Adressen.</p>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 5 bis 7">
+<ul>
+<li><strong>Aufgabe 5:</strong> 256 − 248 = 8er-Blöcke im letzten Byte: {.3, .7} (Block 0–7), {.8, .9} (8–15), {.133, .134, .135} (128–135), {.136, .137} (136–143).</li>
+<li><strong>Aufgabe 6</strong> (Spalten wie in der Tabelle):
+<table class="verlauf">
+<thead><tr><th>Rechner</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead>
+<tbody>
+<tr><th>1.5.5.3</th><td>nein</td><td>nein</td><td>ja</td><td>nein</td><td>ja</td><td>nein</td></tr>
+<tr><th>1.5.6.5</th><td>nein</td><td>nein</td><td>ja</td><td>nein</td><td>ja</td><td>nein</td></tr>
+<tr><th>1.6.6.5</th><td>nein</td><td>ja</td><td>nein</td><td>nein</td><td>ja</td><td>nein</td></tr>
+<tr><th>2.6.5.6</th><td>nein</td><td>nein</td><td>nein</td><td>ja</td><td>nein</td><td>ja</td></tr>
+<tr><th>2.6.6.4</th><td>ja</td><td>nein</td><td>nein</td><td>ja</td><td>nein</td><td>ja</td></tr>
+<tr><th>1.5.2.6</th><td>nein</td><td>nein</td><td>ja</td><td>nein</td><td>ja</td><td>nein</td></tr>
+</tbody>
+</table>
+Auffällig: Ein Rechner kann gleichzeitig zu mehreren der angegebenen Subnetze „passen“ – in der Praxis gehört er natürlich nur zu dem, dessen Netzmaske er selbst eingestellt hat.</li>
+<li><strong>Aufgabe 7:</strong> In Schulnetzen ist /24 häufig, oft aber auch /22, /21 oder größer (viele Geräte im WLAN).</li>
+</ul>
+</lehrkraft>

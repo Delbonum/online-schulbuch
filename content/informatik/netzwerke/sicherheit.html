@@ -1,0 +1,85 @@
+<!--
+beschreibung: Vertiefung Firewall, Proxy und VPN: Pakete filtern, Anfragen vermitteln, Verbindungen tunneln – mit Firewall-Regeln in der Netzwerk-Simulation.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> <strong>fakultative Zusatzseite</strong> (Vertiefung). <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/zuhause/">Das Netz zu Hause</a>. <strong>Dauer:</strong> eine bis zwei Stunden.</p>
+<p>Die Begriffe VPN und Proxy stehen in den Notizen der Präsentation zur Begriffsliste und tauchen im Alltag der Schülerinnen und Schüler häufig auf (Werbung für VPN-Dienste, Webfilter im Schulnetz). Die Seite verbindet sie mit dem Schichtenmodell und bietet einen Anknüpfungspunkt an das Kapitel Kryptologie (Verschlüsselung im Tunnel, HTTPS).</p>
+</lehrkraft>
+
+<h2>1. Firewall: der Türsteher</h2>
+
+<p>Eine <strong>Firewall</strong> (wörtlich „Brandschutzmauer“) prüft jedes Paket, das ankommt oder durchläuft, und entscheidet nach <strong>Regeln</strong>: durchlassen oder verwerfen. Typische Regeln beziehen sich auf die Absender- oder Zieladresse, das Protokoll und den Port – zum Beispiel: „Antworten auf eigene Anfragen durchlassen, alle unaufgeforderten Verbindungen von außen verwerfen“ oder „Pings von außen verwerfen“.</p>
+
+<p>Firewalls gibt es als Programm auf jedem Rechner (z. B. die Windows-Firewall – sie ist oft der Grund, warum das gegenseitige Anpingen in der Klasse nicht klappt) und in Routern, wo sie ganze Netze schützen. Eine Firewall arbeitet vor allem auf der Vermittlungs- und Transportschicht: Sie schaut auf IP-Adressen und Ports, nicht auf den Inhalt.</p>
+
+<aside class="box aufgabe">
+<ol>
+<li>Öffne das Beispiel <a href="/informatik/werkzeuge/netzwerk-simulation/?beispiel=router" target="_blank" rel="noopener">Zwei Netze mit Router</a> und trage bei Rechner D das fehlende Gateway 192.168.2.1 ein. Prüfe, dass alle Pings klappen.</li>
+<li>Klicke den Router an und öffne <em>Firewall …</em>. Schalte sie ein und lege Regeln fest, sodass Rechner aus dem linken Netz die Rechner im rechten Netz <strong>nicht</strong> mehr anpingen können, Pings innerhalb der Netze aber weiter funktionieren. Teste und schau in den Datenaustausch des Routers. Notiere deine Regeln.
+<textarea class="notiz" data-notiz="netz-sich-2" rows="3" aria-label="Aufgabe 2: Firewall-Regeln"></textarea></li>
+<li>Installiere auf Rechner C einen Webserver und starte ihn. Ändere die Firewall so, dass das linke Netz die Webseite von C aufrufen, C aber nicht anpingen kann.
+<textarea class="notiz" data-notiz="netz-sich-3" rows="2" aria-label="Aufgabe 3: Webserver freigeben"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 bis 3">
+<p>Die Firewall des Routers prüft nur Pakete, die er weiterleitet oder selbst empfängt; Pings innerhalb eines Netzes laufen gar nicht über ihn. Eine mögliche Lösung: Standard „durchlassen“ und eine Regel „Quelle 192.168.1.0/24, Ziel 192.168.2.0/24, Protokoll ICMP → verwerfen“; für Aufgabe 3 zusätzlich bzw. stattdessen Standard „verwerfen“ mit „Antworten durchlassen“ und einer Regel „TCP, Zielport 80 → durchlassen“. Verworfene Pakete erscheinen im Datenaustausch als eigene Zeilen. Die genauen Bezeichnungen stehen im Firewall-Fenster der Simulation.</p>
+</lehrkraft>
+
+<h2>2. Proxy: der Vermittler</h2>
+
+<p>Ein <strong>Proxy</strong> (englisch für „Stellvertreter“) steht zwischen Client und Server. Der Browser schickt seine Anfrage nicht direkt an den Webserver, sondern an den Proxy; der Proxy stellt die Anfrage in eigenem Namen und reicht die Antwort weiter. Der Webserver sieht also nur den Proxy, nicht den eigentlichen Client.</p>
+
+<p>Wozu? Schulen und Firmen nutzen Proxys, um Webseiten zu <strong>filtern</strong> (Jugendschutz, Schadsoftware), häufig aufgerufene Seiten <strong>zwischenzuspeichern</strong> und den Zugang zu protokollieren. Ein Proxy arbeitet auf der Anwendungsschicht – er „versteht“ HTTP.</p>
+
+<h2>3. VPN: der Tunnel</h2>
+
+<p>Ein <strong>VPN</strong> (<em>Virtual Private Network</em>, virtuelles privates Netz) baut eine <strong>verschlüsselte Verbindung</strong> – einen Tunnel – zwischen deinem Gerät und einem VPN-Server auf. Alle Pakete werden verschlüsselt in andere Pakete verpackt (wieder: Umschlag im Umschlag!) und zum VPN-Server geschickt, der sie auspackt und ins Internet weiterleitet.</p>
+
+<ul>
+<li><strong>Für Schulen und Firmen:</strong> Mitarbeitende können von zu Hause so arbeiten, als säßen sie im internen Netz (Remote-Verbindung) – und kommen an Dateien und Dienste, die von außen sonst gesperrt sind.</li>
+<li><strong>Für Privatleute:</strong> Im öffentlichen WLAN kann niemand im selben Netz mitlesen. Außerdem sehen Webseiten die IP-Adresse des VPN-Servers statt der eigenen – man kann so tun, als befände man sich an einem anderen Ort.</li>
+<li><strong>Aber:</strong> Ein VPN macht nicht unsichtbar. Der VPN-Anbieter sieht nun, was der Provider vorher sah – man verlagert das Vertrauen nur. Und angemeldete Konten, Cookies und Browserdaten verraten einen weiterhin.</li>
+</ul>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 200" role="img" aria-labelledby="netz-vpn-titel">
+<title id="netz-vpn-titel">VPN-Tunnel: Vom Laptop im Café führt ein verschlüsselter Tunnel durch das öffentliche WLAN und das Internet zum VPN-Server. Erst dort wird das Paket ausgepackt und an den Webserver weitergeschickt. Der Webserver sieht nur die Adresse des VPN-Servers.</title>
+<defs><marker id="pfeil-vpn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="flaeche" x="10" y="70" width="130" height="60" rx="8"/><text x="75" y="96" text-anchor="middle" class="titel">Laptop</text><text x="75" y="116" text-anchor="middle" class="klein">im Café-WLAN</text>
+<rect class="rahmen" x="420" y="70" width="130" height="60" rx="8"/><text x="485" y="96" text-anchor="middle" class="titel">VPN-Server</text><text x="485" y="116" text-anchor="middle" class="klein">z. B. in Zürich</text>
+<rect class="rahmen" x="600" y="70" width="130" height="60" rx="8"/><text x="665" y="96" text-anchor="middle" class="titel">Webserver</text><text x="665" y="116" text-anchor="middle" class="klein">sieht nur Zürich</text>
+<rect class="grau" x="140" y="82" width="280" height="36" rx="18"/><text x="280" y="105" text-anchor="middle">verschlüsselter Tunnel</text>
+<line class="linie" x1="550" y1="100" x2="596" y2="100" marker-end="url(#pfeil-vpn)"/>
+<text x="280" y="60" text-anchor="middle" class="klein">Wer im WLAN mitliest, sieht nur Datensalat.</text>
+<text x="575" y="160" text-anchor="middle" class="klein">ab hier unverschlüsselt (außer bei HTTPS)</text>
+</svg>
+<figcaption>Ein VPN verschlüsselt die Strecke bis zum VPN-Server – nicht weiter.</figcaption>
+</figure>
+
+<aside class="box aufgabe">
+<ol start="4">
+<li>Firewall, Proxy oder VPN? Ordne zu.
+<div class="sortieren" data-kategorien="Firewall|Proxy|VPN">
+<p>Ziehe oder tippe jede Situation zum passenden Begriff.</p>
+<ul>
+<li data-gehoert="Firewall" data-erklaerung="Unaufgeforderte Verbindungen von außen werden nach Regeln verworfen.">Der Laptop nimmt keine Verbindungsanfragen aus dem Internet an.</li>
+<li data-gehoert="Proxy" data-erklaerung="Der Proxy stellt die Anfragen stellvertretend und kann dabei filtern.">Im Schulnetz werden bestimmte Webseiten gesperrt.</li>
+<li data-gehoert="VPN" data-erklaerung="Über den Tunnel ist der Laptop praktisch im Schulnetz.">Eine Lehrkraft greift von zu Hause auf den Schulserver zu.</li>
+<li data-gehoert="VPN" data-erklaerung="Der Tunnel verschlüsselt alles bis zum VPN-Server.">Im Zug-WLAN soll niemand den Datenverkehr mitlesen können.</li>
+<li data-gehoert="Firewall" data-erklaerung="Pings sind ICMP-Pakete; die Firewall lässt sie nicht herein.">Ein Rechner antwortet nicht auf Pings aus der Klasse.</li>
+<li data-gehoert="Proxy" data-erklaerung="Ein Proxy kann häufig abgerufene Seiten zwischenspeichern.">Eine viel besuchte Seite wird im Firmennetz zwischengespeichert und schneller geliefert.</li>
+</ul>
+</div></li>
+<li>Eine Werbung verspricht: „Mit unserem VPN bist du im Internet völlig anonym!“ Nimm Stellung.
+<div class="felder zwei">
+<div><label for="netz-sich-5p">Was stimmt daran?</label><textarea class="notiz" id="netz-sich-5p" data-notiz="netz-sich-5p"></textarea></div>
+<div><label for="netz-sich-5c">Was stimmt nicht?</label><textarea class="notiz" id="netz-sich-5c" data-notiz="netz-sich-5c"></textarea></div>
+</div>
+<textarea class="notiz" data-notiz="netz-sich-5f" rows="2" aria-label="Aufgabe 5: Fazit"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 4 und 5">
+<p><strong>Aufgabe 4</strong> prüft sich selbst. <strong>Aufgabe 5:</strong> Stimmt: Die eigene IP-Adresse ist für Webseiten verborgen, die Verbindung im lokalen Netz und zum Provider verschlüsselt, der Provider sieht nicht, welche Seiten aufgerufen werden. Stimmt nicht: Der VPN-Anbieter kann alles sehen und eventuell protokollieren; Anmeldungen, Cookies und Browser-Fingerabdrücke identifizieren weiterhin; hinter dem VPN-Server ist der Verkehr nur bei HTTPS verschlüsselt. Fazit: mehr Privatsphäre gegenüber bestimmten Beteiligten, aber keine Anonymität.</p>
+</lehrkraft>

@@ -1,0 +1,156 @@
+<!--
+beschreibung: ARP, Broadcast und Switch: wie ein Rechner im lokalen Netz die MAC-Adresse zu einer IP-Adresse findet, wie ein Switch lernt – und was ping und arp -a in der Konsole zeigen.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite, Sicherung nach dem Rollenspiel. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/rollenspiel-lan/">Rollenspiel I</a>. <strong>Dauer:</strong> eine Stunde mit Konsolen-Experiment.</p>
+<p><strong>Konsole und Schulnetz:</strong> Gegenseitiges Anpingen klappt nicht immer. Häufige Gründe: Die Windows-Firewall blockiert eingehende Pings (ICMP), das WLAN ist als „öffentliches Netzwerk“ eingestuft, oder das Schul-WLAN trennt die Geräte voneinander (<em>Client Isolation</em>). Dann eignet sich das Anpingen des Gateways (siehe <code>ipconfig</code>) oder einer Webseite, und die Begegnung mit der Firewall wird selbst zum Thema. Firewalls nur kurz und nur mit Erlaubnis der Systembetreuung ausschalten.</p>
+</lehrkraft>
+
+<h2>1. ARP: von der IP-Adresse zur MAC-Adresse</h2>
+
+<p>Was ihr im Rollenspiel erfunden habt, machen echte Rechner genauso. Will ein Rechner ein Paket an eine IP-Adresse schicken, geht er in drei Schritten vor:</p>
+
+<ol>
+<li><strong>Liegt das Ziel in meinem Netz?</strong> Mithilfe der Netzmaske prüft er, ob die Ziel-IP zu seinem lokalen Netz gehört. (Was passiert, wenn nicht, erfährst du auf der Seite <a href="/informatik/netzwerke/router/">Router und Gateway</a>.)</li>
+<li><strong>Welche MAC gehört dazu?</strong> Steht die Ziel-IP noch nicht in seiner <strong>ARP-Tabelle</strong>, schickt er eine <strong>ARP-Anfrage</strong> an alle im lokalen Netz: „Wer hat die IP 192.168.0.34? Bitte melde dich bei 192.168.0.33.“ Als Ziel-MAC steht die <strong>Broadcast-Adresse</strong> <code>FF:FF:FF:FF:FF:FF</code>. Der Rechner mit dieser IP antwortet direkt: „Ich! Meine MAC ist 60:4E:46:F5:08:09.“</li>
+<li><strong>Abschicken:</strong> Jetzt kann er das IP-Paket in einen Ethernet-Rahmen mit der richtigen Ziel-MAC stecken und abschicken.</li>
+</ol>
+
+<p>Die Antwort merkt er sich in seiner ARP-Tabelle (auch <em>ARP-Cache</em> genannt), damit er nicht vor jedem Paket neu fragen muss. Weil sich Zuordnungen ändern können, verfallen die Einträge nach einiger Zeit wieder.</p>
+
+<aside class="box merke" data-titel="Merke">
+<p><strong>ARP</strong> (<em>Address Resolution Protocol</em>) ist das Bindeglied zwischen Vermittlungsschicht (IP-Adresse) und Netzzugangsschicht (MAC-Adresse): Es übersetzt im lokalen Netz eine bekannte IP-Adresse in die zugehörige MAC-Adresse – mit einer Anfrage an alle (<strong>Broadcast</strong>) und einer Antwort nur an den Fragenden.</p>
+<p>Ein <strong>Broadcast</strong> ist eine Nachricht an alle Geräte im selben lokalen Netz.</p>
+</aside>
+
+<aside class="box aufgabe">
+<ol>
+<li>Rechner A (192.168.0.33) will zum ersten Mal ein Ping an Rechner C (192.168.0.34) schicken. Bringe die Schritte in die richtige Reihenfolge.
+<ol class="reihenfolge">
+<li>A prüft mit der Netzmaske: 192.168.0.34 liegt im eigenen Netz.</li>
+<li>A sieht in seiner ARP-Tabelle nach – kein Eintrag für 192.168.0.34.</li>
+<li>A schickt eine ARP-Anfrage an FF:FF:FF:FF:FF:FF.</li>
+<li>Alle Rechner im Netz erhalten die Anfrage, nur C fühlt sich angesprochen.</li>
+<li>C schickt eine ARP-Antwort mit seiner MAC-Adresse an A.</li>
+<li>A trägt die MAC von C in seine ARP-Tabelle ein.</li>
+<li>A schickt das Ping in einem Ethernet-Rahmen an die MAC von C.</li>
+<li>C antwortet mit einem Pong an A.</li>
+</ol></li>
+</ol>
+</aside>
+
+<h2>2. Der Switch</h2>
+
+<p>Im Rollenspiel habt ihr die Umschläge von Hand weitergegeben. In einem echten LAN sind die Rechner meist über einen <strong>Switch</strong> verbunden, ein Verteilerkasten mit vielen Anschlüssen (Ports). Ein Switch arbeitet auf der Netzzugangsschicht: Er schaut nur auf die <strong>MAC-Adressen</strong> im Ethernet-Rahmen, nie auf die IP-Adressen.</p>
+
+<p>Das Schlaue an einem Switch: Er <strong>lernt</strong>. Kommt ein Rahmen an einem Anschluss an, merkt er sich in seiner <strong>Lerntabelle</strong>: „Diese Quell-MAC hängt an diesem Anschluss.“ Rahmen an eine MAC, die er schon kennt, schickt er nur noch an den richtigen Anschluss. Rahmen an eine unbekannte MAC und Broadcasts schickt er an alle Anschlüsse. So bekommt jeder Rechner nur die Pakete, die ihn betreffen – und die anderen Leitungen bleiben frei.</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 260" role="img" aria-labelledby="netz-switch-titel">
+<title id="netz-switch-titel">Ein Switch mit vier Anschlüssen. An Anschluss 1 hängt Rechner A, an 2 Rechner B, an 3 Rechner C, an 4 Rechner D. Daneben die Lerntabelle des Switches nach einem Ping von A an C: Anschluss 1 – MAC von A, Anschluss 3 – MAC von C.</title>
+<rect class="flaeche" x="210" y="110" width="220" height="50" rx="8"/><text x="320" y="141" text-anchor="middle" class="titel">Switch</text>
+<g class="klein"><text x="240" y="104">1</text><text x="295" y="104">2</text><text x="350" y="104">3</text><text x="405" y="104">4</text></g>
+<line class="linie" x1="243" y1="110" x2="90" y2="50"/><line class="linie" x1="298" y1="110" x2="250" y2="40"/><line class="linie" x1="353" y1="110" x2="400" y2="40"/><line class="linie" x1="408" y1="110" x2="540" y2="50"/>
+<rect class="rahmen" x="40" y="20" width="100" height="40" rx="6"/><text x="90" y="45" text-anchor="middle">A</text>
+<rect class="rahmen" x="200" y="10" width="100" height="40" rx="6"/><text x="250" y="35" text-anchor="middle">B</text>
+<rect class="rahmen" x="350" y="10" width="100" height="40" rx="6"/><text x="400" y="35" text-anchor="middle">C</text>
+<rect class="rahmen" x="490" y="20" width="100" height="40" rx="6"/><text x="540" y="45" text-anchor="middle">D</text>
+<rect class="grau" x="470" y="150" width="250" height="96" rx="8"/>
+<text x="490" y="174" class="titel">Lerntabelle</text>
+<text x="490" y="198">Anschluss 1 → MAC von A</text>
+<text x="490" y="222">Anschluss 3 → MAC von C</text>
+<text x="20" y="200" class="klein">Nach einem Ping von A an C kennt der Switch</text>
+<text x="20" y="218" class="klein">die Anschlüsse von A und C. B und D hat er</text>
+<text x="20" y="236" class="klein">noch nicht „gehört“.</text>
+</svg>
+<figcaption>Ein Switch lernt aus jedem Rahmen, an welchem Anschluss welche MAC-Adresse hängt.</figcaption>
+</figure>
+
+<aside class="box aufgabe">
+<ol start="2">
+<li>Der Switch oben ist gerade eingeschaltet worden, seine Lerntabelle ist leer. A schickt eine ARP-Anfrage nach der IP von C. Wohin schickt der Switch die Anfrage? Was trägt er in seine Lerntabelle ein? Und was passiert bei der Antwort von C?
+<textarea class="notiz" data-notiz="netz-arp-2" rows="4" aria-label="Aufgabe 2: Switch und ARP"></textarea></li>
+<li>Früher gab es statt Switches <strong>Hubs</strong>, die jeden Rahmen einfach an alle Anschlüsse weitergeben. Nenne zwei Nachteile.
+<textarea class="notiz" data-notiz="netz-arp-3" rows="2" aria-label="Aufgabe 3: Nachteile eines Hubs"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 bis 3">
+<ul>
+<li><strong>Aufgabe 1</strong> prüft sich selbst.</li>
+<li><strong>Aufgabe 2:</strong> Die ARP-Anfrage ist ein Broadcast: Der Switch schickt sie an alle anderen Anschlüsse (2, 3, 4) und lernt „Anschluss 1 → MAC von A“. Die Antwort von C geht an die MAC von A; die kennt er schon, also schickt er sie nur an Anschluss 1 und lernt zusätzlich „Anschluss 3 → MAC von C“. Ab jetzt laufen Pakete zwischen A und C nur noch über die Anschlüsse 1 und 3.</li>
+<li><strong>Aufgabe 3:</strong> Alle Leitungen sind ständig mit fremden Paketen belastet (langsam, Kollisionen); jeder Rechner kann alle Pakete mitlesen (Datenschutz, Sicherheit).</li>
+</ul>
+</lehrkraft>
+
+<h2>3. Ping: Bist du da?</h2>
+
+<p>Mit <strong>ping</strong> prüft man, ob ein anderes Gerät erreichbar ist. Der Rechner schickt eine kurze Echo-Anfrage, das Ziel schickt sie zurück – wie im Rollenspiel „Ping“ und „Pong“. Gemessen wird, wie lange Hin- und Rückweg dauern. Ping ist eines der wichtigsten Werkzeuge, wenn in einem Netz etwas nicht funktioniert.</p>
+
+<aside class="box aufgabe">
+<ol start="4">
+<li><strong>Experiment in der Konsole.</strong> Ermittle mit <code>ipconfig</code> die IP-Adresse deines Standardgateways. Gib dann ein (Adresse anpassen):
+<pre class="code"><code>arp -a
+ping 192.168.178.1
+arp -a</code></pre>
+Vergleiche die beiden Ausgaben von <code>arp -a</code>. Was hat sich verändert?
+<textarea class="notiz" data-notiz="netz-arp-4" rows="3" aria-label="Aufgabe 4: Vergleich der ARP-Tabellen"></textarea></li>
+<li>Pinge die IP-Adresse deines Sitznachbarn an (sie steht in seiner Ausgabe von <code>ipconfig</code>). Klappt es? Schau danach in deine ARP-Tabelle.
+<textarea class="notiz" data-notiz="netz-arp-5" rows="2" aria-label="Aufgabe 5: Ping an den Nachbarn"></textarea></li>
+<li>Pinge eine Webseite an, z. B. <code>ping online-schulbuch.de</code>. Vergleiche die Zeiten mit dem Ping an dein Gateway. Steht die IP-Adresse der Webseite danach in deiner ARP-Tabelle? Stelle eine Vermutung an, warum (nicht).
+<textarea class="notiz" data-notiz="netz-arp-6" rows="3" aria-label="Aufgabe 6: Ping an eine Webseite"></textarea></li>
+</ol>
+</aside>
+
+<details class="aufklapp">
+<summary>So sehen die Ausgaben ungefähr aus – mit Erklärung</summary>
+<pre class="code"><code>C:\&gt; ping 192.168.178.1
+
+Ping wird ausgeführt für 192.168.178.1 mit 32 Bytes Daten:
+Antwort von 192.168.178.1: Bytes=32 Zeit=3ms TTL=64
+Antwort von 192.168.178.1: Bytes=32 Zeit=2ms TTL=64
+Antwort von 192.168.178.1: Bytes=32 Zeit=2ms TTL=64
+Antwort von 192.168.178.1: Bytes=32 Zeit=4ms TTL=64
+
+Ping-Statistik für 192.168.178.1:
+    Pakete: Gesendet = 4, Empfangen = 4, Verloren = 0
+    (0% Verlust),</code></pre>
+<ul>
+<li>Windows schickt vier Echo-Anfragen mit je 32 Byte Daten.</li>
+<li><strong>Zeit:</strong> wie lange Hin- und Rückweg gedauert haben, in Millisekunden. Im eigenen Netz sind das wenige Millisekunden, zu Servern auf anderen Kontinenten oft über 100.</li>
+<li><strong>TTL</strong> (<em>Time to Live</em>): Jeder Router, den ein Paket passiert, zählt diesen Wert um 1 herunter; bei 0 wird das Paket weggeworfen. So können Pakete nicht ewig im Kreis laufen.</li>
+<li><strong>Verloren:</strong> Pakete ohne Antwort. „Zeitüberschreitung der Anforderung“ heißt: keine Antwort (Gerät aus, Firewall, falsche Adresse).</li>
+</ul>
+<pre class="code"><code>C:\&gt; arp -a
+
+Schnittstelle: 192.168.178.34 --- 0x7
+  Internetadresse       Physische Adresse     Typ
+  192.168.178.1         dc-39-6f-a1-22-08     dynamisch
+  192.168.178.255       ff-ff-ff-ff-ff-ff     statisch
+  224.0.0.22            01-00-5e-00-00-16     statisch</code></pre>
+<ul>
+<li>Jede Zeile ordnet einer <strong>IP-Adresse</strong> (Internetadresse) eine <strong>MAC-Adresse</strong> (physische Adresse) zu.</li>
+<li><strong>dynamisch:</strong> per ARP gelernt, verfällt nach einiger Zeit. <strong>statisch:</strong> fest eingetragen.</li>
+<li><code>192.168.178.255</code> mit <code>ff-ff-ff-ff-ff-ff</code> ist die Broadcast-Adresse des Netzes. Adressen ab 224 sind für Gruppen-Nachrichten (Multicast) reserviert.</li>
+</ul>
+</details>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 4 bis 6">
+<ul>
+<li><strong>Aufgabe 4:</strong> Nach dem Ping steht (spätestens jetzt) ein dynamischer Eintrag für das Gateway in der Tabelle – der Rechner hat per ARP nach dessen MAC gefragt. War der Eintrag schon da, hatte der Rechner vorher bereits mit dem Gateway gesprochen (das tut er ständig, sobald er ins Internet geht).</li>
+<li><strong>Aufgabe 5:</strong> Klappt es, steht danach auch der Nachbar in der ARP-Tabelle. Klappt es nicht, siehe Hinweise zu Firewall und Client Isolation oben; der ARP-Eintrag erscheint oft trotzdem, weil ARP unterhalb der Firewall-Regeln für Ping funktioniert – ein schöner Beleg für die Schichtentrennung.</li>
+<li><strong>Aufgabe 6:</strong> Die Zeiten sind deutlich länger. Die IP der Webseite erscheint <em>nicht</em> in der ARP-Tabelle: Sie liegt nicht im lokalen Netz, also wird das Paket an das Gateway übergeben – ARP fragt nur nach dessen MAC. Das ist die Brücke zur Seite <a href="/informatik/netzwerke/router/">Router und Gateway</a>. Dass <code>ping</code> den Namen in eine IP-Adresse übersetzt, kommt auf der Seite <a href="/informatik/netzwerke/dns/">DNS</a> zur Sprache.</li>
+</ul>
+</lehrkraft>
+
+<div class="quiz" data-id="netz-arp-quiz" data-anweisung="Wähle die richtige Antwort.">
+<div class="frage" data-erklaerung="Eine ARP-Anfrage geht an alle (Broadcast), denn der Fragende kennt die Ziel-MAC ja gerade nicht."><p>An wen geht eine ARP-Anfrage?</p><ul><li>an den DNS-Server</li><li data-richtig>an alle Geräte im lokalen Netz</li><li>nur an das gesuchte Gerät</li></ul></div>
+<div class="frage" data-erklaerung="Der Switch arbeitet auf der Netzzugangsschicht und entscheidet nach der Ziel-MAC."><p>Wonach entscheidet ein Switch, wohin er einen Rahmen schickt?</p><ul><li>nach der Ziel-IP</li><li data-richtig>nach der Ziel-MAC</li><li>nach dem Inhalt der Nachricht</li></ul></div>
+<div class="frage" data-erklaerung="Die TTL wird von jedem Router um 1 verringert; bei 0 wird das Paket verworfen."><p>Was bedeutet TTL in der Ausgabe von ping?</p><ul><li>die Zeit in Millisekunden</li><li data-richtig>wie viele Router das Paket noch passieren darf</li><li>die Größe des Pakets</li></ul></div>
+<div class="frage" data-erklaerung="Für Ziele außerhalb des lokalen Netzes fragt ARP nur nach der MAC des Gateways."><p>Du pingst einen Server in einem anderen Land an. Wessen MAC-Adresse erfragt dein Rechner per ARP?</p><ul><li>die des Servers</li><li data-richtig>die des Gateways (Routers) im eigenen Netz</li><li>gar keine</li></ul></div>
+</div>
+
+<lehrkraft titel="Als Live-Umfrage durchführen">
+<p>Frage 4 nimmt die Seite zu Routern vorweg und eignet sich als Diagnose, ob das Prinzip „ARP nur im lokalen Netz“ verstanden ist.</p>
+<als-umfrage ids="netz-arp-quiz" titel="Netzwerke – ARP und Switch" modus="single"></als-umfrage>
+</lehrkraft>

@@ -449,3 +449,65 @@ test('Handy (smartphone): Endgerät mit Software, per WLAN (wie ein Kabel) am Sw
   n.start();
   assert.match(ping(n, h, '192.168.0.1').at(-1), /4 empfangen/);
 });
+
+test('Beispielnetze: alle lassen sich bauen, speichern und laden; Rollenspiel-Netz und Fehlersuche verhalten sich wie beschrieben', async () => {
+  const { BEISPIELE, beispiel } = await import('../apps/werkzeuge/netzwerk/beispiele.js');
+  const slugs = new Set();
+  for (const b of BEISPIELE) {
+    assert.ok(/^[a-z-]+$/.test(b.slug) && !slugs.has(b.slug), `Kurzname ${b.slug}`);
+    slugs.add(b.slug);
+    const n = b.baue();
+    assert.ok(n.geraete.size > 0, b.titel);
+    assert.equal(Netz.ausJSON(JSON.parse(JSON.stringify(n))).geraete.size, n.geraete.size);
+  }
+  assert.equal(beispiel('gibt-es-nicht'), null);
+
+  // Rollenspiel-Netz: ping über drei Subnetze per Name (DNS) und traceroute über zwei Router
+  const n = beispiel('rollenspiel').baue();
+  const namen = (name) => [...n.geraete.values()].find((g) => g.name === name);
+  n.start();
+  assert.match(ping(n, namen('adler'), 'luchs').at(-1), /4 empfangen/);
+  assert.match(ping(n, namen('elch'), '1.1.3.3').at(-1), /4 empfangen/);
+
+  // Fehlersuche: C liegt in einem anderen Subnetz, E hängt an keinem Kabel
+  const f = beispiel('fehlersuche-lan').baue();
+  const fg = (name) => [...f.geraete.values()].find((g) => g.name === name);
+  f.start();
+  assert.match(ping(f, fg('Rechner B'), '192.168.0.11').at(-1), /4 empfangen/);
+  assert.match(ping(f, fg('Rechner B'), '192.168.1.13').join('\n'), /nicht erreichbar|0 empfangen/);
+  assert.match(ping(f, fg('Rechner B'), '192.168.0.15').at(-1), /0 empfangen/);
+
+  // Drei Netze: ohne eigene Routen kein Durchkommen, mit Routen schon
+  const d = beispiel('drei-netze').baue();
+  const dg = (name) => [...d.geraete.values()].find((g) => g.name === name);
+  d.start();
+  assert.doesNotMatch(ping(d, dg('Rechner A1'), '192.168.20.10').at(-1), /4 empfangen/);
+  d.stop();
+  dg('Router 1').routen = [{ ziel: '192.168.20.0', maske: '255.255.255.0', gateway: '10.0.0.2' }];
+  dg('Router 2').routen = [{ ziel: '192.168.10.0', maske: '255.255.255.0', gateway: '10.0.0.1' }];
+  d.start();
+  assert.match(ping(d, dg('Rechner A1'), '192.168.20.10').at(-1), /4 empfangen/);
+});
+
+test('Klassen-Internet: Gruppennetz und Provider-Netz über Modems verbunden (Ping per Namen, Webseite)', async () => {
+  const { beispiel } = await import('../apps/werkzeuge/netzwerk/beispiele.js');
+  const p = beispiel('provider').baue();
+  const g1 = beispiel('heimnetz').baue();
+  const nach = (n, name) => [...n.geraete.values()].find((g) => g.name === name);
+  const mP = nach(p, 'Modem Gruppe 1');
+  const mG = nach(g1, 'Modem');
+  p.modemAusgang = (g, r) => { if (g.id === mP.id) g1.modemEingang(mG.id, r); };
+  g1.modemAusgang = (g, r) => p.modemEingang(mP.id, r);
+  p.start(); g1.start();
+  const zeilen = [];
+  let fertig = false;
+  g1.ping(nach(g1, 'Notebook'), 'portal.provider.test', (z) => zeilen.push(z), () => { fertig = true; });
+  for (let i = 0; i < 4000 && !fertig; i++) { p.schritt(); g1.schritt(); }
+  assert.match(zeilen.at(-1), /4 empfangen/, zeilen.join('\n'));
+  // und umgekehrt: Provider-Notebook erreicht den Webserver der Gruppe per Namen
+  const z2 = [];
+  fertig = false;
+  p.ping(nach(p, 'Technik'), 'www.gruppe1.test', (z) => z2.push(z), () => { fertig = true; });
+  for (let i = 0; i < 4000 && !fertig; i++) { p.schritt(); g1.schritt(); }
+  assert.match(z2.at(-1), /4 empfangen/, z2.join('\n'));
+});

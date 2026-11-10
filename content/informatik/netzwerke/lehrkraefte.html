@@ -1,0 +1,167 @@
+<!--
+beschreibung: Hinweise für Lehrkräfte zur Reihe Netzwerksysteme: Konzeption, Bausteine, Planungsmodelle, Organisation der Rollenspiele, Netzwerk-Simulation statt Filius, Konsole im Schulnetz, Begriffe, Differenzierung und Leistungsüberprüfung.
+unterseiten: nein
+-->
+<p>Diese Seite enthält die Konzeption der Reihe, eine Übersicht aller Bausteine mit Kern- und Zusatzseiten, drei Planungsmodelle, Hinweise zur Organisation der Rollenspiele, zur Netzwerk-Simulation und zur Konsole im Schulnetz sowie zu Differenzierung und Leistungsüberprüfung. Die Hinweise sind nach der Anmeldung für Lehrkräfte sichtbar.</p>
+
+<lehrkraft titel="Hinweise für Lehrkräfte">
+
+<h2>Konzeption</h2>
+
+<p>Die Reihe führt vom einfachsten Nachrichtensystem (Leuchtfeuer: ein Bit, vorher vereinbarte Bedeutung) über allgemeine Konzepte (Sender-Empfänger-Modell, Protokoll, Schichtenmodell) zur konkreten Technik des Internets. Leitgedanken:</p>
+<ul>
+<li><strong>Vom Erleben zum Begriff:</strong> Zentrale Abläufe (Kapselung, ARP, Routing, DNS) werden zuerst im <strong>Rollenspiel</strong> von Hand durchgespielt, dann fachlich gesichert und schließlich in der <strong>Netzwerk-Simulation</strong> überprüft. Die Simulation zeigt im Datenaustausch genau die Schritte, die die Klasse im Spiel mit Umschlägen gemacht hat.</li>
+<li><strong>Zwei Umschläge als roter Faden:</strong> innen die IP-Adressen (wer mit wem, bleibt gleich), außen die MAC-Adressen (wer an wen, ändert sich bei jedem Router). Fast jede Seite kommt darauf zurück.</li>
+<li><strong>Das eigene Netz untersuchen:</strong> Konsolen-Experimente (<code>ipconfig</code>, <code>ping</code>, <code>arp -a</code>, <code>nslookup</code>, <code>route print</code>, <code>tracert</code>, <code>netstat</code>) verbinden das Modell mit dem echten Schulnetz; zu jedem Befehl ist eine Beispielausgabe mit Erklärung aufklappbar.</li>
+<li><strong>Didaktische Reduktion:</strong> Verwendet wird das TCP/IP-Modell mit vier Schichten; die <strong>Transportschicht</strong> wird genannt, im weiteren Verlauf aber ausgeklammert und auf einer fakultativen Seite nachgeliefert. IPv6, NAT im Detail, Routing-Protokolle und Verschlüsselung werden nur angedeutet.</li>
+</ul>
+
+<h2>Die Bausteine im Überblick</h2>
+
+<table class="verlauf">
+<thead><tr><th>Seite</th><th>Typ</th><th>Dauer</th><th>Kern</th><th>Material, Werkzeuge</th></tr></thead>
+<tbody>
+<tr><td><a href="/informatik/netzwerke/leuchtfeuer/">Einstieg: Leuchtfeuer</a></td><td>Kern</td><td>1 h</td><td>1 Bit, Vereinbarung, indirekte Kommunikation</td><td>Filmausschnitt, Selbsteinschätzung (Live-Umfrage)</td></tr>
+<tr><td><a href="/informatik/netzwerke/geschichte/">Geschichte</a></td><td>Kern, kürzbar</td><td>0,5–1 h</td><td>Telegraf, Atlantikkabel, ARPANET, WWW, Seekabel</td><td>Zeitleiste, Seekabelkarte</td></tr>
+<tr><td><a href="/informatik/netzwerke/sender-empfaenger/">Sender-Empfänger-Modell</a></td><td>Kern</td><td>1 h</td><td>vier Elemente, Nachricht und Signal</td><td>Taschenlampen-Experiment</td></tr>
+<tr><td><a href="/informatik/netzwerke/protokolle/">Protokolle</a></td><td>Kern</td><td>1 h</td><td>Protokoll = Format + Ablauf</td><td>Würfelspiel, eigenes Lichtprotokoll</td></tr>
+<tr><td><a href="/informatik/netzwerke/schichtenmodell/">Schichtenmodell</a></td><td>Kern</td><td>1–2 h</td><td>Post-Analogie, TCP/IP, Kapselung, Client/Server</td><td></td></tr>
+<tr><td><a href="/informatik/netzwerke/internet/">Was ist das Internet?</a></td><td>Kern</td><td>1 h</td><td>Netz der Netze, LAN/WLAN, Backbone, Internet ≠ WWW</td><td>Erklärvideo (Link)</td></tr>
+<tr><td><a href="/informatik/netzwerke/adressen/">MAC und IP</a></td><td>Kern</td><td>1–2 h</td><td>physische/logische Adresse, IPv4/IPv6, privat/öffentlich</td><td>Konsole: <code>ipconfig /all</code></td></tr>
+<tr><td><a href="/informatik/netzwerke/rollenspiel-lan/">Rollenspiel I</a></td><td>Kern</td><td>2 h</td><td>Stufe 1 (MAC-Liste), Stufe 2 (ARP)</td><td>Rollenspiel-Werkzeug, Umschläge</td></tr>
+<tr><td><a href="/informatik/netzwerke/arp/">ARP und Switch</a></td><td>Kern</td><td>1 h</td><td>ARP, Broadcast, Switch, Ping</td><td>Konsole: <code>ping</code>, <code>arp -a</code></td></tr>
+<tr><td><a href="/informatik/netzwerke/lan-simulieren/">LAN simulieren</a></td><td>Kern</td><td>2 h</td><td>LAN bauen, Datenaustausch, Fehlersuche; DHCP (Zusatz)</td><td>Simulation</td></tr>
+<tr><td><a href="/informatik/netzwerke/subnetze/">Subnetze</a></td><td>Kern</td><td>2 h</td><td>Netzmaske, Netz-/Broadcast-Adresse, gleiches Subnetz</td><td>Subnetz-Trainer</td></tr>
+<tr><td><a href="/informatik/netzwerke/router/">Router und Gateway</a></td><td>Kern</td><td>2 h</td><td>Gateway, Routingtabelle, Konfiguration</td><td>Konsole: <code>route print</code>, <code>tracert</code></td></tr>
+<tr><td><a href="/informatik/netzwerke/dns/">DNS</a></td><td>Kern</td><td>1–2 h</td><td>Namensauflösung, Domain und URL</td><td>Konsole: <code>nslookup</code>, <code>ipconfig /displaydns</code>; Simulation</td></tr>
+<tr><td><a href="/informatik/netzwerke/rollenspiel-internet/">Rollenspiel II</a></td><td>Kern</td><td>2 h</td><td>Stufe 3: Router, Backbone, DNS</td><td>Rollenspiel-Werkzeug, Klebezettel</td></tr>
+<tr><td><a href="/informatik/netzwerke/weg-einer-nachricht/">Weg einer Nachricht</a></td><td>Kern</td><td>1 h</td><td>Ablauf Schritt für Schritt, Schichten bei jeder Station</td><td></td></tr>
+<tr><td><a href="/informatik/netzwerke/routing-simulieren/">Routing simulieren</a></td><td>Kern</td><td>2 h</td><td>Router einbauen, Routen eintragen, Rollenspiel-Netz</td><td>Simulation (Beispielnetze)</td></tr>
+<tr><td><a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a></td><td>Kern</td><td>2 h</td><td>URL, Browser, HTTP, Host, Provider</td><td>Browser-Entwicklerwerkzeuge, Simulation</td></tr>
+<tr><td><a href="/informatik/netzwerke/transportschicht/">Transportschicht</a></td><td><strong>fakultativ</strong></td><td>2 h</td><td>Ports, TCP, UDP, Handshake</td><td>Paket-Puzzle, <code>netstat</code>, Echo-Server</td></tr>
+<tr><td><a href="/informatik/netzwerke/zuhause/">Netz zu Hause</a></td><td>Kern</td><td>1 h</td><td>Heimrouter, Modem, Provider, NAT</td><td></td></tr>
+<tr><td><a href="/informatik/netzwerke/sicherheit/">Firewall, Proxy, VPN</a></td><td><strong>fakultativ</strong></td><td>1–2 h</td><td>Paketfilter, Stellvertreter, Tunnel</td><td>Simulation: Firewall</td></tr>
+<tr><td><a href="/informatik/netzwerke/begriffe/">Begriffe und Selbsttest</a></td><td>Kern</td><td>1 h</td><td>Wiederholung, Vorher-nachher-Vergleich</td><td>Live-Umfrage</td></tr>
+<tr><td><a href="/informatik/netzwerke/klassen-internet/">Klassen-Internet</a></td><td><strong>fakultativ</strong></td><td>4–6 h</td><td>Projekt: Netze über Modems verbinden</td><td>Simulation auf mehreren Geräten</td></tr>
+</tbody>
+</table>
+
+<p>Zusätzlich fakultativ sind innerhalb der Kernseiten: DHCP (<a href="/informatik/netzwerke/lan-simulieren/">LAN simulieren</a>, Abschnitt 4), „krumme“ Netzmasken (<a href="/informatik/netzwerke/subnetze/">Subnetze</a>, Abschnitt 4), Abschnitt 4 und 5 auf <a href="/informatik/netzwerke/routing-simulieren/">Routing simulieren</a>.</p>
+
+<h2>Drei Modelle für die Planung</h2>
+
+<h3>Modell A · Kompakt (etwa 16 Stunden)</h3>
+<p>Leuchtfeuer (mit Geschichte als kurzem Vortrag) – Sender-Empfänger-Modell und Protokolle zusammen (2 h) – Schichtenmodell – Internet – MAC und IP – Rollenspiel I nur Stufe 2 (1,5 h) – ARP und Switch – LAN simulieren (ohne DHCP) – Subnetze (ohne Abschnitt 4, 1 h) – Router (Abschnitt 1–4) – DNS (1 h) – Rollenspiel II mit vereinfachtem ARP (1,5 h) – Routing simulieren (Abschnitt 1–3) – Webseitenaufruf (1 h) – Begriffe. „Weg einer Nachricht“ und „Netz zu Hause“ als Hausaufgabe.</p>
+
+<h3>Modell B · Standard (etwa 24 Stunden)</h3>
+<p>Alle Kernseiten in der Reihenfolge des Kapitels, Rollenspiel I mit Stufe 1 und 2, Rollenspiel II mit vollständigem ARP. Eine Lernkontrolle nach „Routing simulieren“ oder am Ende.</p>
+
+<h3>Modell C · Erweitert (etwa 32 Stunden)</h3>
+<p>Modell B, zusätzlich die Transportschicht nach dem Webseitenaufruf, Firewall/Proxy/VPN nach „Netz zu Hause“ und zum Abschluss das Projekt Klassen-Internet (mit Dokumentation als Bewertungsgrundlage).</p>
+
+<h2>Die Rollenspiele organisieren</h2>
+
+<p>Das Rollenspiel ist in <strong>drei Stufen</strong> angelegt, die aufeinander aufbauen. Alle drei nutzen dieselben Rollenkarten (gleiche Zufallszahl im Werkzeug), sodass Namen, MAC- und IP-Adressen über die Stufen gleich bleiben.</p>
+
+<table class="verlauf">
+<thead><tr><th>Stufe</th><th>Inhalt</th><th>Platzierung</th><th>Zweck</th></tr></thead>
+<tbody>
+<tr><td>1 · LAN ohne ARP</td><td>MAC-Liste je Gruppe; Ping, Mini-Unterhaltung</td><td>direkt nach „MAC und IP“ (optional)</td><td>Kapselung festigen; Frage „Woher die MAC?“ entsteht</td></tr>
+<tr><td>2 · LAN mit ARP</td><td>Broadcast FF:FF, ARP-Tabelle, Zwischenspiel „Umzug“</td><td>im Anschluss an Stufe 1 (gleiche Stunde); ARP wird im Spiel entdeckt</td><td>ARP und Broadcast erleben, danach Theorie und Simulation</td></tr>
+<tr><td>3 · Netze verbinden</td><td>Router mit zwei Händen, Backbone, Gateway, DNS-Server</td><td>nach Router (Abschnitt 1–3) und DNS</td><td>Routing und Namensauflösung erleben; MACs ändern sich, IPs nicht</td></tr>
+</tbody>
+</table>
+
+<ul>
+<li><strong>Rollen verteilen:</strong> Das Werkzeug <a href="/informatik/werkzeuge/netzwerk-rollenspiel/">Rollenspiel: Nachrichten im Netzwerk</a> erzeugt aus Anzahl, Gruppen, Stufe und einer Zufallszahl einen Code (z. B. 24-4-2-517). <em>Digital:</em> QR-Code zeigen, alle tragen ihre Nummer ein (durchzählen oder Nummern nach Tischgruppen vergeben); es wird nichts gespeichert und nichts an einen Server geschickt. <em>Analog:</em> Rollenkarten, MAC-Listen, Umschläge, Zettel und Spielregeln drucken. Die analoge Variante ist günstig, wenn Gruppen räumlich verteilt werden sollen oder keine Geräte zur Verfügung stehen.</li>
+<li><strong>Raum:</strong> Jede Gruppe (5–8 Personen) sitzt als Insel zusammen. In Stufe 3 stehen die Router in der Mitte (Backbone) und reichen mit der rechten Hand in ihre Gruppe.</li>
+<li><strong>Umschläge:</strong> zwei Größen (z. B. C6 innen, C5 außen) oder gefaltete Zettel; Werte durchstreichen und wiederverwenden. Rund drei Umschlagpaare und je zwei ARP-, DNS- und Nachrichtenzettel pro Person reichen.</li>
+<li><strong>Beobachterrolle:</strong> Eine Person je Gruppe protokolliert jede Übergabe (Quelle, Ziel, innen, außen) – entspricht dem Datenaustausch der Simulation und liefert Material für die Auswertung.</li>
+<li><strong>Typische Stolpersteine:</strong> Zurufe statt Umschläge (auf Regel 1 bestehen), Router öffnen den inneren Umschlag, Quell- und Ziel-MAC vertauscht, Staus beim DNS-Server. Stau und Fehler sind lehrreich und sollten in der Auswertung aufgegriffen werden.</li>
+<li><strong>Abweichung von der Vorlage:</strong> Die Rollenkarten der ursprünglichen Materialien verwenden als Netzmaske „9.9.9.0“; hier wird durchgehend 255.255.255.0 verwendet, damit das Spiel zur Subnetz-Seite passt. Die MAC-Adressen sind auf zwei Hex-Paare verkürzt (statt drei Buchstaben), um den hexadezimalen Charakter echter MAC-Adressen anzudeuten.</li>
+</ul>
+
+<p><strong>Ähnliche Rollenspiele</strong> (zur Anregung): das Rollenspiel „IPvS(imple)“ von oinf.ch, auf dem Regeln und Struktogramm dieser Reihe beruhen; das „Rollenspiel Netzwerk“ der ZPG Informatik Baden-Württemberg mit Switch und „Auskunft“ (DNS); das „Internetspiel“ der TU Dresden mit Routern und Adresskarten; aus <em>CS Unplugged</em> „The Orange Game“ (Routing und Verklemmung) und „Tablets of Stone“ (Pakete und Protokolle, Grundlage des Paket-Puzzles auf der Seite zur Transportschicht).</p>
+
+<h2>Netzwerk-Simulation statt Filius</h2>
+
+<p>Alle Simulationsaufgaben der Filius-Arbeitsblätter lassen sich mit der <a href="/informatik/werkzeuge/netzwerk-simulation/">Netzwerk-Simulation</a> des Schulbuchs lösen. Sie läuft im Browser (auch auf Tablets), braucht keine Installation und bildet dieselben Abläufe ab (Datenaustausch je Schicht, ARP, Lerntabelle des Switches, Weiterleitungstabellen, DNS, DHCP, Webserver, E-Mail, Firewall). Zusätzlich gibt es:</p>
+<ul>
+<li><strong>Beispielnetze per Link:</strong> <code>/informatik/werkzeuge/netzwerk-simulation/?beispiel=…</code> lädt ein Ausgangsnetz direkt (<code>switch</code>, <code>router</code>, <code>internet</code>, <code>email</code>, <code>rollenspiel</code>, <code>fehlersuche-lan</code>, <code>drei-netze</code>, <code>heimnetz</code>, <code>provider</code>). Das bisherige Netz lässt sich dort mit „Rückgängig“ zurückholen.</li>
+<li><strong>Modems:</strong> verbinden Simulationen auf verschiedenen Geräten – Grundlage für das Projekt <a href="/informatik/netzwerke/klassen-internet/">Klassen-Internet</a> (in Filius nur eingeschränkt möglich).</li>
+<li><strong>Dokumentation:</strong> Netze beschriften und als Bild speichern, z. B. für Abgaben.</li>
+</ul>
+<table class="verlauf">
+<thead><tr><th>Filius-Arbeitsblatt</th><th>im Schulbuch</th></tr></thead>
+<tbody>
+<tr><td>01 LAN simulieren, A1 (LAN, Ping, ARP)</td><td><a href="/informatik/netzwerke/lan-simulieren/">LAN simulieren</a>, Abschnitt 1–2</td></tr>
+<tr><td>01 LAN simulieren, A2 (DNS-Server)</td><td><a href="/informatik/netzwerke/dns/">DNS</a>, Abschnitt 4</td></tr>
+<tr><td>01 LAN simulieren, A3 (DHCP)</td><td><a href="/informatik/netzwerke/lan-simulieren/">LAN simulieren</a>, Abschnitt 4</td></tr>
+<tr><td>02 Subnetze</td><td><a href="/informatik/netzwerke/subnetze/">Subnetze</a>, Aufgabe 3 und 6</td></tr>
+<tr><td>03 Routing simulieren (inkl. Varianten)</td><td><a href="/informatik/netzwerke/routing-simulieren/">Routing simulieren</a>; Variante 3 (Modem) im Projekt Klassen-Internet</td></tr>
+<tr><td>04 Netzwerke und Routing</td><td><a href="/informatik/netzwerke/router/">Router und Gateway</a>, Aufgabe 5 und 6; Begriffe: <a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a>, Aufgabe 2</td></tr>
+<tr><td>05 Internet</td><td><a href="/informatik/netzwerke/webseitenaufruf/">Webseitenaufruf</a></td></tr>
+</tbody>
+</table>
+<p>Wer weiterhin Filius verwenden möchte, kann die Aufgaben fast wörtlich übernehmen; Abweichungen (z. B. Einträge mit 127.0.0.1 in Filius-Routingtabellen) sind in den Lösungen erwähnt.</p>
+
+<h2>Konsole im Schulnetz</h2>
+
+<table class="verlauf">
+<thead><tr><th>Zweck</th><th>Windows (Eingabeaufforderung)</th><th>macOS (Terminal)</th><th>Seite</th></tr></thead>
+<tbody>
+<tr><td>eigene Adressen</td><td><code>ipconfig</code>, <code>ipconfig /all</code></td><td><code>ifconfig</code></td><td>MAC und IP</td></tr>
+<tr><td>ARP-Tabelle</td><td><code>arp -a</code></td><td><code>arp -a</code></td><td>ARP und Switch</td></tr>
+<tr><td>Erreichbarkeit</td><td><code>ping ziel</code></td><td><code>ping -c 4 ziel</code></td><td>ARP und Switch</td></tr>
+<tr><td>Namensauflösung</td><td><code>nslookup domain</code></td><td><code>nslookup domain</code></td><td>DNS</td></tr>
+<tr><td>DNS-Cache</td><td><code>ipconfig /displaydns</code>, <code>/flushdns</code></td><td><code>sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder</code></td><td>DNS</td></tr>
+<tr><td>Routingtabelle</td><td><code>route print</code> bzw. <code>netstat -r</code></td><td><code>netstat -rn</code></td><td>Router</td></tr>
+<tr><td>Weg der Pakete</td><td><code>tracert ziel</code></td><td><code>traceroute ziel</code></td><td>Router</td></tr>
+<tr><td>Verbindungen, Ports</td><td><code>netstat -n</code></td><td><code>netstat -n</code></td><td>Transportschicht</td></tr>
+</tbody>
+</table>
+<p>Klappt das gegenseitige Anpingen nicht: Windows-Firewall blockiert eingehende Echo-Anfragen, das Netzwerkprofil ist „öffentlich“ statt „privat“, oder das Schul-WLAN isoliert die Geräte voneinander (Client Isolation). Firewalls nur nach Absprache mit der Systembetreuung und nur kurz deaktivieren. Ohne Rechner mit Konsole (Tablets) bietet die Befehlszeile der Simulation dieselben Befehle für das simulierte Netz.</p>
+
+<h2>Die Begriffe der Reihe</h2>
+
+<p>Alle Begriffe der Begriffsfolie werden eingeführt und auf der Seite <a href="/informatik/netzwerke/begriffe/">Begriffe und Selbsttest</a> zusammengefasst: Client und Server (Schichtenmodell, Webseitenaufruf), IP öffentlich/privat (MAC und IP, Netz zu Hause), MAC (MAC und IP), Netzwerk, Subnetz, Internet, Backbone, WWW, LAN, WLAN (Internet, Subnetze), HTTP (Webseitenaufruf), ARP, Ping, Broadcast (Rollenspiel I, ARP und Switch), Subnetzmaske (Subnetze), Browser, URL, Domain, DNS (DNS, Webseitenaufruf), Router, Gateway, Schnittstelle (Router), Switch (ARP und Switch), Modem, Provider (Netz zu Hause), Host (Webseitenaufruf). VPN und Proxy aus den Folien-Notizen stehen auf der fakultativen Seite <a href="/informatik/netzwerke/sicherheit/">Firewall, Proxy und VPN</a>.</p>
+
+<h2>Kompetenzen (Auswahl)</h2>
+<ul>
+<li>Kommunikationsvorgänge mit dem Sender-Empfänger-Modell beschreiben und die Rolle von Protokollen begründen.</li>
+<li>Den Aufbau des TCP/IP-Schichtenmodells erläutern und das Prinzip der Kapselung an Beispielen anwenden.</li>
+<li>MAC- und IP-Adressen unterscheiden und ihre Funktion im lokalen Netz bzw. über Netzgrenzen hinweg erklären.</li>
+<li>Mithilfe der Netzmaske entscheiden, ob Adressen im selben Subnetz liegen, und Netz- und Broadcast-Adressen sowie Gerätezahlen bestimmen.</li>
+<li>Den Weg eines Pakets durch mehrere Netze beschreiben (ARP, Gateway, Routingtabelle, DNS) und Routingtabellen lesen und ergänzen.</li>
+<li>Einfache Netze in einer Simulation aufbauen, konfigurieren, testen und Fehler systematisch eingrenzen.</li>
+<li>Netzwerkbefehle des Betriebssystems einsetzen und ihre Ausgaben deuten.</li>
+<li>Begriffe rund um das Internet (Provider, Host, URL, Domain, WWW) sachgerecht verwenden und Alltagsphänomene (öffentliche IP, VPN-Werbung) beurteilen.</li>
+</ul>
+
+<h2>Differenzierung</h2>
+<ul>
+<li><strong>Unterstützung:</strong> Die aufklappbaren Beispielausgaben der Konsole, der Subnetz-Trainer mit Erklärung in Binärdarstellung, die Beispielnetze mit fertiger Konfiguration; im Rollenspiel die vereinfachte ARP-Regel.</li>
+<li><strong>Erweiterung:</strong> „Krumme“ Netzmasken, eigene Routen (drei Netze, fünfte Gruppe im Rollenspiel-Netz), Firewall-Regeln, Transportschicht, Projekt Klassen-Internet, Rolle der Provider-Gruppe.</li>
+</ul>
+
+<h2>Leistungsüberprüfung</h2>
+<p>Geeignete Aufgabenformen: Subnetz-Entscheidungen mit Begründung; eine Routingtabelle lesen (Was geschieht mit Ziel-IP …?); Max-und-Moritz-Konfiguration mit Netzmasken; den Weg einer Nachricht mit allen Umschlägen tabellarisch darstellen (wie auf der Seite „Weg einer Nachricht“); Konsolenausgaben deuten; Begriffe im Lückentext; Fehlersuche an einem skizzierten Netz. Praktisch: eine Simulationsaufgabe mit Abgabe als Datei oder Bild (Dokumentationsmodus), im Projekt eine Gruppenbewertung mit Adressplan, Testprotokoll und Dokumentation.</p>
+
+<h2>Hinweise zum Ausgangsmaterial</h2>
+<ul>
+<li><strong>Feuer seit einer Million Jahren:</strong> Kontrollierte Feuernutzung ist ungefähr so alt (Funde etwa in der Wonderwerk-Höhle, Südafrika). Dass Feuer seither auch als Signal dient, ist plausibel, aber nicht belegt; sicher belegt sind Signalfeuer seit der Antike. Die Seite formuliert deshalb vorsichtig.</li>
+<li><strong>Aischylos:</strong> In der Tragödie <em>Agamemnon</em> (458 v. Chr.) berichtet Klytaimnestra von der Feuerkette vom Berg Ida bis Argos.</li>
+<li><strong>Präsentation, Folie zu Subnetzmasken:</strong> In den Notizen steht als Broadcast-Adresse „192.168.9.255“; gemeint ist 192.168.0.255.</li>
+<li><strong>Videos:</strong> Die beiden in der Präsentation eingebetteten YouTube-Videos sind nur verlinkt (keine Einbettung aus Datenschutzgründen); vor dem Einsatz prüfen, ob sie noch verfügbar sind.</li>
+</ul>
+
+<h2>Literatur und Links</h2>
+<ul>
+<li>inf-schule.de: Kapitel „Rechnernetze“ (Schichtenmodelle, Internet, Experimente)</li>
+<li>oinf.ch: Lernbereich Netzwerke, Rollenspiel „IPvS(imple)“</li>
+<li>Filius – Lernsoftware zu Rechnernetzen (lernsoftware-filius.de)</li>
+<li>Bell, Witten, Fellows: <em>CS Unplugged</em> – „The Orange Game“, „Tablets of Stone“</li>
+<li>ZPG Informatik Baden-Württemberg: Rollenspiel Netzwerk; TU Dresden, Didaktik der Informatik: Internetspiel</li>
+<li>TeleGeography: Submarine Cable Map (submarinecablemap.com)</li>
+</ul>
+</lehrkraft>

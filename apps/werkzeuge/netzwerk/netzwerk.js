@@ -13,6 +13,7 @@ import {
   P2P_PORT, P2P_ORDNER, dateisystem, ordnerInhalt, alleDateien, existiert, leseDatei, schreibeDatei, neuerOrdner, loesche, benenneUm, normalerPfad, MAX_DATEI,
 } from './netz.js';
 import { fuehreAus } from './befehle.js';
+import { BEISPIELE, beispiel } from './beispiele.js';
 
 const wurzel = document.getElementById('netzwerk');
 const BASIS_BILDER = new URL('./bilder/', import.meta.url).href.replace(/\?.*$/, '');
@@ -1927,101 +1928,12 @@ app.querySelector('.nw-oeffnen').addEventListener('change', async (e) => {
   }
 });
 
-const BEISPIELE = {
-  'Zwei Rechner an einem Switch': () => {
-    const n = new Netz();
-    const s = n.neuesGeraet('switch', { x: 420, y: 240 });
-    const a = n.neuesGeraet('rechner', { x: 200, y: 100, name: 'Rechner A' });
-    const b = n.neuesGeraet('rechner', { x: 640, y: 100, name: 'Rechner B' });
-    const c = n.neuesGeraet('notebook', { x: 420, y: 420, name: 'Notebook C' });
-    a.nics[0].ip = '192.168.0.1'; b.nics[0].ip = '192.168.0.2'; c.nics[0].ip = '192.168.0.3';
-    [a, b, c].forEach((g) => n.verbinde(g.id, s.id));
-    return n;
-  },
-  'Zwei Netze mit Router': () => {
-    const n = new Netz();
-    const r = n.neuesGeraet('router', { x: 520, y: 240, name: 'Router' });
-    const s1 = n.neuesGeraet('switch', { x: 260, y: 240, name: 'Switch 1' });
-    const s2 = n.neuesGeraet('switch', { x: 780, y: 240, name: 'Switch 2' });
-    n.verbinde(s1.id, r.id); n.verbinde(s2.id, r.id);
-    r.nics[0].ip = '192.168.1.1'; r.nics[1].ip = '192.168.2.1';
-    [['A', 100, 100, '192.168.1.10', s1, '192.168.1.1'], ['B', 100, 380, '192.168.1.11', s1, '192.168.1.1'],
-      ['C', 960, 100, '192.168.2.10', s2, '192.168.2.1'], ['D', 960, 380, '192.168.2.11', s2, '']].forEach(([name, x, y, ip, s, gw]) => {
-      const g = n.neuesGeraet('rechner', { x, y, name: `Rechner ${name}` });
-      g.nics[0].ip = ip;
-      g.gateway = gw;
-      n.verbinde(g.id, s.id);
-    });
-    return n; // Rechner D fehlt das Gateway – ein guter Anlass zur Fehlersuche
-  },
-  'Kleines Internet mit DNS, DHCP und Webserver': () => {
-    const n = new Netz();
-    const s1 = n.neuesGeraet('switch', { x: 300, y: 260, name: 'Switch Schule' });
-    const r = n.neuesGeraet('router', { x: 560, y: 260, name: 'Router' });
-    const s2 = n.neuesGeraet('switch', { x: 820, y: 260, name: 'Switch Provider' });
-    n.verbinde(s1.id, r.id); n.verbinde(s2.id, r.id);
-    r.nics[0].ip = '192.168.0.1'; r.nics[1].ip = '10.0.0.1';
-    const dhcp = n.neuesGeraet('rechner', { x: 300, y: 450, name: 'Schulserver' });
-    Object.assign(dhcp.nics[0], { ip: '192.168.0.2' });
-    dhcp.gateway = '192.168.0.1';
-    dhcp.dhcpServer = { aktiv: true, von: '192.168.0.100', bis: '192.168.0.150', gateway: '192.168.0.1', dns: '10.0.0.53' };
-    for (const [i, x] of [[1, 80], [2, 200]]) {
-      const g = n.neuesGeraet('notebook', { x, y: 80, name: `Schüler ${i}` });
-      g.dhcp = true;
-      g.nics[0].ip = '';
-      g.software = ['befehlszeile', 'webbrowser'];
-      n.verbinde(g.id, s1.id);
-    }
-    n.verbinde(dhcp.id, s1.id);
-    const dns = n.neuesGeraet('rechner', { x: 1040, y: 100, name: 'DNS-Server' });
-    dns.nics[0].ip = '10.0.0.53'; dns.nics[0].maske = '255.255.255.0'; dns.gateway = '10.0.0.1';
-    dns.software = ['befehlszeile', 'dnsserver'];
-    dns.daten.dnsserver = { laeuft: true, eintraege: [{ name: 'www.schulbuch.test', ip: '10.0.0.80' }] };
-    const web = n.neuesGeraet('rechner', { x: 1040, y: 400, name: 'Webserver' });
-    web.nics[0].ip = '10.0.0.80'; web.gateway = '10.0.0.1';
-    web.software = ['befehlszeile', 'webserver'];
-    web.daten.webserver = { laeuft: true };
-    Object.entries({ 'index.html': '<html><body>\n<h1>Willkommen!</h1>\n<p>Diese Seite kam über DNS, Router und TCP zu dir.</p>\n<p><a href="impressum.html">Impressum</a></p>\n</body></html>\n', 'impressum.html': '<html><body><h1>Impressum</h1><p><a href="index.html">Zurück</a></p></body></html>\n' })
-      .forEach(([name, text]) => schreibeDatei(web, `/webserver/${name}`, text));
-    n.verbinde(dns.id, s2.id); n.verbinde(web.id, s2.id);
-    return n;
-  },
-};
-BEISPIELE['E-Mail zwischen zwei Domains'] = () => {
-  const n = new Netz();
-  const r = n.neuesGeraet('router', { x: 560, y: 300, name: 'Router' });
-  const s1 = n.neuesGeraet('switch', { x: 300, y: 300, name: 'Switch Schule' });
-  const s2 = n.neuesGeraet('switch', { x: 820, y: 300, name: 'Switch Verein' });
-  n.verbinde(s1.id, r.id); n.verbinde(s2.id, r.id);
-  r.nics[0].ip = '10.1.0.1'; r.nics[1].ip = '10.2.0.1';
-  const host = (name, typ, x, y, ip, gw, software, s) => {
-    const g = n.neuesGeraet(typ, { x, y, name });
-    Object.assign(g.nics[0], { ip, maske: '255.255.255.0' });
-    Object.assign(g, { gateway: gw, dns: '10.1.0.53', software: ['befehlszeile', ...software] });
-    n.verbinde(g.id, s.id);
-    return g;
-  };
-  const dns = host('DNS-Server', 'rechner', 300, 520, '10.1.0.53', '10.1.0.1', ['dnsserver'], s1);
-  dns.daten.dnsserver = { laeuft: true, eintraege: [
-    { name: 'mail.schule.test', typ: 'A', ip: '10.1.0.25' }, { name: 'schule.test', typ: 'MX', ip: 'mail.schule.test' },
-    { name: 'mail.verein.test', typ: 'A', ip: '10.2.0.25' }, { name: 'verein.test', typ: 'MX', ip: 'mail.verein.test' },
-  ] };
-  const m1 = host('Mailserver Schule', 'rechner', 100, 520, '10.1.0.25', '10.1.0.1', ['emailserver'], s1);
-  m1.daten.emailserver = { laeuft: true, domain: 'schule.test', konten: [{ name: 'anna', passwort: 'anna' }, { name: 'carl', passwort: 'carl' }], postfaecher: {} };
-  const m2 = host('Mailserver Verein', 'rechner', 1020, 520, '10.2.0.25', '10.2.0.1', ['emailserver'], s2);
-  m2.daten.emailserver = { laeuft: true, domain: 'verein.test', konten: [{ name: 'ben', passwort: 'ben' }], postfaecher: {} };
-  const konto = (adresse, server) => ({ adresse, smtp: server, pop3: server, benutzer: adresse.split('@')[0], passwort: adresse.split('@')[0], eingang: [], gesendet: [] });
-  host('Anna', 'notebook', 100, 100, '10.1.0.10', '10.1.0.1', ['emailprogramm'], s1).daten.emailprogramm = konto('anna@schule.test', 'mail.schule.test');
-  host('Carl', 'notebook', 300, 80, '10.1.0.11', '10.1.0.1', ['emailprogramm'], s1).daten.emailprogramm = konto('carl@schule.test', 'mail.schule.test');
-  host('Ben', 'notebook', 1020, 100, '10.2.0.10', '10.2.0.1', ['emailprogramm'], s2).daten.emailprogramm = konto('ben@verein.test', 'mail.verein.test');
-  return n;
-};
 const auswahlBeispiel = app.querySelector('.nw-beispiel');
-auswahlBeispiel.insertAdjacentHTML('beforeend', Object.keys(BEISPIELE).map((k) => `<option>${esc(k)}</option>`).join(''));
+auswahlBeispiel.insertAdjacentHTML('beforeend', BEISPIELE.map((b) => `<option value="${esc(b.slug)}">${esc(b.titel)}</option>`).join(''));
 auswahlBeispiel.addEventListener('change', () => {
-  const name = auswahlBeispiel.value;
+  const b = beispiel(auswahlBeispiel.value);
   auswahlBeispiel.value = '';
-  if (name) lade(BEISPIELE[name](), `Beispiel „${name}“ geladen. Oben auf „▶ Simulation“ schalten und ausprobieren.`);
+  if (b) lade(b.baue(), `Beispiel „${b.titel}“ geladen. Oben auf „▶ Simulation“ schalten und ausprobieren.`);
 });
 
 app.querySelector('.nw-hilfe-knopf').addEventListener('click', () => fenster('hilfe', 'Hilfe', {
@@ -2064,6 +1976,17 @@ try {
   const gespeichert = localStorage.getItem(SPEICHER);
   if (gespeichert) zustand.netz = Netz.ausJSON(JSON.parse(gespeichert));
 } catch { /* dann eben leer */ }
-if (!zustand.netz.geraete.size) zustand.netz = BEISPIELE['Zwei Rechner an einem Switch']();
+if (!zustand.netz.geraete.size) zustand.netz = beispiel('switch').baue();
+// ?beispiel=<slug> (Links aus dem Schulbuch): Beispiel laden, das bisherige Netz lässt sich mit „Rückgängig“ zurückholen
+{
+  const b = beispiel(new URLSearchParams(location.search).get('beispiel') ?? '');
+  if (b) {
+    const vorher = JSON.stringify(zustand.netz);
+    zustand.netz = b.baue();
+    speichere();
+    history.replaceState(null, '', location.pathname + location.hash);
+    setTimeout(() => melde(`Beispiel „${b.titel}“ geladen. Dein bisheriges Netz ist ersetzt.`, 'info', () => lade(Netz.ausJSON(JSON.parse(vorher)), 'Dein bisheriges Netz ist wieder da.')), 300);
+  }
+}
 app.querySelectorAll('.nw-modus').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.modus === zustand.modus)));
 zeichne();

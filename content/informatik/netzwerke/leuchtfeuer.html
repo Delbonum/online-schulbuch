@@ -1,0 +1,134 @@
+<!--
+beschreibung: Einstieg ins Thema Netzwerke: Die Leuchtfeuer von Gondor aus „Der Herr der Ringe“ und die Feuerkette bei Aischylos – das einfachste Nachrichtensystem mit nur zwei Zuständen.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite, Einstieg. <strong>Voraussetzungen:</strong> keine; günstig ist, wenn Binärzahlen bekannt sind (Kapitel „Information und ihre Darstellung“), nötig ist es nicht. <strong>Dauer:</strong> etwa eine Stunde, mit Film und Selbsteinschätzung.</p>
+<p><strong>Ablauf:</strong> Filmausschnitt zeigen (Link unten; Szene aus <em>Der Herr der Ringe: Die Rückkehr des Königs</em>, 2003, etwa zwei Minuten) und offen fragen: „Wie wird in diesem Ausschnitt kommuniziert?“ Danach Aischylos als Beleg, dass die Idee alt ist, und die Reduktion auf zwei Zustände. Abschnitt 4 (Codes mit mehreren Feuern) lässt sich als Hausaufgabe auslagern; Abschnitt 5 eignet sich als Überleitung zur nächsten Stunde.</p>
+<p><strong>Anschließend:</strong> <a href="/informatik/netzwerke/geschichte/">Von Leuchtfeuern zum Internet</a> (kürzbar) oder direkt <a href="/informatik/netzwerke/sender-empfaenger/">Das Sender-Empfänger-Modell</a>.</p>
+</lehrkraft>
+
+<h2>1. Gondor ruft um Hilfe</h2>
+
+<p>In J. R. R. Tolkiens <em>Der Herr der Ringe</em> steht Gondor vor einem gewaltigen Angriff. Das verbündete Reich Rohan liegt viele Tagesreisen entfernt. Wie bekommt man dort rechtzeitig Bescheid? Die Antwort sind die <strong>Leuchtfeuer</strong>: Auf den Gipfeln einer langen Bergkette stehen Holzstöße, an jedem Gipfel halten Wächter Ausschau. Wird auf der Burg Minas Tirith das erste Feuer entzündet, sieht es der Wächter auf dem nächsten Berg und zündet sein Feuer an – und so weiter, Gipfel für Gipfel, bis das letzte Feuer in Rohan brennt.</p>
+
+<aside class="box info" data-titel="Filmausschnitt">
+<p>In der Verfilmung <em>Der Herr der Ringe: Die Rückkehr des Königs</em> (2003) gibt es dazu eine berühmte Szene. <a href="https://www.youtube.com/watch?v=f4Tppt5yiNg" target="_blank" rel="noopener">Ausschnitt auf YouTube ansehen</a> (externer Link, öffnet in neuem Tab).</p>
+</aside>
+
+<aside class="box aufgabe">
+<ol>
+<li>Schau dir den Filmausschnitt an (oder lies die Beschreibung oben). Beantworte die Fragen.
+<div class="felder">
+<div><label for="netz-gondor-1a">Wer schickt hier eine Nachricht – und an wen?</label><textarea class="notiz" id="netz-gondor-1a" data-notiz="netz-gondor-1a" rows="2"></textarea></div>
+<div><label for="netz-gondor-1b">Was genau wird übertragen? Was „sagt“ ein brennendes Feuer?</label><textarea class="notiz" id="netz-gondor-1b" data-notiz="netz-gondor-1b" rows="2"></textarea></div>
+<div><label for="netz-gondor-1c">Woher weiß man in Rohan, was das Feuer bedeutet?</label><textarea class="notiz" id="netz-gondor-1c" data-notiz="netz-gondor-1c" rows="2"></textarea></div>
+<div><label for="netz-gondor-1d">Warum braucht man so viele Feuer statt nur einem großen?</label><textarea class="notiz" id="netz-gondor-1d" data-notiz="netz-gondor-1d" rows="2"></textarea></div>
+</div></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1">
+<ul>
+<li><strong>Sender und Empfänger:</strong> Gondor (genauer: wer auf Minas Tirith das erste Feuer entzündet) sendet, Rohan (König Théoden) empfängt. Die Wächter dazwischen sind Empfänger und Sender zugleich – sie leiten weiter.</li>
+<li><strong>Übertragen</strong> wird nur ein Zustand: Feuer brennt oder brennt nicht. Die Botschaft „Gondor braucht Hilfe“ steckt nicht im Feuer selbst.</li>
+<li><strong>Bedeutung:</strong> Sie ist vorher <strong>vereinbart</strong> worden. Ohne diese Absprache sähe man nur ein Feuer auf einem Berg.</li>
+<li><strong>Viele Feuer:</strong> Ein Feuer ist nur so weit zu sehen, wie die Sichtlinie reicht (Erdkrümmung, Berge, Wetter). Die Kette überbrückt große Entfernungen in kurzen Stücken – genau wie heute Router, die Pakete von Netz zu Netz weitergeben. Dieser Gedanke wird im Kapitel wieder wichtig.</li>
+</ul>
+</lehrkraft>
+
+<h2>2. Eine uralte Idee</h2>
+
+<p>Tolkien war nicht der Erste, der sich eine solche Feuerkette ausgedacht hat. Schon der griechische Dichter <strong>Aischylos</strong> lässt in seiner Tragödie <em>Agamemnon</em> (uraufgeführt 458 v. Chr.) die Nachricht vom Sieg der Griechen über Troja auf diesem Weg in die Heimat gelangen: Von Feuer zu Feuer springt die Botschaft über Berggipfel und Meerengen bis nach Argos – in einer einzigen Nacht. Ein Bote zu Schiff hätte dafür Tage gebraucht.</p>
+
+<p>Feuer als Signal ist vermutlich eine der ältesten Formen der Fernkommunikation überhaupt. Menschen nutzen das Feuer seit etwa einer Million Jahren; wann sie damit zum ersten Mal Zeichen gegeben haben, weiß niemand genau. Sicher belegt sind Signalfeuer seit der Antike: im alten Griechenland, im Römischen Reich und an der Chinesischen Mauer, wo Wachtürme tagsüber mit Rauch und nachts mit Feuer warnten.</p>
+
+<p>Das Besondere daran: Es ist eine <strong>indirekte</strong> Kommunikation. Sender und Empfänger stehen sich nicht gegenüber, sie sehen und hören sich nicht – die Nachricht wird über eine Strecke <strong>übertragen</strong>.</p>
+
+<h2>3. Feuer an, Feuer aus</h2>
+
+<figure class="skizze">
+<svg viewBox="0 0 720 210" role="img" aria-labelledby="netz-feuer-titel">
+<title id="netz-feuer-titel">Eine Kette aus fünf Bergen. Auf den ersten drei Bergen brennt ein Feuer, die Nachricht ist bis zum dritten Berg gekommen. Darunter: Feuer an bedeutet 1, Hilfe; Feuer aus bedeutet 0, keine Gefahr.</title>
+<defs><marker id="pfeil-feuer" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<path class="grau" d="M10,150 L70,70 L130,150 Z M150,150 L210,60 L270,150 Z M290,150 L350,75 L410,150 Z M430,150 L490,65 L550,150 Z M570,150 L630,72 L690,150 Z"/>
+<g class="akzent">
+<path d="M70,68 c-10,-10 -4,-22 0,-30 c4,8 10,20 0,30 z"/>
+<path d="M210,58 c-10,-10 -4,-22 0,-30 c4,8 10,20 0,30 z"/>
+<path d="M350,73 c-10,-10 -4,-22 0,-30 c4,8 10,20 0,30 z"/>
+</g>
+<rect class="rahmen" x="482" y="52" width="16" height="12"/><rect class="rahmen" x="622" y="59" width="16" height="12"/>
+<line class="linie" x1="92" y1="40" x2="186" y2="34" marker-end="url(#pfeil-feuer)"/>
+<line class="linie" x1="232" y1="34" x2="326" y2="44" marker-end="url(#pfeil-feuer)"/>
+<line class="gestrichelt" x1="372" y1="46" x2="466" y2="40" marker-end="url(#pfeil-feuer)"/>
+<text x="70" y="172" text-anchor="middle" class="klein">Minas Tirith</text>
+<text x="630" y="172" text-anchor="middle" class="klein">Rohan</text>
+<text x="20" y="200" class="titel">Feuer an = 1 = „Hilfe!“</text>
+<text x="380" y="200" class="titel">Feuer aus = 0 = „keine Gefahr“</text>
+</svg>
+<figcaption>Die Leuchtfeuer-Kette: Jede Station kennt nur zwei Zustände.</figcaption>
+</figure>
+
+<p>Ein Leuchtfeuer kann genau <strong>zwei Zustände</strong> annehmen: Es brennt, oder es brennt nicht. Mehr nicht. Schreibt man für „brennt“ eine <strong>1</strong> und für „brennt nicht“ eine <strong>0</strong>, dann überträgt jedes Feuer genau ein <strong>Bit</strong> – die kleinste mögliche Informationseinheit.</p>
+
+<p>Welche Bedeutung die 1 hat, steht nirgends geschrieben. Sender und Empfänger müssen sie <strong>vorher vereinbaren</strong>, etwa: Feuer aus = „keine Gefahr“, Feuer an = „Hilfe!“. Diese Vereinbarung ist mindestens so wichtig wie das Feuer selbst.</p>
+
+<div class="quiz" data-id="netz-leuchtfeuer-quiz" data-anweisung="Wähle die richtige Antwort.">
+<div class="frage" data-erklaerung="Ein Feuer kennt nur an und aus – also zwei Zustände. Das ist genau ein Bit."><p>Wie viel Information überträgt ein einzelnes Leuchtfeuer?</p><ul><li>ein Wort</li><li data-richtig>ein Bit (zwei Zustände)</li><li>so viel, wie der Wächter möchte</li></ul></div>
+<div class="frage" data-erklaerung="Ohne vorherige Absprache sieht man nur Feuer. Die Bedeutung entsteht durch die Vereinbarung zwischen Sender und Empfänger."><p>Was braucht man, damit der Empfänger ein Feuer richtig versteht?</p><ul><li>ein besonders großes Feuer</li><li data-richtig>eine vorher getroffene Vereinbarung über die Bedeutung</li><li>einen Boten, der hinterherreitet</li></ul></div>
+<div class="frage" data-erklaerung="Indirekt heißt: Sender und Empfänger stehen sich nicht gegenüber. Die Nachricht wird über eine Strecke übertragen."><p>Warum nennt man die Leuchtfeuer eine <em>indirekte</em> Kommunikation?</p><ul><li>Weil die Nachricht verschlüsselt ist.</li><li data-richtig>Weil Sender und Empfänger sich nicht gegenüberstehen.</li><li>Weil das Feuer nicht direkt brennt.</li></ul></div>
+</div>
+
+<lehrkraft titel="Als Live-Umfrage durchführen">
+<p>Das Quiz eignet sich als kurze Sicherung am Ende des Einstiegs: Die Klasse antwortet mit Code oder QR-Code am eigenen Gerät.</p>
+<als-umfrage ids="netz-leuchtfeuer-quiz" titel="Netzwerke – Leuchtfeuer" modus="single"></als-umfrage>
+</lehrkraft>
+
+<h2>4. Mehr als Ja und Nein</h2>
+
+<p>Mit einem einzigen Feuer lässt sich nur Ja oder Nein sagen. Was aber, wenn Gondor mitteilen möchte, <em>wie</em> groß die Gefahr ist – oder <em>woher</em> der Angriff kommt?</p>
+
+<aside class="box aufgabe">
+<ol start="2">
+<li>Auf jedem Berg stehen jetzt <strong>zwei</strong> Holzstöße nebeneinander, links und rechts. Wie viele verschiedene Nachrichten kann man damit senden? Lege eine sinnvolle Bedeutung für jede Möglichkeit fest.
+<table class="verlauf ausfuell">
+<thead><tr><th>links</th><th>rechts</th><th>Bedeutung</th></tr></thead>
+<tbody>
+<tr><td>aus (0)</td><td>aus (0)</td><td><textarea class="notiz" data-notiz="netz-gondor-2-1" rows="1" aria-label="Aufgabe 2: Bedeutung von aus, aus"></textarea></td></tr>
+<tr><td>aus (0)</td><td>an (1)</td><td><textarea class="notiz" data-notiz="netz-gondor-2-2" rows="1" aria-label="Aufgabe 2: Bedeutung von aus, an"></textarea></td></tr>
+<tr><td>an (1)</td><td>aus (0)</td><td><textarea class="notiz" data-notiz="netz-gondor-2-3" rows="1" aria-label="Aufgabe 2: Bedeutung von an, aus"></textarea></td></tr>
+<tr><td>an (1)</td><td>an (1)</td><td><textarea class="notiz" data-notiz="netz-gondor-2-4" rows="1" aria-label="Aufgabe 2: Bedeutung von an, an"></textarea></td></tr>
+</tbody>
+</table></li>
+<li>Wie viele Holzstöße bräuchte man auf jedem Berg, um jeden der 26 Buchstaben des Alphabets senden zu können? Begründe.
+<textarea class="notiz" data-notiz="netz-gondor-3" rows="2" aria-label="Aufgabe 3: Holzstöße für 26 Buchstaben"></textarea></li>
+<li>Bei Nacht und Nebel sieht man das Nachbarfeuer nicht. Und ein Feuer, das nicht brennt, kann „keine Gefahr“ bedeuten – oder dass der Wächter eingeschlafen ist. Welche Probleme hat die Leuchtfeuer-Kette noch? Sammle Vor- und Nachteile.
+<div class="felder zwei">
+<div><label for="netz-gondor-4p">Vorteile</label><textarea class="notiz" id="netz-gondor-4p" data-notiz="netz-gondor-4p"></textarea></div>
+<div><label for="netz-gondor-4c">Nachteile</label><textarea class="notiz" id="netz-gondor-4c" data-notiz="netz-gondor-4c"></textarea></div>
+</div></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 2 bis 4">
+<ul>
+<li><strong>Aufgabe 2:</strong> 2 · 2 = 4 Nachrichten, z. B. 00 = keine Gefahr, 01 = kleiner Trupp, 10 = großes Heer, 11 = Angriff auf die Hauptstadt, sofort kommen. Entscheidend ist, dass beide Seiten dieselbe Tabelle haben – und dass „00“ nicht dasselbe heißen kann wie „Kette unterbrochen“.</li>
+<li><strong>Aufgabe 3:</strong> Mit n Holzstößen gibt es 2<sup>n</sup> Möglichkeiten: 2<sup>4</sup> = 16 reicht nicht, 2<sup>5</sup> = 32 reicht. Also fünf Holzstöße (sechs Kombinationen bleiben frei, z. B. für Leerzeichen oder „Ende“). Hier lässt sich an Binärzahlen und den ASCII-Code anknüpfen.</li>
+<li><strong>Aufgabe 4:</strong> Vorteile: sehr schnell (Lichtgeschwindigkeit plus Reaktionszeit der Wächter), große Entfernungen, kein Bote unterwegs, der abgefangen werden kann. Nachteile: nur vorher vereinbarte Nachrichten, Sichtverbindung nötig (Wetter, Nacht und Nebel bei Rauch), viel Personal, keine Rückmeldung, ob die Nachricht angekommen ist, jeder kann mitlesen (keine Geheimhaltung), Fehlalarme und Ausfälle sind nicht zu erkennen („Feuer aus“ ist mehrdeutig), immer nur eine Richtung. Viele dieser Probleme lösen spätere Systeme mit genaueren <strong>Vereinbarungen</strong> – das führt zu den Protokollen.</li>
+</ul>
+</lehrkraft>
+
+<h2>5. Und heute?</h2>
+
+<p>Dein Handy, dein Laptop und die Server im Internet machen im Grunde dasselbe wie die Wächter von Gondor: Sie übertragen <strong>Nullen und Einsen</strong>. Nur geschieht das nicht mit Feuer, sondern mit Strom, Licht oder Funkwellen – und milliardenfach pro Sekunde. Damit aus diesen Bits Nachrichten, Bilder und Videos werden und sie beim richtigen Empfänger ankommen, braucht es sehr viele und sehr genaue Vereinbarungen. Wie die aussehen, erfährst du in diesem Kapitel.</p>
+
+<aside class="box aufgabe">
+<p><strong>Wo stehst du?</strong> Schätze dich ehrlich ein. Am Ende des Kapitels fragen wir noch einmal nach.</p>
+<div class="position" data-id="netz-pos-1" data-links="gar nicht" data-rechts="sehr genau"><p>Ich kann erklären, wie eine Nachricht von meinem Handy zum Handy einer Freundin oder eines Freundes kommt.</p></div>
+<div class="position" data-id="netz-pos-2" data-links="gar nicht" data-rechts="sehr genau"><p>Ich weiß, was beim Aufruf einer Webseite im Hintergrund passiert.</p></div>
+<div class="position" data-id="netz-pos-3" data-links="stimmt nicht" data-rechts="stimmt genau"><p>Das Internet und das World Wide Web sind dasselbe.</p></div>
+</aside>
+
+<lehrkraft titel="Als Live-Umfrage durchführen">
+<p>Die Selbsteinschätzung lässt sich als Live-Umfrage durchführen; dieselben Fragen kommen auf der Seite <a href="/informatik/netzwerke/begriffe/">Begriffe und Selbsttest</a> noch einmal (Vorher-nachher-Vergleich). Die dritte Aussage ist eine verbreitete Fehlvorstellung und lohnt ein kurzes Gespräch, ohne sie schon aufzulösen.</p>
+<als-umfrage ids="netz-pos-1 netz-pos-2 netz-pos-3" titel="Netzwerke – Selbsteinschätzung (Einstieg)" modus="all"></als-umfrage>
+</lehrkraft>

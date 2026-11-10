@@ -1,0 +1,122 @@
+<!--
+beschreibung: Vertiefung Transportschicht: Ports, TCP mit Verbindungsaufbau (Three-Way-Handshake), Nummerierung und Bestätigung, UDP – mit Paket-Puzzle, netstat und Echo-Server in der Simulation.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> <strong>fakultative Zusatzseite</strong>. Im Kapitel wird die Transportschicht aus Gründen der <strong>didaktischen Reduktion</strong> ausgeklammert: Für das Verständnis von Adressierung (MAC, IP), ARP, Routing und DNS ist sie nicht nötig, und die Rollenspiele bleiben ohne sie übersichtlich. Diese Seite ergänzt sie für Kurse mit mehr Zeit oder als Differenzierungsangebot. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/webseitenaufruf/">Was passiert beim Aufruf einer Webseite?</a> <strong>Dauer:</strong> eine Doppelstunde.</p>
+<p><strong>Paket-Puzzle (Abschnitt 2):</strong> angelehnt an die Unplugged-Aktivität „Tablets of Stone“ aus <em>CS Unplugged</em>. Material: pro Gruppe ein kurzer Text (3–4 Sätze), Schere, Umschläge.</p>
+</lehrkraft>
+
+<h2>1. Wozu eine Transportschicht?</h2>
+
+<p>Bisher haben wir so getan, als passe jede Nachricht in ein einziges Paket und komme garantiert an. In Wirklichkeit gibt es drei Probleme:</p>
+
+<ul>
+<li><strong>Größe:</strong> Ein Paket darf höchstens etwa 1,5 Kilobyte groß sein. Ein Foto oder eine Webseite muss also in Hunderte Pakete zerlegt werden – und beim Empfänger wieder richtig zusammengesetzt.</li>
+<li><strong>Zuverlässigkeit:</strong> Unterwegs können Pakete verloren gehen, doppelt ankommen oder sich überholen, weil sie verschiedene Wege nehmen.</li>
+<li><strong>Zuordnung:</strong> Auf einem Rechner laufen viele Programme gleichzeitig, die alle Daten empfangen: Browser, Messenger, Musik-App. Wem gehört welches Paket?</li>
+</ul>
+
+<p>Um all das kümmert sich die <strong>Transportschicht</strong> – zwischen Anwendung und Vermittlung. Ihre wichtigsten Protokolle heißen <strong>TCP</strong> und <strong>UDP</strong>.</p>
+
+<h2>2. Paket-Puzzle</h2>
+
+<aside class="box aufgabe">
+<ol>
+<li><strong>Gruppenaktivität:</strong> Eure Gruppe bekommt einen kurzen Text. Zerschneidet ihn in Schnipsel mit je etwa fünf Wörtern. Jeder Schnipsel ist ein Paket. Schickt die Pakete einzeln über verschiedene Boten an eine andere Gruppe; die Lehrkraft fängt dabei heimlich ein Paket ab und hält eines eine Weile zurück. Die Empfänger sollen den Text wiederherstellen.</li>
+<li>Was ist schiefgegangen? Welche Angaben hätten auf jedes Paket gehört, und welche Regeln hätten Sender und Empfänger vereinbaren müssen?
+<textarea class="notiz" data-notiz="netz-tcp-2" rows="3" aria-label="Aufgabe 2: Paket-Puzzle auswerten"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Hinweise zu Aufgabe 1 und 2">
+<p>Typische Ergebnisse: Reihenfolge unklar → <strong>Nummern</strong> auf die Pakete (Sequenznummern); Verlust unbemerkt → Empfänger <strong>bestätigt</strong> erhaltene Pakete, Sender schickt nach einer Wartezeit erneut; Ende unklar → Gesamtzahl oder „letztes Paket“ markieren; zu Beginn klären, ob der Empfänger bereit ist → Verbindungsaufbau. Das ist genau TCP.</p>
+</lehrkraft>
+
+<h2>3. Ports: Wohnungsnummern für Programme</h2>
+
+<p>Die IP-Adresse führt ein Paket zum richtigen <strong>Rechner</strong> – wie eine Hausanschrift zum richtigen Haus. Damit es beim richtigen <strong>Programm</strong> landet, braucht es zusätzlich eine <strong>Portnummer</strong> – wie die Wohnungsnummer im Haus. Serverprogramme warten an festen, allgemein bekannten Ports:</p>
+
+<table class="verlauf">
+<thead><tr><th>Port</th><th>Dienst</th></tr></thead>
+<tbody>
+<tr><td>53</td><td>DNS (Namensauflösung)</td></tr>
+<tr><td>80</td><td>HTTP (Webseiten)</td></tr>
+<tr><td>443</td><td>HTTPS (verschlüsselte Webseiten)</td></tr>
+<tr><td>25 / 587</td><td>SMTP (E-Mail versenden)</td></tr>
+<tr><td>993</td><td>IMAP (E-Mail abrufen, verschlüsselt)</td></tr>
+</tbody>
+</table>
+
+<p>Der Client bekommt für jede Verbindung vom Betriebssystem einen zufälligen, freien Port (meist über 49152). So kann der Browser gleichzeitig mehrere Verbindungen offen haben, ohne dass die Antworten durcheinandergeraten.</p>
+
+<h2>4. TCP: verbindungsorientiert und zuverlässig</h2>
+
+<p><strong>TCP</strong> (<em>Transmission Control Protocol</em>) baut zuerst eine Verbindung auf, nummeriert alle Daten, lässt sich jeden Empfang bestätigen und schickt verlorene Pakete erneut. Der Verbindungsaufbau heißt <strong>Three-Way-Handshake</strong> („Drei-Wege-Handschlag“):</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 260" role="img" aria-labelledby="netz-hs-titel">
+<title id="netz-hs-titel">Three-Way-Handshake zwischen Client und Server: 1. Client an Server: SYN (Ich möchte eine Verbindung). 2. Server an Client: SYN, ACK (Einverstanden, ich auch). 3. Client an Server: ACK (Gut, los geht's). Danach Daten mit Bestätigungen, am Ende FIN zum Abbau.</title>
+<defs><marker id="pfeil-hs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="titel" x="120" y="24" text-anchor="middle">Client</text><text class="titel" x="620" y="24" text-anchor="middle">Server</text>
+<line class="linie-grau" x1="120" y1="34" x2="120" y2="250"/><line class="linie-grau" x1="620" y1="34" x2="620" y2="250"/>
+<line class="linie" x1="120" y1="50" x2="616" y2="80" marker-end="url(#pfeil-hs)"/><text x="370" y="56" text-anchor="middle">① SYN – „Ich möchte mit dir reden.“</text>
+<line class="linie" x1="620" y1="100" x2="124" y2="130" marker-end="url(#pfeil-hs)"/><text x="370" y="106" text-anchor="middle">② SYN, ACK – „Einverstanden, ich auch.“</text>
+<line class="linie" x1="120" y1="150" x2="616" y2="180" marker-end="url(#pfeil-hs)"/><text x="370" y="156" text-anchor="middle">③ ACK – „Gut, los geht’s.“</text>
+<line class="gestrichelt" x1="120" y1="200" x2="616" y2="215" marker-end="url(#pfeil-hs)"/><line class="gestrichelt" x1="620" y1="225" x2="124" y2="240" marker-end="url(#pfeil-hs)"/>
+<text x="370" y="212" text-anchor="middle" class="klein">Daten (nummeriert) …</text><text x="370" y="248" text-anchor="middle" class="klein">… und Bestätigungen (ACK); am Ende Abbau mit FIN</text>
+</svg>
+<figcaption>Erst nach beidseitiger Bestätigung beginnt der eigentliche Datenaustausch.</figcaption>
+</figure>
+
+<p><strong>UDP</strong> (<em>User Datagram Protocol</em>) ist das Gegenstück: kein Verbindungsaufbau, keine Bestätigungen, keine Wiederholung. Dafür ist es schnell und schlank. UDP eignet sich, wenn eine kurze Frage-Antwort genügt (DNS) oder wenn ein verlorenes Paket weniger schlimm ist als eine Verzögerung (Videotelefonie, Online-Spiele).</p>
+
+<p>Im Schichtenmodell bekommt die Nachricht damit einen weiteren Umschlag: Die Anwendungsdaten stecken in einem <strong>TCP-Segment</strong> (mit Ports und Nummern), das im IP-Paket steckt, das im Ethernet-Rahmen steckt.</p>
+
+<aside class="box aufgabe">
+<ol start="3">
+<li>TCP oder UDP? Ordne zu.
+<div class="sortieren" data-kategorien="TCP|UDP">
+<p>Welches Protokoll passt besser?</p>
+<ul>
+<li data-gehoert="TCP" data-erklaerung="Eine Webseite muss vollständig und fehlerfrei ankommen.">eine Webseite laden</li>
+<li data-gehoert="TCP" data-erklaerung="Bei einer Datei darf kein Byte fehlen.">eine Datei herunterladen</li>
+<li data-gehoert="UDP" data-erklaerung="Ein kurzes Frage-Antwort-Spiel; geht etwas verloren, fragt man einfach noch mal.">eine DNS-Anfrage</li>
+<li data-gehoert="UDP" data-erklaerung="Ein verspätetes Bild nützt nichts mehr – lieber weiter mit dem nächsten.">ein Videotelefonat</li>
+<li data-gehoert="TCP" data-erklaerung="Eine E-Mail muss vollständig ankommen.">eine E-Mail verschicken</li>
+<li data-gehoert="UDP" data-erklaerung="Die aktuelle Position zählt, nicht die von vor einer Sekunde.">Spielerpositionen in einem Online-Spiel</li>
+</ul>
+</div></li>
+<li>Warum braucht es bei TCP drei Nachrichten für den Verbindungsaufbau – würden zwei nicht reichen?
+<textarea class="notiz" data-notiz="netz-tcp-4" rows="2" aria-label="Aufgabe 4: Warum drei Nachrichten?"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 3 und 4">
+<p><strong>Aufgabe 3</strong> prüft sich selbst. <strong>Aufgabe 4:</strong> Beide Seiten wollen sicher sein, dass ihre Nachrichten beim anderen ankommen. Nach SYN und SYN-ACK weiß der Client, dass der Server ihn hört und antwortet; der Server weiß aber noch nicht, ob seine Antwort angekommen ist – das bestätigt erst das dritte ACK. Dabei werden auch die Startnummern beider Seiten ausgetauscht.</p>
+</lehrkraft>
+
+<h2>5. Experimente</h2>
+
+<aside class="box aufgabe">
+<ol start="5">
+<li>Öffne ein paar Webseiten und gib dann in der Konsole ein: <code>netstat -n</code> (Windows und Mac). Jede Zeile ist eine Verbindung. Welche Ports benutzt dein Rechner, welche die Gegenseite? Welche Gegenseiten-Ports kommen besonders oft vor?
+<textarea class="notiz" data-notiz="netz-tcp-5" rows="3" aria-label="Aufgabe 5: netstat"></textarea></li>
+<li>In der Netzwerk-Simulation: Installiere auf einem Rechner den <em>Echo-Server</em> (starten nicht vergessen) und auf einem anderen den <em>einfachen Client</em>. Verbinde dich mit dem Echo-Server (Port 55555), schicke zwei Nachrichten und trenne die Verbindung. Finde im Datenaustausch den Three-Way-Handshake, die Daten mit Bestätigungen und den Verbindungsabbau. Gib während der Verbindung auf dem Server <code>netstat</code> ein.
+<textarea class="notiz" data-notiz="netz-tcp-6" rows="3" aria-label="Aufgabe 6: Echo-Server in der Simulation"></textarea></li>
+</ol>
+</aside>
+
+<details class="aufklapp">
+<summary>So sieht die Ausgabe von netstat -n ungefähr aus</summary>
+<pre class="code"><code>Aktive Verbindungen
+
+  Proto  Lokale Adresse         Remoteadresse          Status
+  TCP    192.168.178.34:52114   94.130.236.154:443     HERGESTELLT
+  TCP    192.168.178.34:52120   185.15.59.224:443      HERGESTELLT
+  TCP    192.168.178.34:52131   142.250.185.67:443     WARTEND</code></pre>
+<p>Hinter dem Doppelpunkt steht der Port. Lokal: zufällige hohe Ports des Clients; Gegenseite: meist 443 (HTTPS). „HERGESTELLT“ heißt: Der Handshake ist abgeschlossen; „WARTEND“: Die Verbindung wird gerade abgebaut.</p>
+</details>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 5 und 6">
+<p><strong>Aufgabe 5:</strong> Gegenseite fast immer Port 443 (HTTPS), seltener 80; lokale Ports zufällig und hoch, für jede Verbindung ein anderer. <strong>Aufgabe 6:</strong> Im Datenaustausch: SYN, SYN-ACK, ACK; dann je Nachricht ein Datensegment (PSH, ACK) mit Bestätigung und die Antwort des Servers; zum Schluss FIN, ACK in beide Richtungen und ein letztes ACK. <code>netstat</code> zeigt die offene Verbindung mit beiden Ports.</p>
+</lehrkraft>

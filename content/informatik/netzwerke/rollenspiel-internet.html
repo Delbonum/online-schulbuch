@@ -1,0 +1,135 @@
+<!--
+beschreibung: Rollenspiel II: Die Klasse spielt das Internet im Kleinen – mehrere Subnetze, Router mit zwei Händen, ein Backbone, ein DNS-Server und Nachrichten per Namen quer durch alle Netze.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite, Rollenspiel Stufe 3. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/router/">Router, Gateway und Routingtabelle</a> (Abschnitt 1–3) und <a href="/informatik/netzwerke/dns/">DNS</a>. <strong>Dauer:</strong> eine Doppelstunde (Aufbau 15 Minuten, Spiel 40 Minuten, Auswertung 20 Minuten).</p>
+<p><strong>Warum an dieser Stelle?</strong> Router, Gateway und DNS sind theoretisch eingeführt; das Rollenspiel bringt jetzt alle Bausteine zusammen und macht erfahrbar, dass sich der äußere Umschlag bei jedem Router ändert, der innere aber nicht. Danach wird der Ablauf auf der Seite <a href="/informatik/netzwerke/weg-einer-nachricht/">Der Weg einer Nachricht</a> Schritt für Schritt gesichert, und die Simulation (<a href="/informatik/netzwerke/routing-simulieren/">Netze verbinden in der Simulation</a>) prüft das Verständnis. Alternativ lässt sich das Spiel auch direkt nach Abschnitt 2 der Router-Seite spielen, dann ohne DNS (Ping an IP-Adressen statt an Namen).</p>
+<p><strong>Organisation:</strong> Im Werkzeug <a href="/informatik/werkzeuge/netzwerk-rollenspiel/">Rollenspiel: Nachrichten im Netzwerk</a> dieselbe Konfiguration wie in Rollenspiel I mit <strong>Stufe 3</strong> wählen (gleiche Zufallszahl): Namen, MAC- und IP-Adressen bleiben gleich, die erste Person jeder Gruppe wird Router, Person 2 von Gruppe 1 wird DNS-Server. Digital genügt es, auf dem eigenen Gerät die Stufe umzustellen. Router stehen in der Mitte des Raums zusammen (Backbone), die Gruppen um sie herum. Klebezettel für die Hände (oder mit wasserlöslichem Stift auf den Handrücken schreiben).</p>
+<p><strong>Vereinfachung bei Zeitmangel:</strong> ARP nicht als eigenes Gespräch spielen, sondern „auf den Händen nachschauen“ (die MAC steht auf der Hand). Das spart viel Zeit, ohne den Kern zu verlieren – im Spiel aber deutlich als Abkürzung benennen.</p>
+<p><strong>Hinweis zur Vorlage:</strong> Die Rollenkarten der Präsentation verwenden die vereinfachte Netzmaske „9.9.9.0“; hier wird durchgehend die echte Netzmaske 255.255.255.0 benutzt, die die Klasse von der Subnetz-Seite kennt.</p>
+</lehrkraft>
+
+<p>In Rollenspiel I war jede Gruppe ein eigenes lokales Netz – und konnte nur mit sich selbst reden. Jetzt verbindet ihr die Netze: mit <strong>Routern</strong>, die zwei Netzwerkkarten haben, einem <strong>Backbone</strong> in der Mitte und einem <strong>DNS-Server</strong>, der die Namen aller Rechner kennt. Ihr spielt das Internet im Kleinen.</p>
+
+<h2>1. Aufbau</h2>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 330" role="img" aria-labelledby="netz-rs2-titel">
+<title id="netz-rs2-titel">Aufbau von Rollenspiel II mit vier Gruppen: In der Mitte das Backbone 3.3.3.x, in dem die vier Router mit der linken Hand stehen (3.3.3.1 bis 3.3.3.4). Mit der rechten Hand ist jeder Router Mitglied seiner Gruppe 1.1.1.x bis 1.1.4.x (Adresse 1.1.g.1). In Gruppe 1 sitzt der DNS-Server 1.1.1.2.</title>
+<ellipse class="rahmen" cx="370" cy="165" rx="120" ry="58"/><text class="titel" x="370" y="160" text-anchor="middle">Backbone</text><text x="370" y="180" text-anchor="middle">3.3.3.x</text>
+<g>
+<ellipse class="flaeche" cx="110" cy="70" rx="100" ry="55"/><text class="titel" x="90" y="60" text-anchor="middle">Gruppe 1</text><text x="90" y="80" text-anchor="middle" class="klein">1.1.1.x</text><text x="90" y="98" text-anchor="middle" class="klein">DNS-Server 1.1.1.2</text>
+<ellipse class="flaeche" cx="630" cy="70" rx="100" ry="55"/><text class="titel" x="650" y="66" text-anchor="middle">Gruppe 2</text><text x="650" y="86" text-anchor="middle" class="klein">1.1.2.x</text>
+<ellipse class="flaeche" cx="110" cy="262" rx="100" ry="55"/><text class="titel" x="90" y="258" text-anchor="middle">Gruppe 3</text><text x="90" y="278" text-anchor="middle" class="klein">1.1.3.x</text>
+<ellipse class="flaeche" cx="630" cy="262" rx="100" ry="55"/><text class="titel" x="650" y="258" text-anchor="middle">Gruppe 4</text><text x="650" y="278" text-anchor="middle" class="klein">1.1.4.x</text>
+</g>
+<g>
+<rect class="grau" x="200" y="95" width="104" height="44" rx="6"/><text x="252" y="114" text-anchor="middle" class="klein">Router 1</text><text x="252" y="130" text-anchor="middle" class="klein">1.1.1.1 | 3.3.3.1</text>
+<rect class="grau" x="436" y="95" width="104" height="44" rx="6"/><text x="488" y="114" text-anchor="middle" class="klein">Router 2</text><text x="488" y="130" text-anchor="middle" class="klein">1.1.2.1 | 3.3.3.2</text>
+<rect class="grau" x="200" y="192" width="104" height="44" rx="6"/><text x="252" y="211" text-anchor="middle" class="klein">Router 3</text><text x="252" y="227" text-anchor="middle" class="klein">1.1.3.1 | 3.3.3.3</text>
+<rect class="grau" x="436" y="192" width="104" height="44" rx="6"/><text x="488" y="211" text-anchor="middle" class="klein">Router 4</text><text x="488" y="227" text-anchor="middle" class="klein">1.1.4.1 | 3.3.3.4</text>
+</g>
+</svg>
+<figcaption>Jeder Router ist mit der rechten Hand Mitglied seiner Gruppe und mit der linken Hand Mitglied im Backbone.</figcaption>
+</figure>
+
+<ul>
+<li>Ihr behaltet eure Rechnernamen, MAC- und IP-Adressen aus Rollenspiel I. Neu auf euren Datenblättern (Stufe 3): das <strong>Gateway</strong> (die rechte Hand eures Routers, <code>1.1.Gruppe.1</code>) und der <strong>DNS-Server</strong> (<code>1.1.1.2</code>).</li>
+<li>Schreibt eure MAC- und IP-Adresse auf die <strong>rechte Hand</strong> (Klebezettel). <strong>Router</strong> schreiben die Daten ihrer zweiten Netzwerkkarte auf die <strong>linke Hand</strong>. Pakete werden nur mit der richtigen Hand weitergegeben.</li>
+<li>Die Router stellen sich in der Mitte zusammen: Ihre linken Hände bilden das Backbone. Mit der rechten Hand bleiben sie in Reichweite ihrer Gruppe.</li>
+<li>Der <strong>DNS-Server</strong> hat auf seinem Datenblatt eine Tabelle mit allen Namen und IP-Adressen.</li>
+<li>Jeder Router hat auf seinem Datenblatt eine <strong>Routingtabelle</strong>.</li>
+</ul>
+
+<h2>2. Die Regeln für Stufe 3</h2>
+
+<p>Alle Grundregeln aus <a href="/informatik/netzwerke/rollenspiel-lan/">Rollenspiel I</a> gelten weiter. Neu ist, wie man entscheidet, an wen ein Paket als Nächstes geht. Das zeigt das Struktogramm:</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 330" role="img" aria-labelledby="netz-strukto-titel">
+<title id="netz-strukto-titel">Struktogramm „Paket weitergeben“: Ist die Ziel-IP bekannt? Wenn nein: Ziel-IP per DNS-Anfrage herausfinden. Dann: Ist die Ziel-MAC bekannt? Wenn nein: Liegt die Ziel-IP in meiner Gruppe (erste drei Zahlen gleich)? Wenn ja: ARP-Anfrage nach der MAC der Ziel-IP. Wenn nein: Habe ich nur eine IP-Adresse (bin also kein Router)? Wenn ja: ARP-Anfrage nach der MAC des Gateways. Wenn nein: ARP-Anfrage nach der MAC des Routers, der laut Routingtabelle zuständig ist. Zum Schluss: Paket an diese MAC übergeben.</title>
+<rect class="rahmen" x="10" y="10" width="720" height="310"/>
+<path class="flaeche" d="M10,10 H730 V50 H10 Z"/><line class="linie" x1="10" y1="10" x2="370" y2="50"/><line class="linie" x1="730" y1="10" x2="370" y2="50"/>
+<text x="370" y="30" text-anchor="middle" class="titel" style="paint-order:stroke;stroke:var(--fach-soft);stroke-width:6px;stroke-linejoin:round">Ziel-IP bekannt?</text><text x="20" y="46" class="klein">ja</text><text x="720" y="46" text-anchor="end" class="klein">nein</text>
+<rect class="rahmen" x="10" y="50" width="200" height="34"/><rect class="flaeche" x="210" y="50" width="520" height="34"/>
+<text x="470" y="72" text-anchor="middle">Ziel-IP per DNS-Anfrage herausfinden (an den DNS-Server)</text>
+<path class="flaeche" d="M10,84 H730 V124 H10 Z"/><line class="linie" x1="10" y1="84" x2="140" y2="124"/><line class="linie" x1="730" y1="84" x2="140" y2="124"/>
+<text x="420" y="104" text-anchor="middle" class="titel" style="paint-order:stroke;stroke:var(--fach-soft);stroke-width:6px;stroke-linejoin:round">Ziel-MAC bekannt?</text><text x="20" y="120" class="klein">ja</text><text x="720" y="120" text-anchor="end" class="klein">nein</text>
+<rect class="rahmen" x="10" y="124" width="130" height="156"/>
+<path class="rahmen" d="M140,124 H730 V170 H140 Z"/><line class="linie" x1="140" y1="124" x2="330" y2="170"/><line class="linie" x1="730" y1="124" x2="330" y2="170"/>
+<text x="440" y="142" text-anchor="middle" class="titel" style="paint-order:stroke;stroke:#fff;stroke-width:6px;stroke-linejoin:round">Ziel-IP in meiner Gruppe?</text><text x="440" y="160" text-anchor="middle" class="klein" style="paint-order:stroke;stroke:#fff;stroke-width:6px;stroke-linejoin:round">(erste drei Zahlen wie bei einer meiner IPs)</text><text x="150" y="166" class="klein">ja</text><text x="720" y="166" text-anchor="end" class="klein">nein</text>
+<rect class="rahmen" x="140" y="170" width="190" height="110"/><text x="235" y="220" text-anchor="middle">ARP-Anfrage nach</text><text x="235" y="240" text-anchor="middle">der MAC der Ziel-IP</text>
+<path class="grau" d="M330,170 H730 V210 H330 Z"/><line class="linie" x1="330" y1="170" x2="530" y2="210"/><line class="linie" x1="730" y1="170" x2="530" y2="210"/>
+<text x="530" y="190" text-anchor="middle" class="titel" style="paint-order:stroke;stroke:var(--surface-2);stroke-width:6px;stroke-linejoin:round">Nur eine IP (kein Router)?</text><text x="340" y="206" class="klein">ja</text><text x="720" y="206" text-anchor="end" class="klein">nein</text>
+<rect class="grau" x="330" y="210" width="200" height="70"/><text x="430" y="238" text-anchor="middle">ARP-Anfrage nach</text><text x="430" y="258" text-anchor="middle">der MAC des Gateways</text>
+<rect class="grau" x="530" y="210" width="200" height="70"/><text x="630" y="232" text-anchor="middle">ARP nach der MAC des</text><text x="630" y="250" text-anchor="middle">zuständigen Routers</text><text x="630" y="268" text-anchor="middle" class="klein">(laut Routingtabelle)</text>
+<rect class="flaeche" x="10" y="280" width="720" height="40"/><text x="370" y="305" text-anchor="middle" class="titel">Paket an diese MAC übergeben</text>
+</svg>
+<figcaption>Struktogramm „Paket weitergeben“ (nach einer Vorlage von oinf.ch). In Rollenspiel I war immer „Ziel-IP bekannt“ und „in meiner Gruppe“ erfüllt.</figcaption>
+</figure>
+
+<aside class="box tipp" data-titel="DNS im Rollenspiel">
+<p><strong>DNS-Anfrage:</strong> Schreibe den gesuchten Namen auf einen DNS-Zettel. Stecke ihn in einen inneren Umschlag: Quell-IP = deine IP, Ziel-IP = DNS-Server (<code>1.1.1.2</code>). Weiter wie im Struktogramm – liegt der DNS-Server nicht in deiner Gruppe, geht das Paket an dein Gateway.</p>
+<p><strong>DNS-Antwort</strong> (nur der DNS-Server): Namen in der DNS-Tabelle suchen, IP eintragen, Quell- und Ziel-IP vertauschen und zurückschicken.</p>
+</aside>
+
+<aside class="box tipp" data-titel="Als Router">
+<p>Bekommst du ein Paket, öffnest du nur den äußeren Umschlag. Steht innen deine eigene IP, ist es für dich. Sonst suchst du in deiner Routingtabelle von oben nach unten die erste Zeile, die zur Ziel-IP passt. Dann steckst du das IP-Paket in einen <strong>neuen äußeren Umschlag</strong>: Quell-MAC = die MAC der Hand, mit der du weitergibst; Ziel-MAC = die MAC des nächsten Empfängers. Den inneren Umschlag änderst du <strong>nie</strong>.</p>
+</aside>
+
+<h2>3. Spielen</h2>
+
+<aside class="box aufgabe">
+<ol>
+<li><strong>Ping in ein anderes Netz:</strong> Wähle den Namen von jemandem aus einer <strong>anderen</strong> Gruppe (Liste der Namen an der Tafel oder bei der Lehrkraft) und schicke ein Ping an diesen Namen. Halte dich an das Struktogramm.</li>
+<li><strong>Mini-Unterhaltung:</strong> Stelle jemandem aus einer anderen Gruppe per Namen eine Frage und warte auf die Antwort.</li>
+<li><strong>Paket verfolgen:</strong> Einige von euch sind Beobachterinnen und Beobachter. Folgt einem Paket auf seinem ganzen Weg und notiert jede Übergabe.
+<table class="verlauf ausfuell" data-erweiterbar="netz-rs2-3">
+<thead><tr><th>Wer gibt weiter?</th><th>Quell-MAC → Ziel-MAC (außen)</th><th>Quell-IP → Ziel-IP (innen)</th></tr></thead>
+<tbody>
+<tr><td><textarea class="notiz" data-notiz="netz-rs2-3-1-1" rows="1" aria-label="Aufgabe 3: Zeile 1 – wer"></textarea></td><td><textarea class="notiz" data-notiz="netz-rs2-3-1-2" rows="1" aria-label="Aufgabe 3: Zeile 1 – MAC"></textarea></td><td><textarea class="notiz" data-notiz="netz-rs2-3-1-3" rows="1" aria-label="Aufgabe 3: Zeile 1 – IP"></textarea></td></tr>
+<tr><td><textarea class="notiz" data-notiz="netz-rs2-3-2-1" rows="1" aria-label="Aufgabe 3: Zeile 2 – wer"></textarea></td><td><textarea class="notiz" data-notiz="netz-rs2-3-2-2" rows="1" aria-label="Aufgabe 3: Zeile 2 – MAC"></textarea></td><td><textarea class="notiz" data-notiz="netz-rs2-3-2-3" rows="1" aria-label="Aufgabe 3: Zeile 2 – IP"></textarea></td></tr>
+<tr><td><textarea class="notiz" data-notiz="netz-rs2-3-3-1" rows="1" aria-label="Aufgabe 3: Zeile 3 – wer"></textarea></td><td><textarea class="notiz" data-notiz="netz-rs2-3-3-2" rows="1" aria-label="Aufgabe 3: Zeile 3 – MAC"></textarea></td><td><textarea class="notiz" data-notiz="netz-rs2-3-3-3" rows="1" aria-label="Aufgabe 3: Zeile 3 – IP"></textarea></td></tr>
+<tr><td><textarea class="notiz" data-notiz="netz-rs2-3-Zeile-1" rows="1" aria-label="Aufgabe 3: Zeile 4 – wer"></textarea></td><td><textarea class="notiz" data-notiz="netz-rs2-3-Zeile-2" rows="1" aria-label="Aufgabe 3: Zeile 4 – MAC"></textarea></td><td><textarea class="notiz" data-notiz="netz-rs2-3-Zeile-3" rows="1" aria-label="Aufgabe 3: Zeile 4 – IP"></textarea></td></tr>
+</tbody>
+</table></li>
+<li><strong>Störfall:</strong> Auf ein Zeichen der Lehrkraft verlässt ein Router das Backbone (er „fällt aus“). Was passiert mit den Paketen?</li>
+</ol>
+</aside>
+
+<lehrkraft titel="Hinweise zum Spielablauf (Aufgabe 1 bis 4)">
+<ul>
+<li>Beim ersten Ping per Namen staut es sich beim DNS-Server – ein realistischer Effekt, der in der Auswertung aufgegriffen werden kann (deshalb gibt es im Internet viele DNS-Server und Caches).</li>
+<li>Bei Aufgabe 3 sieht die Tabelle für ein Ping von Gruppe 2 an Gruppe 4 z. B. so aus: Client → Router 2 (außen: Client-MAC → MAC rechte Hand Router 2; innen: 1.1.2.x → 1.1.4.y), Router 2 → Router 4 (außen: MAC linke Hand R2 → MAC linke Hand R4; innen unverändert), Router 4 → Ziel (außen: MAC rechte Hand R4 → Ziel-MAC; innen unverändert).</li>
+<li>Störfall: Die Gruppe des ausgefallenen Routers ist abgeschnitten; Pakete an sie bleiben beim Absender-Router liegen. Im echten Internet gibt es meist mehrere Wege, und Router passen ihre Tabellen automatisch an (Routing-Protokolle) – im Spiel sind die Tabellen fest.</li>
+</ul>
+</lehrkraft>
+
+<h2>4. Auswertung</h2>
+
+<aside class="box aufgabe">
+<ol start="5">
+<li>Vergleicht die Einträge eurer Beobachtungstabelle: Welche Angaben haben sich unterwegs verändert, welche sind gleich geblieben? Erkläre, warum.
+<textarea class="notiz" data-notiz="netz-rs2-5" rows="3" aria-label="Aufgabe 5: Was ändert sich, was bleibt?"></textarea></li>
+<li>Wie viele ARP-Anfragen waren für ein Ping in eine andere Gruppe mindestens nötig (Hinweg, beim ersten Mal, ohne DNS)? Wer hat sie gestellt?
+<textarea class="notiz" data-notiz="netz-rs2-6" rows="2" aria-label="Aufgabe 6: Anzahl der ARP-Anfragen"></textarea></li>
+<li>Warum muss ein Client nie in eine Routingtabelle schauen, ein Router aber schon?
+<textarea class="notiz" data-notiz="netz-rs2-7" rows="2" aria-label="Aufgabe 7: Routingtabelle nur beim Router"></textarea></li>
+</ol>
+</aside>
+
+<div class="quiz" data-id="netz-rs2-quiz" data-anweisung="Wähle die richtige Antwort.">
+<div class="frage" data-erklaerung="Die IP-Adressen im inneren Umschlag bleiben auf dem ganzen Weg gleich."><p>Was ändert sich nicht, wenn ein Paket durch mehrere Router läuft?</p><ul><li>die Quell-MAC</li><li>die Ziel-MAC</li><li data-richtig>die Ziel-IP</li></ul></div>
+<div class="frage" data-erklaerung="Ein Client schickt alles, was nicht in seiner Gruppe liegt, an sein Gateway – den Router seiner Gruppe."><p>Ein Client will ein Paket an eine IP in einer anderen Gruppe schicken. An wessen MAC übergibt er es?</p><ul><li>an die MAC des Ziels</li><li data-richtig>an die MAC seines Gateways</li><li>an FF:FF</li></ul></div>
+<div class="frage" data-erklaerung="ARP funktioniert nur im eigenen lokalen Netz. Im Zielnetz fragt der letzte Router nach der MAC des Empfängers."><p>Wer fragt im Zielnetz per ARP nach der MAC des Empfängers?</p><ul><li>der Absender</li><li data-richtig>der Router, der das Zielnetz mit seiner Hand erreicht</li><li>der DNS-Server</li></ul></div>
+<div class="frage" data-erklaerung="Für eine DNS-Anfrage braucht man die IP des DNS-Servers – sie steht in den Einstellungen."><p>Woher kennt ein Client die IP-Adresse des DNS-Servers?</p><ul><li>Er fragt per ARP.</li><li data-richtig>Sie steht in seinen Netzwerkeinstellungen (Datenblatt).</li><li>Er fragt den Router.</li></ul></div>
+</div>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 5 bis 7, Live-Umfrage">
+<ul>
+<li><strong>Aufgabe 5:</strong> Außen (MAC) ändern sich Quelle und Ziel bei jeder Übergabe – sie gelten nur im jeweiligen lokalen Netz bzw. im Backbone. Innen (IP) bleibt alles gleich – die IP-Adressen beschreiben Absender und Empfänger der ganzen Kommunikation.</li>
+<li><strong>Aufgabe 6:</strong> Drei: Absender fragt nach der MAC seines Gateways, der Router seiner Gruppe nach der MAC des Ziel-Routers im Backbone, der Ziel-Router nach der MAC des Empfängers. Jeder fragt nur in einem Netz, in dem er selbst Mitglied ist.</li>
+<li><strong>Aufgabe 7:</strong> Ein Client hat nur eine Netzwerkkarte und nur zwei Möglichkeiten: direkt oder an das Gateway. Ein Router ist Mitglied in mehreren Netzen und muss entscheiden, über welche Hand und an welchen nächsten Router.</li>
+</ul>
+<als-umfrage ids="netz-rs2-quiz" titel="Netzwerke – Rollenspiel II" modus="single"></als-umfrage>
+</lehrkraft>

@@ -1,0 +1,114 @@
+<!--
+beschreibung: Das Sender-Empfänger-Modell: Sender, Empfänger, Nachricht und Übertragungsmedium – und wie aus Zeichen physikalische Signale werden.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/leuchtfeuer/">Einstieg</a>. <strong>Dauer:</strong> eine Stunde mit Experiment.</p>
+<p><strong>Material für das Experiment (Abschnitt 4):</strong> Taschenlampen oder die Taschenlampe im Handy, alternativ eine einfache Schaltung aus Batterie, Taster und Lämpchen bzw. LED (falls ein Physik-Experimentierkasten verfügbar ist). Das Experiment läuft bewusst <em>ohne</em> Absprachen los – die Schwierigkeiten sind der Einstieg in die nächste Seite <a href="/informatik/netzwerke/protokolle/">Kommunikationsprotokolle</a>.</p>
+</lehrkraft>
+
+<h2>1. Vier Bausteine jeder Kommunikation</h2>
+
+<p>Ob Leuchtfeuer, Telegraf oder Handy: Jede Nachrichtenübertragung lässt sich mit demselben einfachen Modell beschreiben. Es besteht aus vier Elementen:</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 250" role="img" aria-labelledby="netz-sem-titel">
+<title id="netz-sem-titel">Sender-Empfänger-Modell als Schaltung: Links ein Taster (Sender), in der Mitte zwei Leitungen (Übertragungsmedium), rechts ein Lämpchen (Empfänger). Über der Leitung wandert die Nachricht als Folge von Signalen: an, aus, an, an.</title>
+<defs><marker id="pfeil-sem" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="flaeche" x="20" y="70" width="150" height="110" rx="10"/>
+<text class="titel" x="95" y="60" text-anchor="middle">Sender</text>
+<rect class="rahmen" x="60" y="140" width="70" height="16" rx="3"/><line class="linie" x1="62" y1="140" x2="120" y2="112"/><circle class="rahmen" cx="62" cy="140" r="4"/><circle class="rahmen" cx="128" cy="140" r="4"/>
+<text x="95" y="100" text-anchor="middle" class="klein">Taster</text>
+<rect class="flaeche" x="570" y="70" width="150" height="110" rx="10"/>
+<text class="titel" x="645" y="60" text-anchor="middle">Empfänger</text>
+<circle class="rahmen" cx="645" cy="125" r="26"/><path class="linie" d="M630,125 q7,-14 15,0 q8,14 15,0"/>
+<text x="645" y="172" text-anchor="middle" class="klein">Lämpchen</text>
+<line class="linie" x1="170" y1="105" x2="570" y2="105"/>
+<line class="linie" x1="170" y1="150" x2="570" y2="150"/>
+<text class="titel" x="370" y="205" text-anchor="middle">Übertragungsmedium</text>
+<text x="370" y="225" text-anchor="middle" class="klein">hier: zwei Drähte (sonst z. B. Luft, Glasfaser, Funk)</text>
+<g>
+<rect class="akzent" x="250" y="118" width="40" height="20" rx="3"/><rect class="grau" x="300" y="118" width="40" height="20" rx="3"/><rect class="akzent" x="350" y="118" width="40" height="20" rx="3"/><rect class="akzent" x="400" y="118" width="40" height="20" rx="3"/>
+<line class="linie" x1="450" y1="128" x2="500" y2="128" marker-end="url(#pfeil-sem)"/>
+</g>
+<text class="titel" x="345" y="40" text-anchor="middle">Nachricht</text>
+<text x="345" y="60" text-anchor="middle" class="klein">als Folge von Signalen: an – aus – an – an</text>
+</svg>
+<figcaption>Das Sender-Empfänger-Modell, gezeigt an einer einfachen Schaltung: wie die Leuchtfeuer, nur mit Strom und Lämpchen statt Feuer.</figcaption>
+</figure>
+
+<dl>
+<dt><strong>Sender</strong></dt><dd>Er will eine Information weitergeben und schickt dafür eine Nachricht ab.</dd>
+<dt><strong>Empfänger</strong></dt><dd>Er nimmt die Nachricht auf und gewinnt daraus die Information zurück.</dd>
+<dt><strong>Nachricht</strong></dt><dd>ein Zeichen oder eine Folge von Zeichen, mit der die Information dargestellt wird.</dd>
+<dt><strong>Übertragungsmedium</strong></dt><dd>der Weg, über den die Nachricht vom Sender zum Empfänger gelangt: Luft, Kabel, Glasfaser, Funk …</dd>
+</dl>
+
+<h2>2. Nachricht und Information</h2>
+
+<p>Eine <strong>Nachricht</strong> ist in unserem Sinne ein Zeichen oder eine ganze Folge von Zeichen, die man zur Darstellung von <strong>Information</strong> benutzt. Dieselbe Information lässt sich auf ganz verschiedene Arten darstellen:</p>
+
+<ul>
+<li>mit den Buchstaben unserer Schrift, wenn die Nachricht auf einem Zettel übertragen wird,</li>
+<li>mit einer bestimmten Flagge, wenn sie von Schiff zu Schiff übertragen wird,</li>
+<li>mit Morsezeichen, wenn sie telegrafiert wird,</li>
+<li>mit Bits, also Nullen und Einsen, wenn sie zwischen Computern übertragen wird.</li>
+</ul>
+
+<p>Die Information „Hilfe!“ bleibt dieselbe – nur ihre Darstellung, die Nachricht, ändert sich.</p>
+
+<h2>3. Von Zeichen zu Signalen</h2>
+
+<p>Zeichen allein kann man nicht verschicken. Für die Übertragung müssen sie in <strong>physikalische Signale</strong> umgewandelt werden – in etwas, das sich über das Medium ausbreiten kann. Bei den Leuchtfeuern ist das Licht, beim Telegrafen ein Stromstoß. Zwischen Computern werden die Bits durch <strong>elektrische Signale</strong> (Spannung im Kupferkabel), <strong>Lichtsignale</strong> (Glasfaser) oder <strong>Funkwellen</strong> (WLAN, Mobilfunk) dargestellt.</p>
+
+<p>Der Sender <strong>codiert</strong> also die Zeichen in Signale, der Empfänger <strong>decodiert</strong> die Signale wieder in Zeichen. Unterwegs können <strong>Störungen</strong> auftreten: Nebel vor dem Feuer, ein Knacken in der Leitung, eine Wand zwischen WLAN-Router und Laptop. Dann kommt beim Empfänger womöglich etwas anderes an, als der Sender gemeint hat.</p>
+
+<aside class="box aufgabe">
+<ol>
+<li>Beschreibe die Situationen mit dem Sender-Empfänger-Modell.
+<table class="verlauf ausfuell">
+<thead><tr><th>Situation</th><th>Sender</th><th>Empfänger</th><th>Nachricht (Zeichen)</th><th>Übertragungsmedium (Signal)</th></tr></thead>
+<tbody>
+<tr><th>Leuchtfeuer von Gondor</th><td><textarea class="notiz" data-notiz="netz-sem-1-1-1" rows="1" aria-label="Aufgabe 1: Leuchtfeuer – Sender"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-1-2" rows="1" aria-label="Aufgabe 1: Leuchtfeuer – Empfänger"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-1-3" rows="1" aria-label="Aufgabe 1: Leuchtfeuer – Nachricht"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-1-4" rows="1" aria-label="Aufgabe 1: Leuchtfeuer – Medium"></textarea></td></tr>
+<tr><th>Telegramm 1866 von London nach New York</th><td><textarea class="notiz" data-notiz="netz-sem-1-2-1" rows="1" aria-label="Aufgabe 1: Telegramm – Sender"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-2-2" rows="1" aria-label="Aufgabe 1: Telegramm – Empfänger"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-2-3" rows="1" aria-label="Aufgabe 1: Telegramm – Nachricht"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-2-4" rows="1" aria-label="Aufgabe 1: Telegramm – Medium"></textarea></td></tr>
+<tr><th>Zwei Schiffe auf See verständigen sich mit Flaggen</th><td><textarea class="notiz" data-notiz="netz-sem-1-3-1" rows="1" aria-label="Aufgabe 1: Flaggen – Sender"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-3-2" rows="1" aria-label="Aufgabe 1: Flaggen – Empfänger"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-3-3" rows="1" aria-label="Aufgabe 1: Flaggen – Nachricht"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-3-4" rows="1" aria-label="Aufgabe 1: Flaggen – Medium"></textarea></td></tr>
+<tr><th>Dein Laptop lädt über WLAN eine Webseite</th><td><textarea class="notiz" data-notiz="netz-sem-1-4-1" rows="1" aria-label="Aufgabe 1: WLAN – Sender"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-4-2" rows="1" aria-label="Aufgabe 1: WLAN – Empfänger"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-4-3" rows="1" aria-label="Aufgabe 1: WLAN – Nachricht"></textarea></td><td><textarea class="notiz" data-notiz="netz-sem-1-4-4" rows="1" aria-label="Aufgabe 1: WLAN – Medium"></textarea></td></tr>
+</tbody>
+</table></li>
+</ol>
+</aside>
+
+<div class="quiz" data-id="netz-sem-quiz" data-anweisung="Wähle die richtige Antwort.">
+<div class="frage" data-erklaerung="Die Nachricht ist die Darstellung (hier: die Buchstaben), die Information ist das, was sie bedeutet."><p>Lea schreibt „Komme um 8“ auf einen Zettel. Was ist hier die Nachricht?</p><ul><li>der Zettel</li><li data-richtig>die Zeichenfolge „Komme um 8“</li><li>dass Lea um 8 Uhr kommt</li></ul></div>
+<div class="frage" data-erklaerung="In der Glasfaser werden die Bits als Lichtsignale übertragen."><p>In welcher Form reisen Bits durch ein Glasfaserkabel?</p><ul><li>als Stromstöße</li><li data-richtig>als Lichtblitze</li><li>als Funkwellen</li></ul></div>
+<div class="frage" data-erklaerung="Der Empfänger wandelt die Signale wieder in Zeichen um – er decodiert."><p>Was macht der Empfänger mit den ankommenden Signalen?</p><ul><li>Er codiert sie.</li><li data-richtig>Er decodiert sie wieder in Zeichen.</li><li>Er verstärkt sie und schickt sie zurück.</li></ul></div>
+<div class="frage" data-erklaerung="Störungen verändern Signale unterwegs, z. B. Rauschen, Nebel oder Wände beim WLAN."><p>Beim Telefonieren rauscht und knackt es. Welches Element des Modells ist betroffen?</p><ul><li>der Sender</li><li data-richtig>das Übertragungsmedium (Störung)</li><li>die Information</li></ul></div>
+</div>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 und Live-Umfrage">
+<table class="verlauf">
+<thead><tr><th>Situation</th><th>Sender</th><th>Empfänger</th><th>Nachricht</th><th>Medium (Signal)</th></tr></thead>
+<tbody>
+<tr><th>Leuchtfeuer</th><td>Gondor (erste Feuerstelle)</td><td>Rohan</td><td>Feuer an (1)</td><td>Luft (Licht), über Zwischenstationen</td></tr>
+<tr><th>Telegramm 1866</th><td>Telegrafist in London</td><td>Telegrafist in New York</td><td>Morsezeichen</td><td>Seekabel (Stromstöße)</td></tr>
+<tr><th>Flaggen</th><td>Schiff A</td><td>Schiff B</td><td>Flaggenzeichen</td><td>Luft (Licht, man sieht die Flaggen)</td></tr>
+<tr><th>WLAN</th><td>Webserver bzw. WLAN-Router</td><td>Laptop (Browser)</td><td>Bits (HTML-Datei)</td><td>Funkwellen, davor Kabel und Glasfaser</td></tr>
+</tbody>
+</table>
+<p>Beim WLAN-Beispiel lohnt der Hinweis, dass die Nachricht unterwegs mehrmals das Medium wechselt – wie bei den Leuchtfeuern mit Zwischenstationen. Das Quiz lässt sich als Live-Umfrage durchführen:</p>
+<als-umfrage ids="netz-sem-quiz" titel="Netzwerke – Sender-Empfänger-Modell" modus="single"></als-umfrage>
+</lehrkraft>
+
+<h2>4. Experiment: Lichtsignale</h2>
+
+<aside class="box aufgabe">
+<ol start="2">
+<li>Arbeitet zu zweit. Eine Person ist Sender, die andere Empfänger. Der Sender bekommt von der Lehrkraft ein kurzes Wort (oder denkt sich eines aus, ohne es zu verraten) und überträgt es <strong>nur mit einer Taschenlampe</strong>: Licht an oder Licht aus. Ihr dürft vorher <strong>nichts</strong> absprechen. Der Empfänger schreibt auf, was er erkennt.</li>
+<li>Was hat geklappt, was nicht? Schreibt auf, welche Schwierigkeiten es gab und was ihr hättet vereinbaren müssen.
+<textarea class="notiz" data-notiz="netz-sem-3" aria-label="Aufgabe 3: Schwierigkeiten beim Experiment"></textarea></li>
+<li>Wiederholt das Experiment mit einem neuen Wort – diesmal nach euren Vereinbarungen. Klappt es besser?</li>
+</ol>
+</aside>
+
+<lehrkraft titel="Hinweise zum Experiment (Aufgabe 2 bis 4)">
+<p>Ohne Absprache scheitert die Übertragung fast immer. Typische Schwierigkeiten, die in der Auswertung gesammelt werden (Tafel): Welcher Code (Morse, Buchstabennummer binär, Anzahl Blinker)? Wann geht es los, wann ist Schluss? Wie lang ist ein Zeichen, wie lang eine Pause? Was, wenn man sich vertan hat? Wie zeigt der Empfänger, dass er nicht mitkommt? Diese Liste ist genau der Inhalt der nächsten Seite – sie wird dort als „Protokoll“ benannt. Es lohnt, sie zu fotografieren.</p>
+</lehrkraft>

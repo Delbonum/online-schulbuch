@@ -1,0 +1,137 @@
+<!--
+beschreibung: Der Weg einer Nachricht Schritt für Schritt: Aline schreibt Bob in einem anderen Netz – DNS-Anfrage, ARP, Router, Umschläge und Schichten bei jeder Station.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite, Sicherung nach <a href="/informatik/netzwerke/rollenspiel-internet/">Rollenspiel II</a> (Material „Nachricht im Netzwerk versenden“). <strong>Dauer:</strong> eine Stunde; Abschnitt 3 eignet sich als Hausaufgabe oder Lernkontrolle.</p>
+<p>Der Ablauf ist bewusst ausführlich. Gut funktioniert, Abschnitt 2 gemeinsam mit Umschlägen an der Tafel nachzuspielen (zwei Farben für innen und außen) und Abschnitt 3 dann allein ausfüllen zu lassen.</p>
+</lehrkraft>
+
+<p>Aline will Bob eine Nachricht schicken. Sie kennt nur seinen Namen – und Bob sitzt in einem ganz anderen Netz. Was passiert jetzt, Schritt für Schritt?</p>
+
+<h2>1. Das Netz</h2>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 300" role="img" aria-labelledby="netz-weg-titel">
+<title id="netz-weg-titel">Drei Gruppen-Netze an einem Backbone 3.3.3.x. Netz 1.1.3.x mit Aline (IP 1.1.3.1, MAC ABC) und Router A (1.1.3.9, MAC ROU | 3.3.3.1, MAC TER). Netz 1.1.6.x mit dem DNS-Server (1.1.6.8, MAC SNV) und Router C (1.1.6.7, MAC DNO | 3.3.3.4, MAC ODN). Netz 1.1.8.x mit Bob (1.1.8.5, MAC XYZ) und Router B (1.1.8.9, MAC TOR | 3.3.3.8, MAC REU).</title>
+<ellipse class="rahmen" cx="370" cy="150" rx="110" ry="52"/><text class="titel" x="370" y="146" text-anchor="middle">Backbone</text><text x="370" y="166" text-anchor="middle">3.3.3.x</text>
+<ellipse class="flaeche" cx="100" cy="70" rx="95" ry="58"/><text class="titel" x="90" y="52" text-anchor="middle">Netz 1.1.3.x</text>
+<rect class="rahmen" x="30" y="66" width="120" height="44" rx="6"/><text x="90" y="84" text-anchor="middle">Aline</text><text x="90" y="101" text-anchor="middle" class="klein">1.1.3.1 · ABC</text>
+<ellipse class="flaeche" cx="640" cy="70" rx="95" ry="58"/><text class="titel" x="650" y="52" text-anchor="middle">Netz 1.1.8.x</text>
+<rect class="rahmen" x="590" y="66" width="120" height="44" rx="6"/><text x="650" y="84" text-anchor="middle">Bob</text><text x="650" y="101" text-anchor="middle" class="klein">1.1.8.5 · XYZ</text>
+<ellipse class="flaeche" cx="370" cy="262" rx="110" ry="34"/>
+<rect class="rahmen" x="440" y="242" width="130" height="44" rx="6"/><text x="505" y="260" text-anchor="middle">DNS-Server</text><text x="505" y="277" text-anchor="middle" class="klein">1.1.6.8 · SNV</text>
+<text class="titel" x="345" y="272" text-anchor="middle">Netz 1.1.6.x</text>
+<rect class="grau" x="170" y="90" width="132" height="46" rx="6"/><text x="236" y="108" text-anchor="middle" class="klein">Router A</text><text x="236" y="126" text-anchor="middle" class="klein">1.1.3.9 ROU | 3.3.3.1 TER</text>
+<rect class="grau" x="440" y="90" width="132" height="46" rx="6"/><text x="506" y="108" text-anchor="middle" class="klein">Router B</text><text x="506" y="126" text-anchor="middle" class="klein">3.3.3.8 REU | 1.1.8.9 TOR</text>
+<rect class="grau" x="250" y="195" width="140" height="46" rx="6"/><text x="320" y="213" text-anchor="middle" class="klein">Router C</text><text x="320" y="231" text-anchor="middle" class="klein">3.3.3.4 ODN | 1.1.6.7 DNO</text>
+</svg>
+<figcaption>Netzmaske überall 255.255.255.0. MAC-Adressen vereinfacht als drei Buchstaben. Aline: Gateway 1.1.3.9, DNS-Server 1.1.6.8. Bob: Gateway 1.1.8.9.</figcaption>
+</figure>
+
+<table class="verlauf">
+<thead><tr><th>Routingtabelle</th><th>Router A</th><th>Router B</th><th>Router C</th></tr></thead>
+<tbody>
+<tr><th>eigene Netze</th><td>1.1.3.x und 3.3.3.x direkt</td><td>1.1.8.x und 3.3.3.x direkt</td><td>1.1.6.x und 3.3.3.x direkt</td></tr>
+<tr><th>1.1.3.x</th><td>–</td><td>an 3.3.3.1</td><td>an 3.3.3.1</td></tr>
+<tr><th>1.1.6.x</th><td>an 3.3.3.4</td><td>an 3.3.3.4</td><td>–</td></tr>
+<tr><th>1.1.8.x</th><td>an 3.3.3.8</td><td>–</td><td>an 3.3.3.8</td></tr>
+</tbody>
+</table>
+
+<h2>2. Teil 1: Die DNS-Anfrage</h2>
+
+<p>Aline kennt nur den Namen „Bob“. Also muss sie zuerst den DNS-Server fragen.</p>
+
+<ol>
+<li><strong>Aline (Anwendung):</strong> schreibt die DNS-Nachricht „Welche IP hat Bob?“.</li>
+<li><strong>Aline (Vermittlung):</strong> packt sie in einen inneren Umschlag: Quell-IP 1.1.3.1, Ziel-IP 1.1.6.8. Liegt 1.1.6.8 im eigenen Netz 1.1.3.x? <em>Nein</em> → das Paket muss an das Gateway 1.1.3.9.</li>
+<li><strong>Aline (Netzzugang):</strong> kennt die MAC des Gateways noch nicht → ARP-Anfrage an alle in 1.1.3.x: „Wer hat 1.1.3.9?“ Router A antwortet: „Ich, ROU.“ Aline packt den äußeren Umschlag: Quell-MAC ABC, Ziel-MAC ROU, und übergibt.</li>
+<li><strong>Router A:</strong> erkennt seine MAC, packt den äußeren Umschlag aus. Ziel-IP 1.1.6.8 ist nicht seine eigene → Routingtabelle: 1.1.6.x → an 3.3.3.4. ARP im Backbone: „Wer hat 3.3.3.4?“ – „Ich, ODN.“ Neuer äußerer Umschlag: Quell-MAC TER, Ziel-MAC ODN.</li>
+<li><strong>Router C:</strong> packt außen aus, Ziel-IP 1.1.6.8 → Routingtabelle: 1.1.6.x ist direkt angeschlossen. ARP in 1.1.6.x: „Wer hat 1.1.6.8?“ – „Ich, SNV.“ Neuer äußerer Umschlag: Quell-MAC DNO, Ziel-MAC SNV.</li>
+<li><strong>DNS-Server:</strong> erkennt seine MAC und seine IP, packt beide Umschläge aus und liest die Frage.</li>
+</ol>
+
+<aside class="box aufgabe">
+<ol>
+<li>Wie oft hat sich auf diesem Weg der äußere Umschlag geändert, wie oft der innere? Wie viele ARP-Anfragen gab es?
+<textarea class="notiz" data-notiz="netz-weg-1" rows="2" aria-label="Aufgabe 1: Umschläge und ARP zählen"></textarea></li>
+<li>Bringe die Schritte der <strong>DNS-Antwort</strong> in die richtige Reihenfolge.
+<ol class="reihenfolge">
+<li>Der DNS-Server schreibt „Bob hat die IP 1.1.8.5“ und packt den inneren Umschlag: Quell-IP 1.1.6.8, Ziel-IP 1.1.3.1.</li>
+<li>Der DNS-Server stellt fest: 1.1.3.1 liegt nicht in 1.1.6.x – das Paket geht an sein Gateway 1.1.6.7.</li>
+<li>Der DNS-Server fragt per ARP nach der MAC von 1.1.6.7 und übergibt das Paket an DNO.</li>
+<li>Router C findet in seiner Tabelle: 1.1.3.x → an 3.3.3.1. Er übergibt mit neuem äußeren Umschlag (ODN → TER).</li>
+<li>Router A erkennt: 1.1.3.x ist direkt angeschlossen. Er übergibt mit neuem äußeren Umschlag (ROU → ABC).</li>
+<li>Aline packt beide Umschläge aus und kennt jetzt Bobs IP-Adresse.</li>
+</ol></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 und 2">
+<p><strong>Aufgabe 1:</strong> Der äußere Umschlag wurde dreimal neu beschriftet (Aline → Router A, Router A → Router C, Router C → DNS-Server), der innere nie. Drei ARP-Anfragen – in jedem der drei durchlaufenen Netze eine. <strong>Aufgabe 2</strong> prüft sich selbst. Auf dem Rückweg sind keine ARP-Anfragen mehr nötig, wenn sich alle die Antworten vom Hinweg gemerkt haben (ARP-Tabellen) – der DNS-Server kennt die MAC von DNO aus dessen ARP-Anfrage.</p>
+</lehrkraft>
+
+<h2>3. Teil 2: Die Nachricht an Bob</h2>
+
+<aside class="box aufgabe">
+<ol start="3">
+<li>Jetzt kennt Aline die IP-Adresse von Bob und schickt ihm „Hallo Bob!“. Fülle für jede Übergabe die Umschläge aus. (Alle nötigen MAC-Adressen stehen schon in den ARP-Tabellen.)
+<table class="verlauf ausfuell">
+<thead><tr><th>Übergabe</th><th>Quell-MAC</th><th>Ziel-MAC</th><th>Quell-IP</th><th>Ziel-IP</th></tr></thead>
+<tbody>
+<tr><th>Aline → ?</th><td><textarea class="notiz" data-notiz="netz-weg-3-1-1" rows="1" aria-label="Aufgabe 3: Übergabe 1 – Quell-MAC"></textarea></td><td><textarea class="notiz" data-notiz="netz-weg-3-1-2" rows="1" aria-label="Aufgabe 3: Übergabe 1 – Ziel-MAC"></textarea></td><td><textarea class="notiz" data-notiz="netz-weg-3-1-3" rows="1" aria-label="Aufgabe 3: Übergabe 1 – Quell-IP"></textarea></td><td><textarea class="notiz" data-notiz="netz-weg-3-1-4" rows="1" aria-label="Aufgabe 3: Übergabe 1 – Ziel-IP"></textarea></td></tr>
+<tr><th>? → ?</th><td><textarea class="notiz" data-notiz="netz-weg-3-2-1" rows="1" aria-label="Aufgabe 3: Übergabe 2 – Quell-MAC"></textarea></td><td><textarea class="notiz" data-notiz="netz-weg-3-2-2" rows="1" aria-label="Aufgabe 3: Übergabe 2 – Ziel-MAC"></textarea></td><td><textarea class="notiz" data-notiz="netz-weg-3-2-3" rows="1" aria-label="Aufgabe 3: Übergabe 2 – Quell-IP"></textarea></td><td><textarea class="notiz" data-notiz="netz-weg-3-2-4" rows="1" aria-label="Aufgabe 3: Übergabe 2 – Ziel-IP"></textarea></td></tr>
+<tr><th>? → Bob</th><td><textarea class="notiz" data-notiz="netz-weg-3-3-1" rows="1" aria-label="Aufgabe 3: Übergabe 3 – Quell-MAC"></textarea></td><td><textarea class="notiz" data-notiz="netz-weg-3-3-2" rows="1" aria-label="Aufgabe 3: Übergabe 3 – Ziel-MAC"></textarea></td><td><textarea class="notiz" data-notiz="netz-weg-3-3-3" rows="1" aria-label="Aufgabe 3: Übergabe 3 – Quell-IP"></textarea></td><td><textarea class="notiz" data-notiz="netz-weg-3-3-4" rows="1" aria-label="Aufgabe 3: Übergabe 3 – Ziel-IP"></textarea></td></tr>
+</tbody>
+</table></li>
+<li>Bob antwortet. Über welche Router läuft die Antwort, und wer muss diesmal per ARP fragen, wenn die ARP-Tabellen von Router B noch leer wären?
+<textarea class="notiz" data-notiz="netz-weg-4" rows="2" aria-label="Aufgabe 4: die Antwort von Bob"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 3 und 4">
+<table class="verlauf">
+<thead><tr><th>Übergabe</th><th>Quell-MAC</th><th>Ziel-MAC</th><th>Quell-IP</th><th>Ziel-IP</th></tr></thead>
+<tbody>
+<tr><th>Aline → Router A</th><td>ABC</td><td>ROU</td><td>1.1.3.1</td><td>1.1.8.5</td></tr>
+<tr><th>Router A → Router B</th><td>TER</td><td>REU</td><td>1.1.3.1</td><td>1.1.8.5</td></tr>
+<tr><th>Router B → Bob</th><td>TOR</td><td>XYZ</td><td>1.1.3.1</td><td>1.1.8.5</td></tr>
+</tbody>
+</table>
+<p><strong>Aufgabe 4:</strong> Bob → Router B (Gateway 1.1.8.9) → Router A (Tabelle: 1.1.3.x an 3.3.3.1) → Aline. Bob kennt die MAC von Router B aus dessen ARP-Anfrage bzw. muss nach 1.1.8.9 fragen; Router B müsste nach 3.3.3.1 fragen; Router A kennt Aline schon. Der DNS-Server ist an diesem Austausch nicht beteiligt.</p>
+</lehrkraft>
+
+<h2>4. Was passiert auf welcher Schicht?</h2>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 250" role="img" aria-labelledby="netz-schichtweg-titel">
+<title id="netz-schichtweg-titel">Der Weg der Nachricht durch die Schichten: Bei Aline läuft sie von der Anwendung über die Vermittlung zum Netzzugang hinunter. Router A und Router B haben nur Vermittlung und je zwei Netzzugänge: Sie packen bis zur Vermittlungsschicht aus und wieder ein. Bei Bob läuft die Nachricht vom Netzzugang hinauf bis zur Anwendung.</title>
+<defs><marker id="pfeil-sw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<text class="titel" x="80" y="22" text-anchor="middle">Aline</text><text class="titel" x="270" y="22" text-anchor="middle">Router A</text><text class="titel" x="470" y="22" text-anchor="middle">Router B</text><text class="titel" x="660" y="22" text-anchor="middle">Bob</text>
+<rect class="flaeche" x="20" y="34" width="120" height="44" rx="4"/><text x="80" y="61" text-anchor="middle">Anwendung</text>
+<rect class="rahmen" x="20" y="84" width="120" height="44" rx="4"/><text x="80" y="111" text-anchor="middle">Vermittlung</text>
+<rect class="grau" x="20" y="134" width="120" height="44" rx="4"/><text x="80" y="161" text-anchor="middle">Netzzugang</text>
+<rect class="rahmen" x="200" y="84" width="140" height="44" rx="4"/><text x="270" y="111" text-anchor="middle">Vermittlung</text>
+<rect class="grau" x="200" y="134" width="68" height="44" rx="4"/><rect class="grau" x="272" y="134" width="68" height="44" rx="4"/><text x="234" y="161" text-anchor="middle" class="klein">ROU</text><text x="306" y="161" text-anchor="middle" class="klein">TER</text>
+<rect class="rahmen" x="400" y="84" width="140" height="44" rx="4"/><text x="470" y="111" text-anchor="middle">Vermittlung</text>
+<rect class="grau" x="400" y="134" width="68" height="44" rx="4"/><rect class="grau" x="472" y="134" width="68" height="44" rx="4"/><text x="434" y="161" text-anchor="middle" class="klein">REU</text><text x="506" y="161" text-anchor="middle" class="klein">TOR</text>
+<rect class="flaeche" x="600" y="34" width="120" height="44" rx="4"/><text x="660" y="61" text-anchor="middle">Anwendung</text>
+<rect class="rahmen" x="600" y="84" width="120" height="44" rx="4"/><text x="660" y="111" text-anchor="middle">Vermittlung</text>
+<rect class="grau" x="600" y="134" width="120" height="44" rx="4"/><text x="660" y="161" text-anchor="middle">Netzzugang</text>
+<path class="linie" d="M60,78 V84 M60,128 V134 M60,178 V200 H234 V178 M234,134 V128 M306,128 V134 M306,178 V200 H434 V178 M434,134 V128 M506,128 V134 M506,178 V200 H680 V178 M680,134 V128 M680,84 V80" marker-end="url(#pfeil-sw)"/>
+<text x="147" y="222" text-anchor="middle" class="klein">Netz 1.1.3.x</text><text x="370" y="222" text-anchor="middle" class="klein">Backbone 3.3.3.x</text><text x="593" y="222" text-anchor="middle" class="klein">Netz 1.1.8.x</text>
+<text x="370" y="244" text-anchor="middle" class="klein">IP-Adressen (innen): auf dem ganzen Weg 1.1.3.1 → 1.1.8.5 · MAC-Adressen (außen): in jedem Netz neu</text>
+</svg>
+<figcaption>Router packen nur bis zur Vermittlungsschicht aus: Sie lesen die Ziel-IP, entscheiden und packen in einen neuen Ethernet-Rahmen.</figcaption>
+</figure>
+
+<aside class="box aufgabe">
+<ol start="5">
+<li>Erkläre mithilfe der Abbildung, warum Router die Nachricht „Hallo Bob!“ selbst nie zu sehen bekommen – und warum sie trotzdem jedes Paket öffnen müssen.
+<textarea class="notiz" data-notiz="netz-weg-5" rows="3" aria-label="Aufgabe 5: Router und Schichten"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 5">
+<p>Router öffnen den äußeren Umschlag (Netzzugang), um an die Ziel-IP im inneren Umschlag zu kommen (Vermittlung) – die brauchen sie für ihre Entscheidung. Den inneren Umschlag öffnen sie nicht, weil die Ziel-IP nicht ihre eigene ist; die Anwendungsdaten interessieren sie nicht. (In Wirklichkeit liegen die Daten technisch lesbar im Paket, wenn sie nicht verschlüsselt sind – deshalb ist Verschlüsselung wie HTTPS wichtig. Bezug zur Kryptologie.)</p>
+</lehrkraft>

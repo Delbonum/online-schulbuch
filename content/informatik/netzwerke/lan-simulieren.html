@@ -1,0 +1,106 @@
+<!--
+beschreibung: Ein lokales Netz in der Netzwerk-Simulation bauen: Rechner und Switch verkabeln, IP-Adressen vergeben, pingen, ARP im Datenaustausch beobachten, Fehler suchen und DHCP einrichten.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite, Simulation (ersetzt das Filius-Arbeitsblatt „LAN simulieren“, Aufgabe 1 und 3). <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/arp/">ARP, Broadcast und Switch</a>. <strong>Dauer:</strong> eine Doppelstunde; Abschnitt 4 (DHCP) ist fakultativ und eignet sich zur Differenzierung.</p>
+<p><strong>Funktion im Ablauf:</strong> Nach Rollenspiel und Theorie überprüft die Simulation, ob das Konzept verstanden wurde: Die Schülerinnen und Schüler sollen im Datenaustausch genau die Schritte wiederfinden, die sie im Rollenspiel von Hand gemacht haben (ARP-Broadcast, ARP-Antwort, Ping, Pong). Die Simulation läuft im Browser, auch auf Tablets; Ergebnisse lassen sich mit „Speichern“ als Datei sichern.</p>
+<p>Der Teil „DNS-Server im LAN“ des Filius-Arbeitsblatts steht auf der Seite <a href="/informatik/netzwerke/dns/">DNS</a>, weil DNS dort erst eingeführt wird.</p>
+</lehrkraft>
+
+<p>Im Rollenspiel wart ihr selbst die Rechner. Jetzt baust du ein lokales Netz in der <strong>Netzwerk-Simulation</strong> und schaust zu, ob die Rechner es genauso machen wie ihr.</p>
+
+<aside class="box info" data-titel="Kurzanleitung zur Simulation">
+<ul>
+<li><strong>✎ Entwurf:</strong> Hier baust du. Links ein Gerät anklicken und dann auf die Fläche klicken. Mit dem <em>Kabel</em>-Werkzeug nacheinander zwei Geräte anklicken. Ein angeklicktes Gerät stellst du unten ein (IP-Adresse, Netzmaske, Gateway …).</li>
+<li><strong>▶ Simulation:</strong> Hier probierst du aus. Doppelklick auf einen Rechner öffnet seinen Desktop. Unter <em>Software-Installation</em> installierst du die <em>Befehlszeile</em>. Ein Klick auf ein Gerät zeigt unten <em>Datenaustausch anzeigen</em> (bei Rechnern) bzw. <em>Lerntabelle</em> (beim Switch).</li>
+<li><strong>Tempo:</strong> Oben langsamer stellen, dann siehst du die Pakete über die Kabel wandern (grün leuchtende Kabel).</li>
+<li><strong>Speichern:</strong> Dein Netz bleibt im Browser erhalten. Mit „Speichern“ lädst du es als Datei herunter.</li>
+</ul>
+<p><a href="/informatik/werkzeuge/netzwerk-simulation/" target="_blank" rel="noopener">Netzwerk-Simulation öffnen</a> (neuer Tab)</p>
+</aside>
+
+<h2>1. Ein LAN bauen</h2>
+
+<aside class="box aufgabe">
+<ol>
+<li>Öffne die Simulation und klicke auf <em>Neu</em>. Baue im Entwurf ein LAN aus <strong>einem Switch</strong> und <strong>drei oder vier Rechnern bzw. Notebooks</strong>, die alle mit dem Switch verkabelt sind.</li>
+<li>Vergib die IP-Adressen so, dass alle Geräte zum <strong>selben Netz</strong> gehören und jedes eine <strong>eigene</strong> Adresse hat. Lass die Netzmaske auf 255.255.255.0. Notiere deine Adressen.
+<textarea class="notiz" data-notiz="netz-lan-2" rows="2" aria-label="Aufgabe 2: gewählte IP-Adressen"></textarea></li>
+<li>Wechsle in die Simulation. Installiere auf einem Rechner die Befehlszeile und gib <code>ipconfig</code> ein. Vergleiche mit der Ausgabe auf deinem echten Rechner.</li>
+</ol>
+</aside>
+
+<h2>2. Ping und Datenaustausch</h2>
+
+<aside class="box aufgabe">
+<ol start="4">
+<li>Stelle das Tempo langsam ein und schicke von einem Rechner ein Ping an einen anderen, z. B. <code>ping 192.168.0.2</code>. Beobachte die Kabel: Wohin wandert das allererste Paket, wohin die folgenden?
+<textarea class="notiz" data-notiz="netz-lan-4" rows="2" aria-label="Aufgabe 4: Beobachtung der Kabel"></textarea></li>
+<li>Klicke den sendenden Rechner an und wähle <em>Datenaustausch anzeigen</em>. Jede Nachricht steht dort mit einer Zeile je Schicht. Trage die ersten Nachrichten in die Tabelle ein und erkläre sie.
+<table class="verlauf ausfuell" data-erweiterbar="netz-lan-5">
+<thead><tr><th>Protokoll</th><th>Quelle → Ziel</th><th>Was passiert hier? (Vergleich mit dem Rollenspiel)</th></tr></thead>
+<tbody>
+<tr><td><textarea class="notiz" data-notiz="netz-lan-5-1-1" rows="1" aria-label="Aufgabe 5: Zeile 1 – Protokoll"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-5-1-2" rows="1" aria-label="Aufgabe 5: Zeile 1 – Quelle und Ziel"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-5-1-3" rows="2" aria-label="Aufgabe 5: Zeile 1 – Erklärung"></textarea></td></tr>
+<tr><td><textarea class="notiz" data-notiz="netz-lan-5-2-1" rows="1" aria-label="Aufgabe 5: Zeile 2 – Protokoll"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-5-2-2" rows="1" aria-label="Aufgabe 5: Zeile 2 – Quelle und Ziel"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-5-2-3" rows="2" aria-label="Aufgabe 5: Zeile 2 – Erklärung"></textarea></td></tr>
+<tr><td><textarea class="notiz" data-notiz="netz-lan-5-3-1" rows="1" aria-label="Aufgabe 5: Zeile 3 – Protokoll"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-5-3-2" rows="1" aria-label="Aufgabe 5: Zeile 3 – Quelle und Ziel"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-5-3-3" rows="2" aria-label="Aufgabe 5: Zeile 3 – Erklärung"></textarea></td></tr>
+<tr><td><textarea class="notiz" data-notiz="netz-lan-5-Zeile-1" rows="1" aria-label="Aufgabe 5: Zeile 4 – Protokoll"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-5-Zeile-2" rows="1" aria-label="Aufgabe 5: Zeile 4 – Quelle und Ziel"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-5-Zeile-3" rows="2" aria-label="Aufgabe 5: Zeile 4 – Erklärung"></textarea></td></tr>
+</tbody>
+</table></li>
+<li>Gib auf dem sendenden Rechner <code>arp</code> ein. Was steht in der ARP-Tabelle? Schicke ein zweites Ping an denselben Rechner. Taucht ARP im Datenaustausch noch einmal auf? Warum (nicht)?
+<textarea class="notiz" data-notiz="netz-lan-6" rows="3" aria-label="Aufgabe 6: ARP-Tabelle und zweites Ping"></textarea></li>
+<li>Öffne den Datenaustausch eines <strong>unbeteiligten</strong> Rechners. Was hat er mitbekommen – und was nicht?
+<textarea class="notiz" data-notiz="netz-lan-7" rows="2" aria-label="Aufgabe 7: unbeteiligter Rechner"></textarea></li>
+<li>Klicke den Switch an und lass dir seine <em>Lerntabelle</em> anzeigen. Erkläre die Einträge.
+<textarea class="notiz" data-notiz="netz-lan-8" rows="2" aria-label="Aufgabe 8: Lerntabelle des Switches"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 4 bis 8">
+<ul>
+<li><strong>Aufgabe 4:</strong> Das erste Paket (ARP-Anfrage) läuft vom Switch zu <em>allen</em> Rechnern; die Antwort und alle weiteren Pakete laufen nur noch zwischen den beiden Beteiligten.</li>
+<li><strong>Aufgabe 5:</strong> (1) ARP, Quelle = eigene MAC, Ziel = FF:FF:FF:FF:FF:FF: „Wer hat 192.168.0.2?“ – im Rollenspiel der Umschlag an FF:FF; (2) ARP-Antwort von der MAC des Ziels: „192.168.0.2 ist …“ – der zurückgeschickte ARP-Zettel; (3) ICMP Echo-Anfrage (Ping) von IP zu IP, mit Zeilen für Netzzugang (MACs) und Vermittlung (IPs) – innerer und äußerer Umschlag; (4) ICMP Echo-Antwort (Pong). Die Simulation zeigt je Nachricht Zeilen für jede beteiligte Schicht – genau die Umschläge.</li>
+<li><strong>Aufgabe 6:</strong> Die ARP-Tabelle enthält die IP und MAC des angepingten Rechners. Beim zweiten Ping kein ARP mehr, der Eintrag wird wiederverwendet (wie die ARP-Tabelle auf dem Zettel im Rollenspiel).</li>
+<li><strong>Aufgabe 7:</strong> Der unbeteiligte Rechner sieht nur die ARP-Anfrage (Broadcast), nicht aber Ping und Pong – der Switch schickt sie nur an die Beteiligten.</li>
+<li><strong>Aufgabe 8:</strong> Zu jedem Anschluss steht die MAC-Adresse, die der Switch dort als Absender gesehen hat – nach einem Ping also die beiden beteiligten Rechner.</li>
+</ul>
+</lehrkraft>
+
+<h2>3. Fehlersuche</h2>
+
+<aside class="box aufgabe">
+<ol start="9">
+<li>Öffne das Beispielnetz <a href="/informatik/werkzeuge/netzwerk-simulation/?beispiel=fehlersuche-lan" target="_blank" rel="noopener">Fehlersuche: ein LAN mit drei Fehlern</a> (neuer Tab; dein bisheriges Netz lässt sich dort mit „Rückgängig“ zurückholen). In diesem Netz sind <strong>drei Fehler</strong> versteckt. Finde sie mit <code>ping</code>, <code>ipconfig</code> und dem Datenaustausch, beschreibe sie und behebe sie.
+<table class="verlauf ausfuell">
+<thead><tr><th>Fehler</th><th>Woran hast du ihn erkannt?</th><th>Wie hast du ihn behoben?</th></tr></thead>
+<tbody>
+<tr><td><textarea class="notiz" data-notiz="netz-lan-9-1-1" rows="2" aria-label="Aufgabe 9: Fehler 1"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-9-1-2" rows="2" aria-label="Aufgabe 9: Fehler 1 erkannt"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-9-1-3" rows="2" aria-label="Aufgabe 9: Fehler 1 behoben"></textarea></td></tr>
+<tr><td><textarea class="notiz" data-notiz="netz-lan-9-2-1" rows="2" aria-label="Aufgabe 9: Fehler 2"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-9-2-2" rows="2" aria-label="Aufgabe 9: Fehler 2 erkannt"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-9-2-3" rows="2" aria-label="Aufgabe 9: Fehler 2 behoben"></textarea></td></tr>
+<tr><td><textarea class="notiz" data-notiz="netz-lan-9-3-1" rows="2" aria-label="Aufgabe 9: Fehler 3"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-9-3-2" rows="2" aria-label="Aufgabe 9: Fehler 3 erkannt"></textarea></td><td><textarea class="notiz" data-notiz="netz-lan-9-3-3" rows="2" aria-label="Aufgabe 9: Fehler 3 behoben"></textarea></td></tr>
+</tbody>
+</table></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 9">
+<ul>
+<li><strong>Fehler 1:</strong> Rechner C hat 192.168.1.13 – ein anderes Netz (dritte Zahl). Ping von B: „Ziel nicht erreichbar“ bzw. keine Antwort, weil B das Ziel außerhalb seines Netzes sieht und kein Gateway hat. Behebung: 192.168.0.13.</li>
+<li><strong>Fehler 2:</strong> Notebook D hat dieselbe IP wie Rechner A (192.168.0.11). Auf die ARP-Anfrage antworten zwei Geräte, Pings landen mal hier, mal dort. Behebung: eindeutige Adresse, z. B. 192.168.0.14.</li>
+<li><strong>Fehler 3:</strong> Notebook E ist nicht verkabelt: Ping liefert keine Antwort, im Datenaustausch erscheint nur die unbeantwortete ARP-Anfrage. Behebung: Kabel zum Switch.</li>
+</ul>
+</lehrkraft>
+
+<h2>4. Zusatz: Adressen automatisch vergeben mit DHCP</h2>
+
+<p>In der Schule oder zu Hause hast du nie eine IP-Adresse von Hand eingetippt. Das übernimmt ein <strong>DHCP-Server</strong> (<em>Dynamic Host Configuration Protocol</em>): Ein neues Gerät ruft per Broadcast „Ich brauche eine Adresse!“, und der DHCP-Server teilt ihm eine freie IP-Adresse zu, dazu Netzmaske, Gateway und DNS-Server. Zu Hause steckt der DHCP-Server meist im Router.</p>
+
+<aside class="box aufgabe">
+<ol start="10">
+<li>Baue ein zweites, unabhängiges LAN aus einem Switch, einem Rechner und mindestens fünf Notebooks. Nenne den Rechner „DHCP“ und gib ihm eine feste IP-Adresse. Richte auf ihm unter <em>DHCP-Server auf diesem Rechner</em> einen Bereich ein, z. B. von <code>192.168.1.100</code> bis <code>192.168.1.150</code> (der Bereich darf die Adresse des DHCP-Rechners nicht enthalten). Stelle bei allen Notebooks „per DHCP beziehen“ ein.</li>
+<li>Starte die Simulation und beobachte. Welche Adressen bekommen die Notebooks? Wie viele Nachrichten braucht ein Notebook, bis es seine Adresse hat? Schau in den Datenaustausch eines Notebooks.
+<textarea class="notiz" data-notiz="netz-lan-12" rows="3" aria-label="Aufgabe 11: DHCP beobachten"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 10 und 11">
+<p>Die Notebooks bekommen Adressen aus dem eingestellten Bereich. Der Ablauf besteht aus vier Nachrichten: <em>Discover</em> (Broadcast: „Gibt es einen DHCP-Server?“), <em>Offer</em> (Angebot einer Adresse), <em>Request</em> („Die nehme ich.“), <em>Acknowledge</em> (Bestätigung). Da das Notebook noch keine IP hat, sendet es mit der Quell-IP 0.0.0.0 an die Broadcast-IP 255.255.255.255. Zur Vertiefung: Was passiert, wenn der Bereich nur drei Adressen hat und fünf Notebooks fragen?</p>
+</lehrkraft>

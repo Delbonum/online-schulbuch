@@ -1,0 +1,265 @@
+<!--
+beschreibung: Router, Gateway und Routingtabelle: wie Pakete von einem Subnetz ins nächste kommen, wie man eine Routingtabelle liest – und was route print und tracert in der Konsole zeigen.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite (enthält das Arbeitsblatt „Netzwerke und Routing“, Teil 1 und 2). <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/subnetze/">Subnetze und Netzmasken</a>. <strong>Dauer:</strong> zwei Stunden.</p>
+<p><strong>Ablauf:</strong> Abschnitt 1 und 2 klären Router und Gateway – das genügt als Vorbereitung für <a href="/informatik/netzwerke/rollenspiel-internet/">Rollenspiel II</a>, das man auch direkt im Anschluss an Abschnitt 2 spielen kann (vorher noch <a href="/informatik/netzwerke/dns/">DNS</a>, oder DNS im Spiel weglassen). Die echte Form der Routingtabelle (Abschnitt 4) lässt sich gut nach dem Rollenspiel besprechen: „So sah die vereinfachte Tabelle im Spiel aus – so sieht sie in echt aus.“</p>
+</lehrkraft>
+
+<h2>1. Raus aus dem eigenen Netz</h2>
+
+<p>Innerhalb eines Subnetzes können sich alle Geräte direkt Pakete schicken. Doch wie kommt ein Paket in ein <strong>anderes</strong> Subnetz – oder gar zu einem Server auf einem anderen Kontinent? Dafür braucht es ein Gerät, das in beiden Netzen zu Hause ist: einen <strong>Router</strong>.</p>
+
+<p>Ein Router hat <strong>mehrere Netzwerkkarten</strong> (auch <em>Schnittstellen</em> genannt), jede mit eigener MAC-Adresse und eigener IP-Adresse – und damit ist er Mitglied in mehreren Subnetzen gleichzeitig. Kleine Router haben zwei Schnittstellen, große Router im Backbone Dutzende. Bekommt ein Router ein Paket, das nicht für ihn selbst ist, entscheidet er anhand seiner <strong>Routingtabelle</strong>, über welche Schnittstelle und an wen er es weitergibt. Router arbeiten auf der <strong>Vermittlungsschicht</strong>: Sie lesen die Ziel-IP-Adresse.</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 230" role="img" aria-labelledby="netz-router-titel">
+<title id="netz-router-titel">Zwei Subnetze mit einem Router: links das Netz 192.168.1.0/24 mit Rechnern A (192.168.1.10) und B (192.168.1.11) an einem Switch, rechts das Netz 192.168.2.0/24 mit Rechnern C und D. Der Router hat links die Schnittstelle 192.168.1.1, rechts 192.168.2.1. Er ist für beide Netze das Gateway.</title>
+<rect class="flaeche" x="10" y="20" width="290" height="190" rx="12"/><text class="titel" x="155" y="44" text-anchor="middle">Netz 192.168.1.0 /24</text>
+<rect class="flaeche" x="440" y="20" width="290" height="190" rx="12"/><text class="titel" x="585" y="44" text-anchor="middle">Netz 192.168.2.0 /24</text>
+<rect class="rahmen" x="30" y="70" width="120" height="44" rx="6"/><text x="90" y="90" text-anchor="middle">A</text><text x="90" y="106" text-anchor="middle" class="klein">192.168.1.10</text>
+<rect class="rahmen" x="30" y="146" width="120" height="44" rx="6"/><text x="90" y="166" text-anchor="middle">B</text><text x="90" y="182" text-anchor="middle" class="klein">192.168.1.11</text>
+<rect class="rahmen" x="590" y="70" width="120" height="44" rx="6"/><text x="650" y="90" text-anchor="middle">C</text><text x="650" y="106" text-anchor="middle" class="klein">192.168.2.10</text>
+<rect class="rahmen" x="590" y="146" width="120" height="44" rx="6"/><text x="650" y="166" text-anchor="middle">D</text><text x="650" y="182" text-anchor="middle" class="klein">192.168.2.11</text>
+<rect class="grau" x="200" y="115" width="70" height="30" rx="4"/><text x="235" y="135" text-anchor="middle" class="klein">Switch</text>
+<rect class="grau" x="470" y="115" width="70" height="30" rx="4"/><text x="505" y="135" text-anchor="middle" class="klein">Switch</text>
+<line class="linie" x1="150" y1="92" x2="200" y2="125"/><line class="linie" x1="150" y1="168" x2="200" y2="138"/>
+<line class="linie" x1="590" y1="92" x2="540" y2="125"/><line class="linie" x1="590" y1="168" x2="540" y2="138"/>
+<rect class="rahmen" x="320" y="105" width="100" height="50" rx="8"/><text x="370" y="135" text-anchor="middle" class="titel">Router</text>
+<line class="linie" x1="270" y1="130" x2="320" y2="130"/><line class="linie" x1="420" y1="130" x2="470" y2="130"/>
+<text x="296" y="100" text-anchor="middle" class="klein">192.168.1.1</text><text x="444" y="100" text-anchor="middle" class="klein">192.168.2.1</text>
+</svg>
+<figcaption>Der Router ist mit einer Schnittstelle Mitglied im linken, mit der anderen im rechten Netz. Für A und B ist 192.168.1.1 das Gateway, für C und D 192.168.2.1.</figcaption>
+</figure>
+
+<h2>2. Das Gateway: die Tür nach draußen</h2>
+
+<p>Jeder Rechner kennt die IP-Adresse eines Routers in seinem eigenen Netz, das <strong>Standardgateway</strong> (kurz Gateway). Es ist sozusagen die Tür des Netzes nach draußen. Bevor ein Rechner ein Paket abschickt, entscheidet er:</p>
+
+<ul>
+<li><strong>Liegt die Ziel-IP in meinem Subnetz?</strong> (Netzmaske!) Dann fragt er per ARP nach der MAC des Ziels und stellt direkt zu.</li>
+<li><strong>Nein?</strong> Dann fragt er per ARP nach der MAC des <strong>Gateways</strong> und übergibt das Paket dem Router. Die Ziel-IP im inneren Umschlag bleibt dabei unverändert – nur der äußere Umschlag geht an den Router.</li>
+</ul>
+
+<p>Der Router packt den äußeren Umschlag aus, liest die Ziel-IP, sucht in seiner Routingtabelle den nächsten Schritt und steckt das IP-Paket in einen <strong>neuen äußeren Umschlag</strong> – mit seiner eigenen MAC als Quelle und der MAC des nächsten Empfängers als Ziel. So geht es von Router zu Router, bis das Paket im Netz des Empfängers ist.</p>
+
+<aside class="box merke" data-titel="Merke: Was sich unterwegs ändert">
+<p>Bei jeder Weitergabe ändern sich die <strong>MAC-Adressen</strong> im äußeren Umschlag – sie zeigen, <em>wer gerade an wen</em> übergibt. Die <strong>IP-Adressen</strong> im inneren Umschlag bleiben vom Anfang bis zum Ende gleich – sie zeigen, <em>wer mit wem</em> kommuniziert.</p>
+</aside>
+
+<aside class="box aufgabe">
+<ol>
+<li>Rechner A (192.168.1.10, Netzmaske 255.255.255.0, Gateway 192.168.1.1) aus der Abbildung oben schickt ein Paket. Kreuze an, was er tut.
+<div class="quiz" data-id="netz-router-quiz-1" data-anweisung="Direkt zustellen oder an das Gateway?">
+<div class="frage" data-erklaerung="192.168.1.11 liegt im eigenen Netz 192.168.1.0/24 – A fragt per ARP nach der MAC von B."><p>Ziel 192.168.1.11 (Rechner B)</p><ul><li data-richtig>direkt zustellen</li><li>an das Gateway</li></ul></div>
+<div class="frage" data-erklaerung="192.168.2.10 liegt nicht im eigenen Netz – A fragt per ARP nach der MAC des Gateways 192.168.1.1."><p>Ziel 192.168.2.10 (Rechner C)</p><ul><li>direkt zustellen</li><li data-richtig>an das Gateway</li></ul></div>
+<div class="frage" data-erklaerung="Ein Server im Internet liegt außerhalb des eigenen Netzes – also an das Gateway."><p>Ziel 185.15.59.224 (ein Server im Internet)</p><ul><li>direkt zustellen</li><li data-richtig>an das Gateway</li></ul></div>
+<div class="frage" data-erklaerung="Das Gateway selbst liegt im eigenen Netz und wird direkt angesprochen."><p>Ziel 192.168.1.1 (der Router selbst)</p><ul><li data-richtig>direkt zustellen</li><li>an das Gateway</li></ul></div>
+</div></li>
+<li>Bei Rechner D fehlt der Eintrag für das Gateway. Was passiert, wenn A ein Ping an D schickt? Was passiert, wenn D ein Ping an A schickt?
+<textarea class="notiz" data-notiz="netz-router-2" rows="3" aria-label="Aufgabe 2: fehlendes Gateway"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 und 2">
+<p><strong>Aufgabe 1</strong> prüft sich selbst und eignet sich als Live-Umfrage:</p>
+<als-umfrage ids="netz-router-quiz-1" titel="Netzwerke – Direkt oder Gateway?" modus="single"></als-umfrage>
+<p><strong>Aufgabe 2:</strong> Ping von A an D: Das Paket kommt über den Router bei D an, aber D kann nicht antworten – A liegt aus Sicht von D in einem fremden Netz, und D kennt keinen Weg dorthin. A bekommt keine Antwort („Zeitüberschreitung“). Ping von D an A: D meldet sofort „Ziel nicht erreichbar“. Genau dieser Fehler steckt im Beispielnetz „Zwei Netze mit Router“ der Simulation.</p>
+</lehrkraft>
+
+<h2>3. Die Routingtabelle</h2>
+
+<p>Woher weiß ein Router, wohin er ein Paket schicken soll? Er schaut in seine Routingtabelle (in der Simulation heißt sie <em>Weiterleitungstabelle</em>). Darin stehen Regeln der Form: „Wenn die Ziel-IP so aussieht, dann gib das Paket über diese Schnittstelle an diesen nächsten Router.“ Im Rollenspiel wird eine vereinfachte Form benutzt, zum Beispiel für den Router mit den Adressen 1.1.1.6 und 3.3.3.2:</p>
+
+<table class="verlauf">
+<thead><tr><th>Ziel-IP hat die Form</th><th>Weitergeben an (dabei die MACs auf dem äußeren Umschlag anpassen)</th></tr></thead>
+<tbody>
+<tr><td>1.1.1.6 oder 3.3.3.2</td><td>selbst verarbeiten (das bin ich)</td></tr>
+<tr><td>1.1.1.x</td><td>direkt an die Ziel-IP (über Schnittstelle 1.1.1.6)</td></tr>
+<tr><td>3.3.3.x</td><td>direkt an die Ziel-IP (über Schnittstelle 3.3.3.2)</td></tr>
+<tr><td>1.1.3.x</td><td>an den Router 3.3.3.1 (über 3.3.3.2)</td></tr>
+<tr><td>1.1.6.x</td><td>an den Router 3.3.3.4 (über 3.3.3.2)</td></tr>
+<tr><td>1.1.8.x</td><td>an den Router 3.3.3.8 (über 3.3.3.2)</td></tr>
+<tr><td>alle anderen</td><td>an den Router 3.3.3.9 (Richtung Internet)</td></tr>
+</tbody>
+</table>
+
+<aside class="box aufgabe">
+<ol start="3">
+<li>Beantworte zur Tabelle oben: In wie vielen Subnetzen ist dieser Router Mitglied, und in welchen? Wie viele andere Router kennt er?
+<textarea class="notiz" data-notiz="netz-router-3" rows="2" aria-label="Aufgabe 3: Fragen zur Routingtabelle"></textarea></li>
+</ol>
+</aside>
+
+<h2>4. Routingtabellen in echt</h2>
+
+<p>Echte Router (und auch die Simulation) schreiben dieselben Regeln mit Netzmasken:</p>
+
+<table class="verlauf">
+<thead><tr><th>Ziel</th><th>Netzmaske</th><th>Gateway</th><th>Schnittstelle</th></tr></thead>
+<tbody>
+<tr><td>1.1.1.6</td><td>255.255.255.255</td><td>127.0.0.1</td><td>127.0.0.1</td></tr>
+<tr><td>3.3.3.2</td><td>255.255.255.255</td><td>127.0.0.1</td><td>127.0.0.1</td></tr>
+<tr><td>3.3.3.0</td><td>255.255.255.0</td><td>3.3.3.2</td><td>3.3.3.2</td></tr>
+<tr><td>1.1.1.0</td><td>255.255.255.0</td><td>1.1.1.6</td><td>1.1.1.6</td></tr>
+<tr><td>1.1.3.0</td><td>255.255.255.0</td><td>3.3.3.1</td><td>3.3.3.2</td></tr>
+<tr><td>1.1.6.0</td><td>255.255.255.0</td><td>3.3.3.4</td><td>3.3.3.2</td></tr>
+<tr><td>1.1.8.0</td><td>255.255.255.0</td><td>3.3.3.8</td><td>3.3.3.2</td></tr>
+<tr><td>0.0.0.0</td><td>0.0.0.0</td><td>3.3.3.9</td><td>3.3.3.2</td></tr>
+</tbody>
+</table>
+
+<aside class="box tipp" data-titel="So liest du eine Routingtabelle">
+<ul>
+<li>Eine Zeile <strong>passt</strong>, wenn die Ziel-IP UND Netzmaske die Zahl in der Spalte „Ziel“ ergibt – also wenn die Ziel-IP im angegebenen Netz liegt. Passen mehrere Zeilen, gilt die <strong>genaueste</strong> (die mit den meisten Einsen in der Netzmaske).</li>
+<li><strong>Gateway:</strong> an wen das Paket als Nächstes geht. <strong>Schnittstelle:</strong> über welche eigene Netzwerkkarte (im Rollenspiel: welche Hand).</li>
+<li><strong>Gateway = Schnittstelle:</strong> Das Zielnetz ist direkt angeschlossen – das Paket wird direkt an die Ziel-IP zugestellt.</li>
+<li><strong>127.0.0.1</strong> (<em>localhost</em>) heißt „ich selbst“: Das Paket ist für den Router selbst bestimmt.</li>
+<li>Die Zeile mit Ziel 0.0.0.0 und Netzmaske 0.0.0.0 passt auf jede Adresse: die <strong>Standardroute</strong> (Default-Route) für alles, was keine andere Zeile genauer trifft.</li>
+</ul>
+</aside>
+
+<aside class="box aufgabe">
+<ol start="4">
+<li>Was geschieht bei diesem Router mit Paketen an die Ziel-IP 1.2.3.213, 9.9.9.1 und 1.2.4.17?
+<table class="verlauf">
+<thead><tr><th>Ziel</th><th>Netzmaske</th><th>Gateway</th><th>Schnittstelle</th></tr></thead>
+<tbody>
+<tr><td>1.2.3.1</td><td>255.255.255.255</td><td>127.0.0.1</td><td>127.0.0.1</td></tr>
+<tr><td>9.9.9.1</td><td>255.255.255.255</td><td>127.0.0.1</td><td>127.0.0.1</td></tr>
+<tr><td>1.2.3.0</td><td>255.255.255.0</td><td>1.2.3.1</td><td>1.2.3.1</td></tr>
+<tr><td>9.9.9.0</td><td>255.255.255.0</td><td>9.9.9.1</td><td>9.9.9.1</td></tr>
+<tr><td>0.0.0.0</td><td>0.0.0.0</td><td>9.9.9.254</td><td>9.9.9.1</td></tr>
+</tbody>
+</table>
+<textarea class="notiz" data-notiz="netz-router-4" rows="3" aria-label="Aufgabe 4: drei Ziel-IPs"></textarea></li>
+<li>Gegeben ist die Weiterleitungstabelle eines Internet-Routers:
+<table class="verlauf">
+<thead><tr><th>Nr.</th><th>Ziel</th><th>Netzmaske</th><th>Gateway</th><th>Schnittstelle</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>1.2.3.6</td><td>255.255.255.255</td><td>127.0.0.1</td><td>127.0.0.1</td></tr>
+<tr><td>2</td><td>7.8.9.2</td><td>255.255.255.255</td><td>127.0.0.1</td><td>127.0.0.1</td></tr>
+<tr><td>3</td><td>4.4.4.1</td><td>255.255.255.255</td><td>127.0.0.1</td><td>127.0.0.1</td></tr>
+<tr><td>4</td><td>1.2.3.0</td><td>255.255.255.0</td><td>1.2.3.6</td><td>1.2.3.6</td></tr>
+<tr><td>5</td><td>7.8.9.0</td><td>255.255.255.0</td><td>7.8.9.2</td><td>7.8.9.2</td></tr>
+<tr><td>6</td><td>4.4.0.0</td><td>255.255.0.0</td><td>4.4.4.1</td><td>4.4.4.1</td></tr>
+<tr><td>7</td><td>0.0.0.0</td><td>0.0.0.0</td><td>4.4.19.254</td><td>4.4.4.1</td></tr>
+</tbody>
+</table>
+<div class="felder">
+<div><label for="netz-router-5a">a) Über wie viele Netzwerkkarten verfügt dieser Router? Woran erkennst du das?</label><textarea class="notiz" id="netz-router-5a" data-notiz="netz-router-5a" rows="2"></textarea></div>
+<div><label for="netz-router-5b">b) Welches seiner Subnetze kann die meisten Geräte haben? Wie viele?</label><textarea class="notiz" id="netz-router-5b" data-notiz="netz-router-5b" rows="2"></textarea></div>
+</div>
+c) Was macht der Router mit Paketen an diese Ziel-IPs? Gib jeweils die Regel an.
+<table class="verlauf ausfuell">
+<thead><tr><th>Ziel-IP</th><th>Was passiert? (Regel)</th></tr></thead>
+<tbody>
+<tr><th>4.4.4.17</th><td><textarea class="notiz" data-notiz="netz-router-5c-1" rows="1" aria-label="Aufgabe 5c: 4.4.4.17"></textarea></td></tr>
+<tr><th>7.8.9.2</th><td><textarea class="notiz" data-notiz="netz-router-5c-2" rows="1" aria-label="Aufgabe 5c: 7.8.9.2"></textarea></td></tr>
+<tr><th>4.5.6.7</th><td><textarea class="notiz" data-notiz="netz-router-5c-3" rows="1" aria-label="Aufgabe 5c: 4.5.6.7"></textarea></td></tr>
+<tr><th>4.4.254.17</th><td><textarea class="notiz" data-notiz="netz-router-5c-4" rows="1" aria-label="Aufgabe 5c: 4.4.254.17"></textarea></td></tr>
+<tr><th>1.2.3.254</th><td><textarea class="notiz" data-notiz="netz-router-5c-5" rows="1" aria-label="Aufgabe 5c: 1.2.3.254"></textarea></td></tr>
+<tr><th>7.8.9.1</th><td><textarea class="notiz" data-notiz="netz-router-5c-6" rows="1" aria-label="Aufgabe 5c: 7.8.9.1"></textarea></td></tr>
+</tbody>
+</table></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 3 bis 5">
+<ul>
+<li><strong>Aufgabe 3:</strong> Mitglied in zwei Subnetzen (1.1.1.x und 3.3.3.x); er kennt vier andere Router (3.3.3.1, 3.3.3.4, 3.3.3.8, 3.3.3.9).</li>
+<li><strong>Aufgabe 4:</strong> 1.2.3.213 → 3. Regel: über 1.2.3.1 direkt an die Ziel-IP; 9.9.9.1 → 2. Regel: selbst verarbeiten; 1.2.4.17 → nur die Standardroute passt: über Schnittstelle 9.9.9.1 an den Router 9.9.9.254.</li>
+<li><strong>Aufgabe 5a:</strong> drei Netzwerkkarten – drei Regeln mit 127.0.0.1 bzw. drei verschiedene eigene IPs als Schnittstellen (1.2.3.6, 7.8.9.2, 4.4.4.1).</li>
+<li><strong>Aufgabe 5b:</strong> 4.4.x.x mit Maske 255.255.0.0: 2<sup>16</sup> = 65 536 Adressen, also 65 534 Geräte (die anderen beiden haben 256 Adressen bzw. 254 Geräte).</li>
+<li><strong>Aufgabe 5c:</strong> 4.4.4.17 → Regel 6: über 4.4.4.1 direkt an 4.4.4.17. 7.8.9.2 → Regel 2: selbst verarbeiten. 4.5.6.7 → nur Regel 7 passt: über 4.4.4.1 an den nächsten Router 4.4.19.254. 4.4.254.17 → Regel 6: direkt an 4.4.254.17. 1.2.3.254 → Regel 4: über 1.2.3.6 direkt. 7.8.9.1 → Regel 5: über 7.8.9.2 direkt.</li>
+</ul>
+</lehrkraft>
+
+<h2>5. Ein Netz konfigurieren</h2>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 260" role="img" aria-labelledby="netz-konfig-titel">
+<title id="netz-konfig-titel">Linkes Netz an einem Switch: Rechner 3.1.0.5, 3.1.6.9, 3.1.6.8 und das Notebook Max ohne Adresse. Ein Router mit den Schnittstellen 3.1.0.7 (links) und 2.1.5.5 (rechts). Rechtes Netz an einem Switch: Rechner 2.1.5.12, 2.1.5.17 und das Notebook Moritz ohne Adresse. Daneben zwei Handys, 2.1.1.3 und 3.3.0.2, die zu keinem der beiden Netze gehören sollen.</title>
+<rect class="grau" x="140" y="120" width="70" height="28" rx="4"/><text x="175" y="139" text-anchor="middle" class="klein">Switch</text>
+<rect class="grau" x="460" y="120" width="70" height="28" rx="4"/><text x="495" y="139" text-anchor="middle" class="klein">Switch</text>
+<rect class="rahmen" x="10" y="40" width="90" height="34" rx="6"/><text x="55" y="62" text-anchor="middle" class="klein">3.1.0.5</text>
+<rect class="rahmen" x="120" y="10" width="90" height="34" rx="6"/><text x="165" y="32" text-anchor="middle" class="klein">3.1.6.9</text>
+<rect class="rahmen" x="240" y="40" width="90" height="34" rx="6"/><text x="285" y="62" text-anchor="middle" class="klein">3.1.6.8</text>
+<rect class="flaeche" x="40" y="200" width="100" height="40" rx="6"/><text x="90" y="225" text-anchor="middle">Max: ?</text>
+<rect class="rahmen" x="420" y="20" width="90" height="34" rx="6"/><text x="465" y="42" text-anchor="middle" class="klein">2.1.5.12</text>
+<rect class="rahmen" x="530" y="20" width="90" height="34" rx="6"/><text x="575" y="42" text-anchor="middle" class="klein">2.1.5.17</text>
+<rect class="flaeche" x="520" y="200" width="110" height="40" rx="6"/><text x="575" y="225" text-anchor="middle">Moritz: ?</text>
+<rect class="rahmen" x="270" y="180" width="160" height="44" rx="8"/><text x="350" y="200" text-anchor="middle" class="titel">Router</text><text x="350" y="216" text-anchor="middle" class="klein">3.1.0.7 ⟷ 2.1.5.5</text>
+<g class="linie"><line x1="100" y1="60" x2="145" y2="122"/><line x1="165" y1="44" x2="170" y2="120"/><line x1="240" y1="62" x2="205" y2="122"/><line x1="100" y1="205" x2="155" y2="148"/><line x1="200" y1="148" x2="280" y2="190"/><line x1="465" y1="54" x2="485" y2="120"/><line x1="575" y1="54" x2="515" y2="120"/><line x1="560" y1="200" x2="510" y2="148"/><line x1="420" y1="190" x2="475" y2="148"/></g>
+<ellipse class="gestrichelt" cx="680" cy="130" rx="52" ry="80"/>
+<rect class="rahmen" x="645" y="70" width="70" height="34" rx="6"/><text x="680" y="92" text-anchor="middle" class="klein">2.1.1.3</text>
+<rect class="rahmen" x="645" y="150" width="70" height="34" rx="6"/><text x="680" y="172" text-anchor="middle" class="klein">3.3.0.2</text>
+</svg>
+<figcaption>Zwei Subnetze mit einem Router. Die beiden Handys im Oval gehören zu keinem der beiden Netze – das hilft, die Netzmasken zu bestimmen.</figcaption>
+</figure>
+
+<aside class="box aufgabe">
+<ol start="6">
+<li>Richte die Notebooks Max und Moritz so ein, dass sie in ihr jeweiliges Netz passen.
+<table class="verlauf ausfuell">
+<thead><tr><th></th><th>Max</th><th>Moritz</th></tr></thead>
+<tbody>
+<tr><th>IP-Adresse</th><td><textarea class="notiz" data-notiz="netz-router-6-1-1" rows="1" aria-label="Aufgabe 6: IP von Max"></textarea></td><td><textarea class="notiz" data-notiz="netz-router-6-1-2" rows="1" aria-label="Aufgabe 6: IP von Moritz"></textarea></td></tr>
+<tr><th>Netzmaske</th><td><textarea class="notiz" data-notiz="netz-router-6-2-1" rows="1" aria-label="Aufgabe 6: Netzmaske von Max"></textarea></td><td><textarea class="notiz" data-notiz="netz-router-6-2-2" rows="1" aria-label="Aufgabe 6: Netzmaske von Moritz"></textarea></td></tr>
+<tr><th>Gateway</th><td><textarea class="notiz" data-notiz="netz-router-6-3-1" rows="1" aria-label="Aufgabe 6: Gateway von Max"></textarea></td><td><textarea class="notiz" data-notiz="netz-router-6-3-2" rows="1" aria-label="Aufgabe 6: Gateway von Moritz"></textarea></td></tr>
+</tbody>
+</table></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 6">
+<p><strong>Max:</strong> Im linken Netz unterscheiden sich die Adressen schon im dritten Byte (3.1.0.x und 3.1.6.x), die Netzmaske ist also höchstens 255.255.0.0. Das Handy 3.3.0.2 darf nicht dazugehören, also genau <strong>255.255.0.0</strong>. IP z. B. <strong>3.1.0.6</strong> (allgemein 3.1.x.x, frei und nicht Netz- oder Broadcast-Adresse), Gateway <strong>3.1.0.7</strong>.</p>
+<p><strong>Moritz:</strong> Alle Adressen beginnen mit 2.1.5. Das Handy 2.1.1.3 darf nicht dazugehören, also <strong>255.255.255.0</strong>. IP z. B. <strong>2.1.5.2</strong> (allgemein 2.1.5.x), Gateway <strong>2.1.5.5</strong>.</p>
+</lehrkraft>
+
+<h2>6. Experiment: Routingtabelle und Weg ins Internet</h2>
+
+<aside class="box aufgabe">
+<ol start="7">
+<li>Lass dir in der Konsole die Routingtabelle deines eigenen Rechners anzeigen: <code>route print</code> oder <code>netstat -r</code> (Mac: <code>netstat -rn</code>). Suche die Zeile mit dem Netzwerkziel 0.0.0.0. Was steht als Gateway dort – und was hat das mit <code>ipconfig</code> zu tun?
+<textarea class="notiz" data-notiz="netz-router-7" rows="2" aria-label="Aufgabe 7: eigene Routingtabelle"></textarea></li>
+<li>Verfolge den Weg deiner Pakete zu einer Webseite: <code>tracert online-schulbuch.de</code> (Mac: <code>traceroute online-schulbuch.de</code>). Das dauert etwas. Wie viele Router liegen auf dem Weg? Welcher ist der erste?
+<textarea class="notiz" data-notiz="netz-router-8" rows="2" aria-label="Aufgabe 8: tracert"></textarea></li>
+</ol>
+</aside>
+
+<details class="aufklapp">
+<summary>So sehen die Ausgaben ungefähr aus – mit Erklärung</summary>
+<pre class="code"><code>IPv4-Routentabelle
+===========================================================================
+Aktive Routen:
+     Netzwerkziel    Netzwerkmaske          Gateway    Schnittstelle Metrik
+          0.0.0.0          0.0.0.0    192.168.178.1   192.168.178.34     35
+        127.0.0.0        255.0.0.0     Auf Verbindung        127.0.0.1    331
+    192.168.178.0    255.255.255.0     Auf Verbindung   192.168.178.34    291
+  192.168.178.255  255.255.255.255     Auf Verbindung   192.168.178.34    291</code></pre>
+<ul>
+<li><strong>0.0.0.0 / 0.0.0.0:</strong> die Standardroute. Alles, was nicht ins eigene Netz geht, geht an das Gateway 192.168.178.1 – dieselbe Adresse wie „Standardgateway“ bei <code>ipconfig</code>.</li>
+<li><strong>192.168.178.0 / 255.255.255.0 „Auf Verbindung“:</strong> das eigene Netz, direkt erreichbar (wie „Gateway = Schnittstelle“).</li>
+<li><strong>127.0.0.0:</strong> der Rechner selbst (localhost).</li>
+<li><strong>Metrik:</strong> Kosten einer Route; passen mehrere gleich genau, wird die mit der kleineren Metrik genommen.</li>
+</ul>
+<pre class="code"><code>Routenverfolgung zu online-schulbuch.de [94.130.236.154] über maximal 30 Hops:
+
+  1     2 ms     1 ms     2 ms  fritz.box [192.168.178.1]
+  2     9 ms     8 ms     9 ms  100.64.12.1
+  3    12 ms    11 ms    11 ms  …
+  …
+ 11    25 ms    24 ms    25 ms  94.130.236.154
+
+Ablaufverfolgung beendet.</code></pre>
+<ul>
+<li>Jede Zeile ist ein Router (ein „Hop“) auf dem Weg, mit drei Messungen der Antwortzeit. Der erste ist das eigene Gateway.</li>
+<li><code>tracert</code> nutzt die TTL: Es schickt Pakete mit TTL 1, 2, 3 … Der Router, bei dem die TTL auf 0 fällt, meldet sich zurück – so verrät jeder Router auf dem Weg seine Adresse.</li>
+<li>Sternchen <code>*</code> bedeuten: Dieser Router antwortet nicht auf solche Anfragen. Das Paket kommt trotzdem weiter.</li>
+</ul>
+</details>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 7 und 8">
+<p><strong>Aufgabe 7:</strong> Das Gateway der Standardroute ist das Standardgateway aus <code>ipconfig</code>: Der eigene Rechner hat also selbst eine (kleine) Routingtabelle, nur mit einer einzigen Tür nach draußen. <strong>Aufgabe 8:</strong> Meist 8–20 Hops; der erste ist der Schul- bzw. Heimrouter. In manchen Schulnetzen blockieren Firewalls <code>tracert</code> (nur Sternchen) – dann eignet sich eine Online-Visualisierung (Suchbegriff „visual traceroute“) oder die Befehlszeile der Simulation (<code>traceroute</code>).</p>
+</lehrkraft>

@@ -1,0 +1,109 @@
+<!--
+beschreibung: Netze verbinden in der Netzwerk-Simulation: Router einbauen, Gateways eintragen, Weiterleitungstabellen lesen und ergänzen, Fehler suchen und das Rollenspiel-Netz nachspielen.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite, Simulation (ersetzt das Filius-Arbeitsblatt „Routing simulieren“ und erweitert es). <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/weg-einer-nachricht/">Der Weg einer Nachricht</a>. <strong>Dauer:</strong> eine Doppelstunde für Abschnitt 1–3; Abschnitt 4 und 5 zur Differenzierung bzw. als Vertiefung.</p>
+<p><strong>Funktion im Ablauf:</strong> Überprüfung, ob das Routing-Konzept verstanden ist – besonders Abschnitt 3 (Routen selbst eintragen) und 4 (Rollenspiel-Netz) zeigen, ob die Gruppen das Struktogramm aus Rollenspiel II übertragen können. Die Beispielnetze werden über Links mit <code>?beispiel=…</code> direkt geladen; das bisherige Netz lässt sich in der Simulation mit „Rückgängig“ zurückholen.</p>
+</lehrkraft>
+
+<h2>1. Zwei Netze mit einem Router</h2>
+
+<aside class="box aufgabe">
+<ol>
+<li>Öffne die <a href="/informatik/werkzeuge/netzwerk-simulation/" target="_blank" rel="noopener">Netzwerk-Simulation</a> mit deinem LAN aus der Seite <a href="/informatik/netzwerke/lan-simulieren/">Ein LAN simulieren</a>. Richte daneben ein <strong>zweites</strong> LAN mit einem eigenen Switch und einem <strong>anderen</strong> Subnetz ein, z. B. 10.0.0.x. Teste es mit einem Ping innerhalb des neuen Netzes.</li>
+<li>Setze einen <strong>Router</strong> zwischen die beiden Switches und verkabele ihn mit beiden. Stelle die IP-Adressen und Netzmasken seiner beiden Anschlüsse so ein, dass jeder in „sein“ Subnetz passt. Achtung: Auch die Adressen des Routers müssen im jeweiligen Netz einmalig sein.</li>
+<li>Trage bei <strong>allen</strong> Rechnern die passende Router-Adresse als <strong>Gateway</strong> ein. Teste dann mit einem Ping von einem Netz ins andere.</li>
+<li>Lass dir in der Simulation die Weiterleitungstabelle des Routers anzeigen (Router anklicken, <em>Weiterleitungstabelle</em>, oder in der Befehlszeile eines Rechners <code>route</code>). Erkläre die Einträge.
+<textarea class="notiz" data-notiz="netz-routing-4" rows="3" aria-label="Aufgabe 4: Weiterleitungstabelle erklären"></textarea></li>
+<li>Schicke ein Ping von einem Subnetz ins andere und schau dir den Datenaustausch des Routers an. Wie viele ARP-Anfragen waren insgesamt nötig? Beschreibe den Datenverkehr.
+<textarea class="notiz" data-notiz="netz-routing-5" rows="3" aria-label="Aufgabe 5: ARP-Anfragen zählen"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 bis 5">
+<ul>
+<li><strong>Musterlösung:</strong> Netz 1 192.168.0.x, Netz 2 10.0.0.x, Router 192.168.0.254 und 10.0.0.254, Gateways der Rechner entsprechend. Häufigster Fehler: Gateway vergessen oder Router-Adresse doppelt vergeben.</li>
+<li><strong>Aufgabe 4:</strong> Für einfache Netze erstellt die Simulation die Einträge automatisch: je eine Zeile für jedes direkt angeschlossene Netz (Zielnetz = Netzadresse, Netzmaske, Schnittstelle = eigene Adresse in diesem Netz, kein nächster Router nötig). In Filius erscheinen zusätzlich Zeilen mit 127.0.0.1 für die eigenen Adressen („selbst verarbeiten“).</li>
+<li><strong>Aufgabe 5:</strong> Zwei ARP-Anfragen: Der Absender fragt nach der MAC des Routers (seines Gateways), der Router fragt im Zielnetz nach der MAC des Ziels. Danach Ping (über den Router) und Pong zurück; für das Pong ist kein ARP mehr nötig, weil beide die MACs aus den ARP-Anfragen kennen.</li>
+</ul>
+</lehrkraft>
+
+<h2>2. Fehlersuche: Wo hakt es?</h2>
+
+<aside class="box aufgabe">
+<ol start="6">
+<li>Öffne das Beispiel <a href="/informatik/werkzeuge/netzwerk-simulation/?beispiel=router" target="_blank" rel="noopener">Zwei Netze mit Router</a>. Teste mit <code>ping</code> von jedem Rechner zu jedem anderen. Ein Rechner macht Probleme. Finde den Fehler, erkläre, warum genau diese Pings scheitern, und behebe ihn.
+<textarea class="notiz" data-notiz="netz-routing-6" rows="3" aria-label="Aufgabe 6: Fehlersuche Router"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 6">
+<p>Rechner D fehlt das Gateway. Pings innerhalb des rechten Netzes klappen; Pings von D ins linke Netz scheitern sofort („Ziel nicht erreichbar“), Pings von A oder B an D bleiben ohne Antwort, weil D die Antwort nicht zurückschicken kann. Behebung: Gateway 192.168.2.1 eintragen.</p>
+</lehrkraft>
+
+<h2>3. Routen selbst eintragen</h2>
+
+<p>Bei einem einzigen Router reichen die automatischen Einträge. Sobald mehrere Router hintereinander hängen, kennt ein Router das Netz hinter dem nächsten Router nicht – dann muss man ihm sagen, wohin er solche Pakete schicken soll.</p>
+
+<aside class="box aufgabe">
+<ol start="7">
+<li>Öffne das Beispiel <a href="/informatik/werkzeuge/netzwerk-simulation/?beispiel=drei-netze" target="_blank" rel="noopener">Drei Netze in einer Reihe</a>: Netz A, ein Verbindungsnetz zwischen den beiden Routern und Netz B. Versuche ein Ping von Rechner A1 zu Rechner B1. Warum klappt es nicht? Schau in die Weiterleitungstabellen beider Router.
+<textarea class="notiz" data-notiz="netz-routing-7" rows="2" aria-label="Aufgabe 7: Warum klappt es nicht?"></textarea></li>
+<li>Trage bei beiden Routern im Entwurf unter <em>Weiterleitungstabelle → + Eintrag</em> die fehlenden Routen ein (Zielnetz, Netzmaske, nächster Router). Notiere deine Einträge und teste mit <code>ping</code> und <code>traceroute</code>.
+<table class="verlauf ausfuell">
+<thead><tr><th>Router</th><th>Zielnetz</th><th>Netzmaske</th><th>nächster Router</th></tr></thead>
+<tbody>
+<tr><th>Router 1</th><td><textarea class="notiz" data-notiz="netz-routing-8-1-1" rows="1" aria-label="Aufgabe 8: Router 1 – Zielnetz"></textarea></td><td><textarea class="notiz" data-notiz="netz-routing-8-1-2" rows="1" aria-label="Aufgabe 8: Router 1 – Netzmaske"></textarea></td><td><textarea class="notiz" data-notiz="netz-routing-8-1-3" rows="1" aria-label="Aufgabe 8: Router 1 – nächster Router"></textarea></td></tr>
+<tr><th>Router 2</th><td><textarea class="notiz" data-notiz="netz-routing-8-2-1" rows="1" aria-label="Aufgabe 8: Router 2 – Zielnetz"></textarea></td><td><textarea class="notiz" data-notiz="netz-routing-8-2-2" rows="1" aria-label="Aufgabe 8: Router 2 – Netzmaske"></textarea></td><td><textarea class="notiz" data-notiz="netz-routing-8-2-3" rows="1" aria-label="Aufgabe 8: Router 2 – nächster Router"></textarea></td></tr>
+</tbody>
+</table></li>
+<li>Ein Mitschüler sagt: „Es reicht, wenn Router 1 die Route kennt – Hauptsache, das Ping kommt an.“ Stimmt das? Probiere es aus und begründe.
+<textarea class="notiz" data-notiz="netz-routing-9" rows="2" aria-label="Aufgabe 9: eine Route reicht?"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 7 bis 9">
+<ul>
+<li><strong>Aufgabe 7:</strong> Router 1 kennt nur 192.168.10.0/24 und 10.0.0.0/24; für 192.168.20.x hat er keinen Eintrag und verwirft das Paket („Ziel nicht erreichbar“). Router 2 kennt umgekehrt 192.168.10.x nicht.</li>
+<li><strong>Aufgabe 8:</strong> Router 1: 192.168.20.0 / 255.255.255.0 / 10.0.0.2. Router 2: 192.168.10.0 / 255.255.255.0 / 10.0.0.1. Alternativ jeweils eine Standardroute 0.0.0.0 / 0.0.0.0 zum anderen Router. <code>traceroute 192.168.20.10</code> von A1 zeigt dann 192.168.10.1, 10.0.0.2, 192.168.20.10.</li>
+<li><strong>Aufgabe 9:</strong> Nein: Das Ping kommt zwar bei B1 an, aber das Pong findet den Rückweg nicht, weil Router 2 das Netz A nicht kennt. Routing muss in beide Richtungen stimmen – eine typische Fehlerquelle auch in echten Netzen.</li>
+</ul>
+</lehrkraft>
+
+<h2>4. Das Rollenspiel-Netz in der Simulation</h2>
+
+<aside class="box aufgabe">
+<ol start="10">
+<li>Öffne das Beispiel <a href="/informatik/werkzeuge/netzwerk-simulation/?beispiel=rollenspiel" target="_blank" rel="noopener">Rollenspiel-Netz</a>: vier Gruppen-Netze, ein Router je Gruppe, ein Backbone und ein DNS-Server – genau wie in Rollenspiel II. Schau dir die Weiterleitungstabelle von Router 2 an und vergleiche sie mit der Routingtabelle eines Routers im Rollenspiel.
+<textarea class="notiz" data-notiz="netz-routing-10" rows="2" aria-label="Aufgabe 10: Vergleich der Routingtabellen"></textarea></li>
+<li>Schicke von <em>adler</em> (Gruppe 1) ein <code>ping luchs</code> (Gruppe 4). Öffne die Datenaustausch-Fenster von adler, Router 1 und Router 4. Finde dort die Schritte aus dem Rollenspiel wieder: DNS-Anfrage, ARP-Anfragen, Weitergabe durch die Router.
+<textarea class="notiz" data-notiz="netz-routing-11" rows="4" aria-label="Aufgabe 11: Schritte im Datenaustausch"></textarea></li>
+<li>Gib auf adler <code>traceroute luchs</code> ein. Erkläre die Ausgabe.
+<textarea class="notiz" data-notiz="netz-routing-12" rows="2" aria-label="Aufgabe 12: traceroute"></textarea></li>
+<li>Erweitere das Netz um eine fünfte Gruppe (1.1.5.x) mit Router 5 (1.1.5.1 und 3.3.3.5) und zwei Rechnern. Was musst du alles einstellen, damit alle Gruppen die neue Gruppe erreichen – auch per Namen?
+<textarea class="notiz" data-notiz="netz-routing-13" rows="3" aria-label="Aufgabe 13: fünfte Gruppe"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 10 bis 13">
+<ul>
+<li><strong>Aufgabe 10:</strong> Router 2 hat automatisch 1.1.2.0/24 und 3.3.3.0/24 sowie eingetragene Routen 1.1.1.0, 1.1.3.0, 1.1.4.0 (je /24) über 3.3.3.1, 3.3.3.3, 3.3.3.4 – dieselben Regeln wie die Tabelle auf der Rollenkarte, nur mit Netzmasken statt „x“.</li>
+<li><strong>Aufgabe 11:</strong> adler: ARP nach dem Gateway 1.1.1.1? Nein – zuerst DNS: Der DNS-Server 1.1.1.2 liegt im eigenen Netz, also ARP nach 1.1.1.2, DNS-Anfrage und -Antwort („luchs“ → 1.1.4.4); dann ARP nach dem Gateway 1.1.1.1, Ping an 1.1.4.4. Router 1: ARP im Backbone nach 3.3.3.4, Weitergabe. Router 4: ARP nach 1.1.4.4, Zustellung. Pong auf demselben Weg zurück.</li>
+<li><strong>Aufgabe 12:</strong> drei Stationen: 1.1.1.1 (Router 1), 3.3.3.4 (Router 4 im Backbone), 1.1.4.4 (luchs).</li>
+<li><strong>Aufgabe 13:</strong> Router 5 mit beiden Anschlüssen und Routen zu 1.1.1.0 bis 1.1.4.0; bei den Routern 1–4 je eine Route 1.1.5.0/24 über 3.3.3.5; Rechner in Gruppe 5 mit Gateway 1.1.5.1 und DNS 1.1.1.2; im DNS-Server Einträge für die neuen Namen. Das zeigt, warum echte Router ihre Tabellen über Routing-Protokolle automatisch austauschen.</li>
+</ul>
+</lehrkraft>
+
+<h2>5. Zusatz: Dienste in anderen Netzen</h2>
+
+<aside class="box aufgabe">
+<ol start="14">
+<li>Richte in deinem Netz aus Abschnitt 1 in einem Subnetz einfache Clients mit <em>Webbrowser</em> ein und im anderen einen Rechner mit <em>Webserver</em> (Software installieren und starten). Rufe die Webseite vom Client aus über die IP-Adresse des Servers auf. Beobachte den Datenaustausch. Was ist neu im Vergleich zu einem Ping?
+<textarea class="notiz" data-notiz="netz-routing-14" rows="3" aria-label="Aufgabe 14: Webserver in einem anderen Netz"></textarea></li>
+<li>Für Profis: Verbinde dein Netz über ein <strong>Modem</strong> mit dem Netz einer anderen Gruppe auf einem anderen Gerät. Wie das geht, steht im Projekt <a href="/informatik/netzwerke/klassen-internet/">Ein Klassen-Internet mit Modems</a>.</li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 14">
+<p>Neu sind die Transportschicht (TCP-Verbindungsaufbau mit SYN, SYN-ACK, ACK, dann Datenpakete mit Bestätigungen und der Verbindungsabbau) und auf der Anwendungsschicht HTTP (GET-Anfrage, Antwort mit der HTML-Datei). Gute Überleitung zu <a href="/informatik/netzwerke/webseitenaufruf/">Was passiert beim Aufruf einer Webseite?</a> und zur fakultativen Seite <a href="/informatik/netzwerke/transportschicht/">Transportschicht</a>.</p>
+</lehrkraft>

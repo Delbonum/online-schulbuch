@@ -1,0 +1,134 @@
+<!--
+beschreibung: DNS – das Domain Name System: Namen statt Nummern, Domain und URL, Namensauflösung über DNS-Server, DNS-Cache – mit nslookup in der Konsole und einem eigenen DNS-Server in der Simulation.
+-->
+<lehrkraft titel="Einsatz dieser Seite">
+<p><strong>Typ:</strong> Kernseite. <strong>Frühestens nach:</strong> <a href="/informatik/netzwerke/router/">Router, Gateway und Routingtabelle</a> (Abschnitt 1–3 gehen auch schon nach <a href="/informatik/netzwerke/lan-simulieren/">Ein LAN simulieren</a>). <strong>Dauer:</strong> eine bis zwei Stunden.</p>
+<p>Abschnitt 4 entspricht dem Teil „DNS-Server einrichten“ des Filius-Arbeitsblatts „LAN simulieren“. Anschließend wird DNS in <a href="/informatik/netzwerke/rollenspiel-internet/">Rollenspiel II</a> von Hand gespielt.</p>
+</lehrkraft>
+
+<h2>1. Namen statt Nummern</h2>
+
+<p>Im Netz werden Pakete an IP-Adressen geschickt. Aber wer merkt sich schon <code>185.15.59.224</code>? Viel leichter ist ein Name wie <code>wikipedia.org</code>. Damit dein Rechner trotzdem weiß, wohin er die Pakete schicken muss, gibt es das <strong>DNS</strong> (<em>Domain Name System</em>). Es funktioniert wie ein riesiges <strong>Telefonbuch</strong>: Zu jedem Namen findet man dort die zugehörige IP-Adresse.</p>
+
+<p>Gibst du einen Namen ein, fragt dein Rechner zuerst einen <strong>DNS-Server</strong>: „Welche IP-Adresse gehört zu <code>wikipedia.org</code>?“ Welchen DNS-Server er fragt, steht in seinen Netzwerkeinstellungen (du hast ihn bei <code>ipconfig /all</code> gesehen). Der DNS-Server antwortet mit der IP-Adresse – und erst dann schickt dein Rechner die eigentliche Anfrage los. Die Namensauflösung ist ein eigenes, kleines „Gespräch“ auf der Anwendungsschicht.</p>
+
+<figure class="skizze">
+<svg viewBox="0 0 740 240" role="img" aria-labelledby="netz-dns-titel">
+<title id="netz-dns-titel">Ablauf der Namensauflösung: 1. Der Rechner fragt den DNS-Server: Welche IP hat wikipedia.org? 2. Der DNS-Server antwortet: 185.15.59.224. 3. Der Rechner schickt seine eigentliche Anfrage an 185.15.59.224 (Webserver). 4. Der Webserver antwortet.</title>
+<defs><marker id="pfeil-dns" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path class="pfeilspitze" d="M0,0 L10,5 L0,10 z"/></marker></defs>
+<rect class="flaeche" x="20" y="90" width="150" height="60" rx="8"/><text x="95" y="117" text-anchor="middle" class="titel">dein Rechner</text><text x="95" y="137" text-anchor="middle" class="klein">Client</text>
+<rect class="rahmen" x="300" y="10" width="160" height="56" rx="8"/><text x="380" y="35" text-anchor="middle" class="titel">DNS-Server</text><text x="380" y="54" text-anchor="middle" class="klein">„Telefonbuch“</text>
+<rect class="rahmen" x="560" y="170" width="160" height="56" rx="8"/><text x="640" y="195" text-anchor="middle" class="titel">Webserver</text><text x="640" y="214" text-anchor="middle" class="klein">185.15.59.224</text>
+<line class="linie" x1="170" y1="100" x2="296" y2="40" marker-end="url(#pfeil-dns)"/><text x="150" y="58" class="klein">① Welche IP hat wikipedia.org?</text>
+<line class="linie" x1="300" y1="58" x2="174" y2="116" marker-end="url(#pfeil-dns)"/><text x="250" y="110" class="klein">② 185.15.59.224</text>
+<line class="linie" x1="170" y1="140" x2="556" y2="190" marker-end="url(#pfeil-dns)"/><text x="300" y="186" class="klein">③ Anfrage an 185.15.59.224</text>
+<line class="gestrichelt" x1="556" y1="208" x2="170" y2="150" marker-end="url(#pfeil-dns)"/><text x="330" y="226" class="klein">④ Antwort</text>
+</svg>
+<figcaption>Erst wird der Name aufgelöst, dann folgt die eigentliche Anfrage.</figcaption>
+</figure>
+
+<p>Kein einzelner DNS-Server kennt alle Namen der Welt. Kennt er einen Namen nicht, fragt er bei anderen DNS-Servern nach – von den <strong>Root-Servern</strong> über die Server für die Endung (z. B. <code>.de</code>) bis zu dem Server, der für die Domain zuständig ist. Antworten werden eine Weile zwischengespeichert (<strong>DNS-Cache</strong>), auch auf deinem eigenen Rechner. So geht es beim nächsten Mal schneller.</p>
+
+<h2>2. Domain und URL</h2>
+
+<p>Der Name eines Rechners im Internet heißt <strong>Domain</strong> (genauer: Domainname). Die vollständige Adresse eines einzelnen Dokuments – einer Webseite, eines Bildes, einer Datei – heißt <strong>URL</strong> (<em>Uniform Resource Locator</em>). Die Domain ist also nur ein Teil der URL:</p>
+
+<pre class="code"><code>https://online-schulbuch.de/informatik/netzwerke/dns/
+└─┬──┘  └───────┬─────────┘└───────────┬──────────┘
+Protokoll     Domain             Pfad zur Ressource
+└──────────────────── URL ────────────────────────┘</code></pre>
+
+<p>Die Domain endet mit der <strong>Top-Level-Domain</strong> (TLD), z. B. <code>.de</code> für Deutschland, <code>.ch</code> für die Schweiz oder <code>.org</code> für Organisationen. Davor können weitere Teile stehen, sogenannte Subdomains wie <code>www.</code> oder <code>de.</code> in <code>de.wikipedia.org</code>. Der DNS-Server übersetzt nur die Domain in eine IP-Adresse – den Pfad wertet erst der Server am Ziel aus.</p>
+
+<aside class="box aufgabe">
+<ol>
+<li>Markiere in der URL <code>https://www.beispiel.ch/ordner/datei.html</code>: Protokoll, Domain, Top-Level-Domain und Pfad.
+<div class="felder">
+<div><label for="netz-dns-1a">Protokoll</label><textarea class="notiz" id="netz-dns-1a" data-notiz="netz-dns-1a" rows="1"></textarea></div>
+<div><label for="netz-dns-1b">Domain</label><textarea class="notiz" id="netz-dns-1b" data-notiz="netz-dns-1b" rows="1"></textarea></div>
+<div><label for="netz-dns-1c">Top-Level-Domain</label><textarea class="notiz" id="netz-dns-1c" data-notiz="netz-dns-1c" rows="1"></textarea></div>
+<div><label for="netz-dns-1d">Pfad zur Ressource</label><textarea class="notiz" id="netz-dns-1d" data-notiz="netz-dns-1d" rows="1"></textarea></div>
+</div></li>
+<li>Viele URLs teilen sich dieselbe Domain – und manchmal teilen sich sogar viele Domains dieselbe IP-Adresse. Wie kann das sein?
+<textarea class="notiz" data-notiz="netz-dns-2" rows="2" aria-label="Aufgabe 2: Domains und IP-Adressen"></textarea></li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 1 und 2">
+<p><strong>Aufgabe 1:</strong> Protokoll <code>https</code>, Domain <code>www.beispiel.ch</code> (mit Subdomain www), TLD <code>.ch</code>, Pfad <code>/ordner/datei.html</code>.</p>
+<p><strong>Aufgabe 2:</strong> Alle Seiten einer Website liegen auf demselben Server (gleiche Domain, verschiedene Pfade). Und ein Server kann viele Websites ausliefern (Webhosting): Der Browser schickt den gewünschten Domainnamen in seiner HTTP-Anfrage mit, damit der Server weiß, welche Website gemeint ist.</p>
+</lehrkraft>
+
+<h2>3. Experiment: DNS in der Konsole</h2>
+
+<aside class="box aufgabe">
+<ol start="3">
+<li>Frage den DNS-Server nach der IP-Adresse einer Domain:
+<pre class="code"><code>nslookup online-schulbuch.de
+nslookup wikipedia.org</code></pre>
+Welcher DNS-Server antwortet? Welche IP-Adressen bekommst du?
+<textarea class="notiz" data-notiz="netz-dns-3" rows="2" aria-label="Aufgabe 3: nslookup"></textarea></li>
+<li>Schau dir an, welche Namen dein Rechner schon zwischengespeichert hat, und leere dann den Speicher (Windows):
+<pre class="code"><code>ipconfig /displaydns
+ipconfig /flushdns
+ipconfig /displaydns</code></pre>
+Rufe danach eine Webseite im Browser auf und schau noch einmal nach. Was beobachtest du?
+<textarea class="notiz" data-notiz="netz-dns-4" rows="2" aria-label="Aufgabe 4: DNS-Cache"></textarea></li>
+<li>Gib die IP-Adresse, die du für <code>wikipedia.org</code> bekommen hast, direkt in die Adresszeile des Browsers ein. Was passiert?
+<textarea class="notiz" data-notiz="netz-dns-5" rows="2" aria-label="Aufgabe 5: IP im Browser"></textarea></li>
+</ol>
+</aside>
+
+<details class="aufklapp">
+<summary>So sieht die Ausgabe von nslookup ungefähr aus – mit Erklärung</summary>
+<pre class="code"><code>C:\&gt; nslookup wikipedia.org
+Server:  fritz.box
+Address:  192.168.178.1
+
+Nicht autorisierende Antwort:
+Name:    wikipedia.org
+Addresses:  2a02:ec80:300:ed1a::1
+          185.15.59.224</code></pre>
+<ul>
+<li><strong>Server / Address:</strong> der DNS-Server, den dein Rechner gefragt hat – zu Hause oft der Router, der die Frage seinerseits an den DNS-Server des Providers weiterreicht.</li>
+<li><strong>Nicht autorisierende Antwort:</strong> Der befragte Server ist nicht selbst für die Domain zuständig; er hat die Antwort von einem anderen Server oder aus seinem Cache.</li>
+<li><strong>Addresses:</strong> die IP-Adressen der Domain, hier eine IPv6- und eine IPv4-Adresse. Große Websites haben oft mehrere.</li>
+</ul>
+<p><code>ipconfig /displaydns</code> zeigt den DNS-Cache des Rechners (Name, Typ des Eintrags, „Gültigkeitsdauer“ in Sekunden, IP-Adresse), <code>ipconfig /flushdns</code> leert ihn. Auf dem Mac geht das Leeren mit <code>sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder</code>.</p>
+</details>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 3 bis 5">
+<ul>
+<li><strong>Aufgabe 3:</strong> Antwortender Server ist der DNS-Server aus <code>ipconfig /all</code> (Schulserver oder Router). Große Seiten liefern mehrere Adressen, oft IPv4 und IPv6.</li>
+<li><strong>Aufgabe 4:</strong> Nach <code>/flushdns</code> ist der Cache (fast) leer; nach dem Aufruf einer Webseite stehen dort wieder Einträge – nicht nur für die Seite selbst, sondern auch für eingebundene Dienste (Bilder, Schriften, Werbung, Statistik). Das macht sichtbar, wie viele Server beim Aufruf einer Seite beteiligt sind. Für <code>/flushdns</code> sind meist keine Administratorrechte nötig, sonst Aufgabe gemeinsam am Lehrerrechner.</li>
+<li><strong>Aufgabe 5:</strong> Teils erscheint die Seite, teils eine Fehlermeldung oder eine Zertifikatswarnung: Viele Server liefern ohne Domainnamen nicht die gewünschte Website aus (siehe Aufgabe 2). Das zeigt, dass DNS bequem, aber für die Paketzustellung selbst nicht nötig ist.</li>
+</ul>
+</lehrkraft>
+
+<h2>4. Einen DNS-Server in der Simulation einrichten</h2>
+
+<aside class="box aufgabe">
+<ol start="6">
+<li>Öffne dein LAN aus der Seite <a href="/informatik/netzwerke/lan-simulieren/">Ein LAN simulieren</a> (oder baue schnell eines mit vier Rechnern). Nenne einen Rechner „DNS“. Trage bei allen anderen Rechnern unter <em>DNS-Server</em> die IP-Adresse dieses Rechners ein.</li>
+<li>Wechsle in die Simulation. Installiere auf dem Rechner „DNS“ die Software <em>DNS-Server</em>, öffne sie und ordne den IP-Adressen deines Netzes Namen zu (z. B. <code>anna.lan</code> → 192.168.0.1). <strong>Starte</strong> den DNS-Server.</li>
+<li>Wiederhole ein Ping, diesmal mit dem Namen statt der IP-Adresse, z. B. <code>ping anna.lan</code>. Wie unterscheidet sich der Kommunikationsweg vom Ping mit IP-Adresse? Schau in den Datenaustausch des sendenden Rechners.
+<textarea class="notiz" data-notiz="netz-dns-8" rows="3" aria-label="Aufgabe 8: Kommunikationsweg mit DNS"></textarea></li>
+<li>Probiere auch den Befehl <code>host anna.lan</code> in der Befehlszeile der Simulation. Was passiert, wenn du einen Namen abfragst, der nicht in der Tabelle steht?</li>
+</ol>
+</aside>
+
+<lehrkraft titel="Lösungsvorschlag zu Aufgabe 6 bis 9">
+<p><strong>Aufgabe 8:</strong> Zuerst geht eine DNS-Anfrage vom Absender an den DNS-Server (beim allerersten Mal davor ARP nach der MAC des DNS-Servers), der DNS-Server antwortet mit der IP-Adresse. Erst dann folgt der eigentliche Datenaustausch direkt zwischen Absender und Ziel (ggf. mit ARP nach der MAC des Ziels), ohne Beteiligung des DNS-Servers. <strong>Aufgabe 9:</strong> Für unbekannte Namen meldet die Befehlszeile, dass der Name nicht aufgelöst werden kann; dasselbe passiert, wenn der DNS-Server nicht gestartet ist.</p>
+</lehrkraft>
+
+<div class="quiz" data-id="netz-dns-quiz" data-anweisung="Wähle die richtige Antwort.">
+<div class="frage" data-erklaerung="DNS übersetzt Namen (Domains) in IP-Adressen – wie ein Telefonbuch."><p>Was macht ein DNS-Server?</p><ul><li>Er übersetzt IP-Adressen in MAC-Adressen.</li><li data-richtig>Er übersetzt Domainnamen in IP-Adressen.</li><li>Er leitet Pakete zwischen Netzen weiter.</li></ul></div>
+<div class="frage" data-erklaerung="Die URL ist die vollständige Adresse, die Domain nur der Name des Servers darin."><p>Was ist der Unterschied zwischen Domain und URL?</p><ul><li>Es gibt keinen.</li><li data-richtig>Die Domain ist der Name des Servers, die URL die vollständige Adresse eines Dokuments.</li><li>Die URL ist ein Teil der Domain.</li></ul></div>
+<div class="frage" data-erklaerung="ARP: IP → MAC im lokalen Netz. DNS: Name → IP, weltweit."><p>Welche Zuordnung ist richtig?</p><ul><li>ARP: Name → IP; DNS: IP → MAC</li><li data-richtig>DNS: Name → IP; ARP: IP → MAC</li><li>DNS und ARP machen dasselbe.</li></ul></div>
+<div class="frage" data-erklaerung="Ohne DNS kennt der Rechner die IP zum Namen nicht – mit der IP-Adresse geht es aber weiterhin."><p>Der DNS-Server deiner Schule fällt aus. Was passiert?</p><ul><li>Gar nichts geht mehr, auch nicht mit IP-Adressen.</li><li data-richtig>Webseiten lassen sich über ihren Namen nicht mehr aufrufen, über die IP-Adresse aber schon.</li><li>Nur Webseiten mit .de funktionieren nicht mehr.</li></ul></div>
+</div>
+
+<lehrkraft titel="Als Live-Umfrage durchführen">
+<p>Frage 3 prüft eine häufige Verwechslung und eignet sich als Diagnose vor Rollenspiel II.</p>
+<als-umfrage ids="netz-dns-quiz" titel="Netzwerke – DNS" modus="single"></als-umfrage>
+</lehrkraft>
