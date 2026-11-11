@@ -404,6 +404,15 @@ a.nav-link:hover { background: var(--surface-2); }
 .box.material .quelle, .box .quelle { font-size: .85rem; color: var(--muted); text-align: right; }
 .box.material blockquote { margin: 0 0 1em; padding: 0; font-style: normal; }
 .box.info { background: var(--fach-soft); }
+/* Zuklappbare Kästen: <details class="box material" data-titel="…"> */
+details.box { margin: .7em 0; }   /* mehrere Materialien rücken zusammen; zu anderen Kästen bleibt der volle Abstand */
+details.box > summary.box-titel { cursor: pointer; list-style: none; }
+details.box > summary.box-titel::-webkit-details-marker { display: none; }
+details.box > summary.box-titel .auf-zu { margin-left: auto; flex: none; transition: transform .15s; }
+details.box[open] > summary.box-titel .auf-zu { transform: rotate(90deg); }
+details.box:not([open]) { padding-bottom: 14px; }
+details.box:not([open]) > summary.box-titel { margin-bottom: 0 !important; }
+details.box > summary.box-titel:hover span { text-decoration: underline; }
 
 /* Inhalte für Lehrkräfte: gesperrt als schmaler Hinweis, nach der Anmeldung als eigener Kasten */
 .box.lehrkraft { border-left-color: #8a6d1f; background: #fbf6e4; }

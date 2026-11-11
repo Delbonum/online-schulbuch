@@ -282,6 +282,15 @@ function analogesBlatt(mitLoesung) {
   // Aufklappbare Kästen: mit Antwortfeldern (z. B. Tagebucheinträge) oder mit Lösungen offen, sonst weg
   k.querySelectorAll('details').forEach((d) => {
     if (!mitLoesung && !d.querySelector('.notiz') && !d.hasAttribute('data-blatt')) { d.remove(); return; }
+    // Zuklappbare Kästen (details.box) werden wieder zu gewöhnlichen Kästen
+    if (d.classList.contains('box')) {
+      const box = el('aside', d.className);
+      const s = d.querySelector(':scope > summary');
+      if (s) { s.querySelector('.auf-zu')?.remove(); box.append(el('p', 'box-titel', s.innerHTML)); s.remove(); }
+      box.append(...d.childNodes);
+      d.replaceWith(box);
+      return;
+    }
     const div = el('div', 'ab-blatt-aufklapp');
     const s = d.querySelector(':scope > summary');
     if (s) { div.append(el('p', 'ab-blatt-summary', s.innerHTML)); s.remove(); }

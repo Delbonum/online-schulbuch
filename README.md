@@ -90,6 +90,7 @@ Bausteine für den Inhalt:
 <aside class="box aufgabe"><p>…</p></aside>        <!-- Aufgabe -->
 <aside class="box hinweis"><p>…</p></aside>        <!-- Hinweis; ebenso tipp, merke, info, material -->
 <aside class="box material" data-titel="M1 · Titel"> … <p class="quelle">S. 16</p></aside>
+<details class="box material" data-titel="M1 · Titel"> … </details>   <!-- derselbe Kasten zum Aufklappen (lange Materialien); auf dem Arbeitsblatt offen -->
 <blockquote class="zitat"><p>…</p><span class="beleg">S. 16</span></blockquote>   <!-- Zitat; Verse: <div class="vers"> -->
 <lehrkraft titel="Lösungsvorschlag"> … </lehrkraft>   <!-- nur für Lehrkräfte, siehe unten -->
 <div class="einbettung" data-src="https://learningapps.org/watch?v=…" data-anbieter="LearningApps"></div>

@@ -270,6 +270,11 @@ function wandle(html, quelle) {
     const [ic, titel] = BOX[art] ?? ['hinweis', art];
     return `<aside class="box ${art}"><p class="box-titel">${icon(ic)}${eigen ?? titel}</p>`;
   });
+  // Zuklappbare Kästen (z. B. lange Materialien): Titelzeile zum Aufklappen, bleiben auf dem gedruckten Arbeitsblatt
+  s = s.replace(/<details class="box (\w+)"(?: data-titel="([^"]*)")?>/g, (m, art, eigen) => {
+    const [ic, titel] = BOX[art] ?? ['hinweis', art];
+    return `<details class="box ${art}" data-blatt><summary class="box-titel">${icon(ic)}<span>${eigen ?? titel}</span>${icon('chevron', 'icon klein auf-zu')}</summary>`;
+  });
   // Externe Einbettungen erst nach Klick laden (Datenschutz)
   s = s.replace(/<div class="einbettung" data-src="([^"]+)" data-anbieter="([^"]+)"><\/div>/g, (m, src, anbieter) => {
     const host = new URL(src.replace(/&amp;/g, '&')).hostname;
